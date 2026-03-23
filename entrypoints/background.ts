@@ -194,9 +194,8 @@ export default defineBackground(() => {
           return;
         }
 
+        const stepIndex = actor.getSnapshot().context.stepCount;
         actor.send({ type: 'USER_ACTION' });
-
-        const stepCount = actor.getSnapshot().context.stepCount;
         const guideId = snap.context.currentGuideId!;
         const stepId = crypto.randomUUID();
         const tabId = sender.tab?.id;
@@ -225,7 +224,7 @@ export default defineBackground(() => {
           await db.steps.add({
             id: stepId,
             guideId,
-            index: stepCount,
+            index: stepIndex,
             description: fallbackDescription,
             action: msg.action,
             url: currentUrl,
