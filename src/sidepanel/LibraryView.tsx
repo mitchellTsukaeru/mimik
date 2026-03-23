@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, FileText } from 'lucide-react';
 import { getGuides, deleteGuide } from '../shared/guide-service';
 import type { Guide } from '../shared/types';
 
@@ -49,64 +49,46 @@ export default function LibraryView({ onOpen, onStartRecording, isAlive }: Libra
   }, [loadGuides]);
 
   if (loading) {
-    return <p className="text-sm text-gray-500 p-4">Loading...</p>;
+    return <p className="text-sm text-gray-400 px-5 py-4">Loading...</p>;
+  }
+
+  if (guides.length === 0) {
+    return (
+      <div className="px-5 py-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <FileText size={20} className="text-gray-400" />
+        </div>
+        <p className="text-sm text-gray-500">No guides yet</p>
+        <p className="text-xs text-gray-400 mt-1">Start a capture to create your first guide</p>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col">
-      {guides.length === 0 ? (
-        <div className="p-4">
-          <p className="text-sm text-gray-500 mb-4">
-            No guides yet. Start recording to create your first guide.
-          </p>
-          {onStartRecording && (
-            <button
-              onClick={onStartRecording}
-              className="w-full py-2 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-              disabled={!isAlive}
-            >
-              Start Recording
-            </button>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="divide-y divide-gray-100">
-            {guides.map((guide) => (
-              <div
-                key={guide.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
-                onClick={() => onOpen(guide.id)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{guide.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatRelativeTime(guide.updatedAt)}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => handleDelete(e, guide.id)}
-                  className="ml-2 p-1 rounded text-gray-400 hover:text-red-500 flex-shrink-0"
-                  title="Delete guide"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
-          {onStartRecording && (
-            <div className="p-3 border-t border-gray-100">
-              <button
-                onClick={onStartRecording}
-                className="w-full py-2 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                disabled={!isAlive}
-              >
-                New Recording
-              </button>
+      <div className="divide-y divide-gray-50">
+        {guides.map((guide) => (
+          <div
+            key={guide.id}
+            className="px-5 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between group transition-colors"
+            onClick={() => onOpen(guide.id)}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{guide.title}</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatRelativeTime(guide.updatedAt)}
+              </p>
             </div>
-          )}
-        </>
-      )}
+            <button
+              onClick={(e) => handleDelete(e, guide.id)}
+              className="ml-2 p-1.5 rounded-lg text-gray-300 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
+              title="Delete guide"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

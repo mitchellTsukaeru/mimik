@@ -172,10 +172,12 @@ export default defineBackground(() => {
         try {
           await actorReady;
 
+          const guideId = actor.getSnapshot().context.currentGuideId;
+
           await broadcastStopCapture();
 
           actor.send({ type: 'STOP_RECORDING' });
-          sendResponse({ success: true });
+          sendResponse({ success: true, guideId });
         } catch (err) {
           console.error('[Mimik] STOP_RECORDING failed', err);
           sendResponse({ error: String(err) });
