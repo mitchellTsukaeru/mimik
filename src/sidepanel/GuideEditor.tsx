@@ -1,0 +1,188 @@
+import { useState, useEffect, useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { getGuide, updateGuideTitle, updateStepDescription, deleteStep, reorderSteps, updateScreenshotBlob } from '../shared/guide-service';
+import type { Guide, Step, Screenshot } from '../shared/types';
+import StepCard from './StepCard';
+import BlurCanvas from './BlurCanvas';
+import ExportMenu from './ExportMenu';
+
+interface GuideEditorProps {
+  guideId: string;
+  onBack: () => void;
+}
+
+interface GuideData {
+  guide: Guide;
+  steps: Step[];
+  screenshots: Map<string, Screenshot>;
+}
+
+export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
+  const [data, setData] = useState<GuideData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [title, setTitle] = useState('');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
+
+  const loadGuide = useCallback(async () => {
+    const result = await getGuide(guideId);
+    if (!result) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+    setData(result);
+    setTitle(result.guide.title);
+    setLoading(false);
+  }, [guideId]);
+
+  useEffect(() => {
+    loadGuide();
+  }, [loadGuide]);
+
+  const handleTitleBlur = useCallback(async () => {
+    if (!data || title === data.guide.title) return;
+    await updateGuideTitle(guideId, title);
+    setData(prev => prev ? { ...prev, guide: { ...prev.guide, title } } : prev);
+  }, [data, guideId, title]);
+
+  const handleDescriptionChange = useCallback(async (stepId: string, description: string) => {
+    await updateStepDescription(stepId, description);
+    setData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        steps: prev.steps.map(s => s.id === stepId ? { ...s, description } : s),
+      };
+    });
+  }, []);
+
+  const handleDeleteStep = useCallback(async (stepId: string) => {
+    await deleteStep(guideId, stepId);
+    const result = await getGuide(guideId);
+    if (result) {
+      setData(result);
+      setTitle(result.guide.title);
+    } else {
+      setData(null);
+      setLoading(true);
+      await loadGuide();
+    }
+  }, [guideId, loadGuide]);
+
+  const handleBlurSave = useCallback(async (blob: Blob) => {
+    if (!blurringStepId || !data) return;
+    const blurScreenshot = data.screenshots.get(blurringStepId);
+    if (!blurScreenshot) return;
+    await updateScreenshotBlob(blurScreenshot.id, blob);
+    setData(prev => {
+      if (!prev) return prev;
+      const newScreenshots = new Map(prev.screenshots);
+      newScreenshots.set(blurringStepId, { ...blurScreenshot, blob });
+      return { ...prev, screenshots: newScreenshots };
+    });
+    setBlurringStepId(null);
+  }, [blurringStepId, data]);
+
+  if (loading) {
+    return <p className="text-sm text-gray-500 p-4">Loading...</p>;
+  }
+
+  if (notFound || !data) {
+    return (
+      <div className="p-4">
+        <button onClick={onBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
+          <ArrowLeft size={18} />
+          Back
+        </button>
+        <p className="text-sm text-red-500">Guide not found</p>
+      </div>
+    );
+  }
+
+  const blurScreenshot = blurringStepId ? data.screenshots.get(blurringStepId) : undefined;
+
+  return (
+    <div className="min-h-screen bg-white">
+      {blurringStepId && blurScreenshot && (
+        <BlurCanvas
+          screenshot={blurScreenshot}
+          onSave={handleBlurSave}
+          onCancel={() => setBlurringStepId(null)}
+        />
+      )}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2 mb-1">
+          <button
+            onClick={onBack}
+            className="flex-shrink-0 text-gray-500 hover:text-gray-700 p-1 rounded"
+            title="Back to library"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <input
+            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none w-full"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={handleTitleBlur}
+          />
+          <div className="ml-auto flex-shrink-0">
+            <ExportMenu
+              guideId={guideId}
+              guide={data.guide}
+              steps={data.steps}
+              screenshots={data.screenshots}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">{data.steps.length} step{data.steps.length !== 1 ? 's' : ''}</p>
+      </div>
+      <div className="p-4">
+        {data.steps.length === 0 ? (
+          <p className="text-sm text-gray-500">No steps in this guide.</p>
+        ) : (
+          data.steps.map((step, idx) => (
+            <div key={step.id}>
+              {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
+                <div className="h-1 bg-blue-500 rounded-full mx-4 mb-1" />
+              )}
+              <StepCard
+                step={step}
+                screenshot={data.screenshots.get(step.id)}
+                onDescriptionChange={handleDescriptionChange}
+                onDelete={handleDeleteStep}
+                onBlur={(stepId) => setBlurringStepId(stepId)}
+                dragHandleProps={{
+                  onDragStart: (e: React.DragEvent) => {
+                    setDragIndex(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                  },
+                  onDragOver: (e: React.DragEvent) => {
+                    e.preventDefault();
+                    setDragOverIndex(idx);
+                  },
+                  onDragEnd: () => {
+                    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+                      setData(prev => {
+                        if (!prev) return prev;
+                        const newSteps = [...prev.steps];
+                        const [moved] = newSteps.splice(dragIndex, 1);
+                        newSteps.splice(dragOverIndex, 0, moved);
+                        reorderSteps(guideId, newSteps.map(s => s.id));
+                        return { ...prev, steps: newSteps };
+                      });
+                    }
+                    setDragIndex(null);
+                    setDragOverIndex(null);
+                  },
+                }}
+              />
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
+import LibraryView from './LibraryView';
+import GuideEditor from './GuideEditor';
+
+type View = { name: 'library' } | { name: 'editor'; guideId: string } | { name: 'recording' };
 
 export default function App() {
   const [isAlive, setIsAlive] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [stepCount, setStepCount] = useState(0);
+  const [view, setView] = useState<View>({ name: 'library' });
 
   useEffect(() => {
     chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
@@ -17,25 +22,33 @@ export default function App() {
           if (response.stepCount !== undefined) {
             setStepCount(response.stepCount);
           }
+          setView({ name: 'recording' });
         } else {
+          if (isRecording) {
+          }
           setIsRecording(false);
         }
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isRecording]);
 
   const handleStartRecording = useCallback(async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = tab?.url || '';
+    const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const url = tabs[0]?.url || '';
 
     chrome.runtime.sendMessage(
       { type: 'START_RECORDING', url },
       (response) => {
+        if (chrome.runtime.lastError) {
+          console.error('[Mimik] START_RECORDING error', chrome.runtime.lastError);
+          return;
+        }
         if (response?.guideId) {
           setIsRecording(true);
           setStepCount(0);
+          setView({ name: 'recording' });
         }
       }
     );
@@ -46,9 +59,41 @@ export default function App() {
       if (response?.success) {
         setIsRecording(false);
         setStepCount(0);
+        if (response.guideId) {
+          setView({ name: 'editor', guideId: response.guideId });
+        } else {
+          setView({ name: 'library' });
+        }
       }
     });
   }, []);
+
+  if (view.name === 'editor') {
+    return (
+      <GuideEditor
+        guideId={view.guideId}
+        onBack={() => setView({ name: 'library' })}
+      />
+    );
+  }
+
+  if (view.name === 'library' && !isRecording) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">Mimik</h1>
+          <span className="text-xs text-gray-400">
+            {isAlive ? 'Connected' : 'Connecting...'}
+          </span>
+        </div>
+        <LibraryView
+          onOpen={(guideId) => setView({ name: 'editor', guideId })}
+          onStartRecording={handleStartRecording}
+          isAlive={isAlive}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 min-h-screen bg-white">
@@ -67,22 +112,12 @@ export default function App() {
         )}
       </div>
 
-      {!isRecording ? (
-        <button
-          onClick={handleStartRecording}
-          className="mt-4 w-full py-2 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-          disabled={!isAlive}
-        >
-          Start Recording
-        </button>
-      ) : (
-        <button
-          onClick={handleStopRecording}
-          className="mt-4 w-full py-2 px-4 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
-        >
-          Stop Recording
-        </button>
-      )}
+      <button
+        onClick={handleStopRecording}
+        className="mt-4 w-full py-2 px-4 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+      >
+        Stop Recording
+      </button>
     </div>
   );
 }
