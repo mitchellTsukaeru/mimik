@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Trash2, GripVertical, EyeOff, Copy, Check } from 'lucide-react';
 import type { Step, Screenshot } from '../shared/types';
+import ZoomScreenshot from './ZoomScreenshot';
 
 interface DragHandleProps {
   onDragStart: (e: React.DragEvent) => void;
@@ -103,11 +104,11 @@ export default function StepCard({
           {step.index + 1}
         </span>
         <div className="flex-1 min-w-0">
-          {objectUrl ? (
-            <img
-              src={objectUrl}
+          {screenshot ? (
+            <ZoomScreenshot
+              screenshot={screenshot}
               alt={`Step ${step.index + 1} screenshot`}
-              className="w-full rounded mb-2 border border-gray-100"
+              className="mb-2"
             />
           ) : (
             <div className="w-full h-32 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-sm mb-2">

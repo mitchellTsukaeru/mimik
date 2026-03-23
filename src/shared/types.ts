@@ -17,6 +17,13 @@ export interface Step {
   screenshotId?: string;
 }
 
+export interface ScreenshotBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface Screenshot {
   id: string;
   stepId: string;
@@ -24,6 +31,8 @@ export interface Screenshot {
   mimeType: string;
   width: number;
   height: number;
+  bounds?: ScreenshotBounds;
+  pixelRatio?: number;
 }
 
 export interface Settings {
