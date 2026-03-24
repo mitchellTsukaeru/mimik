@@ -154,6 +154,8 @@ export default defineBackground(() => {
             createdAt: Date.now(),
             updatedAt: Date.now(),
             stepIds: [],
+            starred: false,
+            deletedAt: null,
           });
 
           await broadcastStartCapture(guideId);

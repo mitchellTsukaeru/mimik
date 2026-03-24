@@ -4,6 +4,8 @@ export interface Guide {
   createdAt: number;
   updatedAt: number;
   stepIds: string[];
+  starred: boolean;
+  deletedAt: number | null;
 }
 
 export interface Step {

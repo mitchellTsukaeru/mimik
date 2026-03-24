@@ -20,6 +20,17 @@ export class MimikDB extends Dexie {
       screenshots: 'id, stepId',
       rrwebEvents: 'id, guideId, timestamp',
     });
+    this.version(3).stores({
+      guides: 'id, createdAt, updatedAt, starred, deletedAt',
+      steps: 'id, guideId, index',
+      screenshots: 'id, stepId',
+      rrwebEvents: 'id, guideId, timestamp',
+    }).upgrade(tx => {
+      return tx.table('guides').toCollection().modify(guide => {
+        if (guide.starred === undefined) guide.starred = false;
+        if (guide.deletedAt === undefined) guide.deletedAt = null;
+      });
+    });
   }
 }
 
