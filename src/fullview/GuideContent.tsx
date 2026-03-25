@@ -11,6 +11,7 @@ interface GuideContentProps {
   onStepsLoaded: (steps: Step[], domain: string, favicon: string) => void;
   scrollToStepId: string | null;
   onActiveStepChange: (stepId: string | null) => void;
+  onTitleChange?: (title: string) => void;
 }
 
 interface GuideData {
@@ -26,7 +27,7 @@ function getFaviconUrl(url: string): string {
   try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`; } catch { return ''; }
 }
 
-export default function GuideContent({ guideId, onStepsLoaded, scrollToStepId, onActiveStepChange }: GuideContentProps) {
+export default function GuideContent({ guideId, onStepsLoaded, scrollToStepId, onActiveStepChange, onTitleChange }: GuideContentProps) {
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -41,11 +42,12 @@ export default function GuideContent({ guideId, onStepsLoaded, scrollToStepId, o
       setData(result);
       setTitle(result.guide.title);
       document.title = `${result.guide.title} — Mimik`;
+      onTitleChange?.(result.guide.title);
       const firstUrl = result.steps[0]?.url || '';
       onStepsLoaded(result.steps, extractDomain(firstUrl), getFaviconUrl(firstUrl));
     }
     setLoading(false);
-  }, [guideId, onStepsLoaded]);
+  }, [guideId, onStepsLoaded, onTitleChange]);
 
   useEffect(() => { loadGuide(); }, [loadGuide]);
 
@@ -137,7 +139,7 @@ export default function GuideContent({ guideId, onStepsLoaded, scrollToStepId, o
 
       {/* Title */}
       <input
-        className="text-3xl font-bold bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none w-full mb-6"
+        className="text-3xl font-bold bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-amber-500 focus:outline-none w-full mb-6"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onBlur={handleTitleBlur}
@@ -163,7 +165,7 @@ export default function GuideContent({ guideId, onStepsLoaded, scrollToStepId, o
               data-step-id={step.id}
             >
               {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
-                <div className="h-1 bg-blue-500 rounded-full mx-4 mb-2" />
+                <div className="h-1 bg-amber-500 rounded-full mx-4 mb-2" />
               )}
               <StepCard
                 step={step}

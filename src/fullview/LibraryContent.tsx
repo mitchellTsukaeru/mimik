@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LayoutGrid, LayoutList, Star, Trash2, RotateCcw, Search, FileText } from 'lucide-react';
+import { LayoutGrid, LayoutList, Star, Trash2, RotateCcw, FileText } from 'lucide-react';
 import { getGuides, getStarredGuides, getTrashedGuides, softDeleteGuide, permanentlyDeleteGuide, restoreGuide, toggleStar, getFirstScreenshot } from '../shared/guide-service';
 import type { Guide, Screenshot } from '../shared/types';
 import { navigate } from './router';
@@ -8,17 +8,17 @@ import ZoomScreenshot from '../sidepanel/ZoomScreenshot';
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
   onCountsChange: (counts: { all: number; starred: number; trash: number }) => void;
+  searchQuery?: string;
 }
 
 function formatDate(ts: number): string {
   return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function LibraryContent({ category, onCountsChange }: LibraryContentProps) {
+export default function LibraryContent({ category, onCountsChange, searchQuery = '' }: LibraryContentProps) {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [thumbnails, setThumbnails] = useState<Map<string, Screenshot>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [display, setDisplay] = useState<'list' | 'grid'>(() =>
     (localStorage.getItem('mimik-display') as 'list' | 'grid') || 'list'
   );
@@ -50,8 +50,8 @@ export default function LibraryContent({ category, onCountsChange }: LibraryCont
     localStorage.setItem('mimik-display', next);
   };
 
-  const filtered = search
-    ? guides.filter(g => g.title.toLowerCase().includes(search.toLowerCase()))
+  const filtered = searchQuery
+    ? guides.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : guides;
 
   const handleStar = async (e: React.MouseEvent, id: string) => {
@@ -90,26 +90,17 @@ export default function LibraryContent({ category, onCountsChange }: LibraryCont
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{titles[category]}</h2>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search guides..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 w-56"
-            />
-          </div>
-          <button
-            onClick={toggleDisplay}
-            className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"
-            title={display === 'list' ? 'Grid view' : 'List view'}
-          >
-            {display === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold" style={{ color: '#451a03' }}>{titles[category]}</h2>
+        <button
+          onClick={toggleDisplay}
+          className="p-2 rounded-lg transition-colors"
+          style={{ border: '1px solid #E8E2DA', color: '#6B5D40' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#FEF3C7'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+          title={display === 'list' ? 'Grid view' : 'List view'}
+        >
+          {display === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
+        </button>
       </div>
 
       {loading ? (
