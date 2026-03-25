@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, FileText } from 'lucide-react';
-import { getGuides, softDeleteGuide } from '../shared/guide-service';
+import { getGuides, softDeleteGuide, getFirstStepUrl } from '../shared/guide-service';
 import type { Guide } from '../shared/types';
 
 function formatRelativeTime(timestamp: number): string {
@@ -17,21 +17,53 @@ function formatRelativeTime(timestamp: number): string {
   return rtf.format(diffDay, 'day');
 }
 
+function getFaviconUrl(url: string): string {
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`;
+  } catch {
+    return '';
+  }
+}
+
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
 interface LibraryViewProps {
   onOpen: (guideId: string) => void;
   onStartRecording?: () => void;
   isAlive?: boolean;
+  searchQuery?: string;
 }
 
-export default function LibraryView({ onOpen, onStartRecording, isAlive }: LibraryViewProps) {
-  const [guides, setGuides] = useState<Guide[]>([]);
+interface GuideWithMeta extends Guide {
+  favicon: string;
+  domain: string;
+}
+
+export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
+  const [guides, setGuides] = useState<GuideWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadGuides = useCallback(async () => {
     setLoading(true);
     try {
       const result = await getGuides();
-      setGuides(result);
+      const withMeta: GuideWithMeta[] = await Promise.all(
+        result.map(async (guide) => {
+          const url = await getFirstStepUrl(guide.id);
+          return {
+            ...guide,
+            favicon: url ? getFaviconUrl(url) : '',
+            domain: url ? extractDomain(url) : '',
+          };
+        })
+      );
+      setGuides(withMeta);
     } finally {
       setLoading(false);
     }
@@ -48,47 +80,84 @@ export default function LibraryView({ onOpen, onStartRecording, isAlive }: Libra
     await loadGuides();
   }, [loadGuides]);
 
+  const filtered = searchQuery
+    ? guides.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : guides;
+
   if (loading) {
-    return <p className="text-sm text-gray-400 px-5 py-4">Loading...</p>;
+    return <p className="text-sm py-4" style={{ color: '#B5A48B' }}>Loading...</p>;
   }
 
   if (guides.length === 0) {
     return (
-      <div className="px-5 py-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-          <FileText size={20} className="text-gray-400" />
+      <div className="py-10 text-center">
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3" style={{ background: '#FDE68A', border: '1px solid #FBBF24' }}>
+          <FileText size={20} style={{ color: '#92400E' }} />
         </div>
-        <p className="text-sm text-gray-500">No guides yet</p>
-        <p className="text-xs text-gray-400 mt-1">Start a capture to create your first guide</p>
+        <p className="text-sm font-medium" style={{ color: '#451a03' }}>No guides yet</p>
+        <p className="text-xs mt-1" style={{ color: '#B45309' }}>Start a capture to create your first guide</p>
+      </div>
+    );
+  }
+
+  if (filtered.length === 0) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm" style={{ color: '#B5A48B' }}>No matching guides</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="divide-y divide-gray-50">
-        {guides.map((guide) => (
-          <div
-            key={guide.id}
-            className="px-5 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between group transition-colors"
-            onClick={() => onOpen(guide.id)}
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{guide.title}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatRelativeTime(guide.updatedAt)}
-              </p>
-            </div>
-            <button
-              onClick={(e) => handleDelete(e, guide.id)}
-              className="ml-2 p-1.5 rounded-lg text-gray-300 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
-              title="Delete guide"
-            >
-              <Trash2 size={14} />
-            </button>
+    <div className="flex flex-col gap-2 pb-4">
+      {filtered.map((guide) => (
+        <div
+          key={guide.id}
+          className="flex items-center gap-3 px-3.5 py-3 rounded-lg cursor-pointer group transition-all"
+          style={{ border: '1px solid #FDE68A' }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#F59E0B'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(245,158,11,0.12)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#FDE68A'; e.currentTarget.style.boxShadow = 'none'; }}
+          onClick={() => onOpen(guide.id)}
+        >
+          {/* Favicon */}
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden text-xs font-semibold" style={{ background: '#FDE68A', border: '1px solid #FBBF24', color: '#78350F' }}>
+            {guide.favicon ? (
+              <img
+                src={guide.favicon}
+                alt=""
+                className="w-5 h-5"
+                onError={(e) => {
+                  const el = e.target as HTMLImageElement;
+                  el.style.display = 'none';
+                  el.parentElement!.textContent = guide.title.charAt(0).toUpperCase();
+                }}
+              />
+            ) : (
+              guide.title.charAt(0).toUpperCase()
+            )}
           </div>
-        ))}
-      </div>
+
+          {/* Text */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate" style={{ color: '#451a03' }}>{guide.title}</p>
+            <p className="text-xs mt-0.5" style={{ color: '#B45309' }}>
+              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatRelativeTime(guide.updatedAt)}
+            </p>
+          </div>
+
+          {/* Delete */}
+          <button
+            onClick={(e) => handleDelete(e, guide.id)}
+            className="ml-1 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all flex-shrink-0"
+            style={{ color: '#D4BFA8' }}
+            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#EF4444'; }}
+            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#D4BFA8'; }}
+            title="Delete guide"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

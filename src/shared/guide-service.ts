@@ -91,6 +91,11 @@ export async function deleteStep(guideId: string, stepId: string): Promise<void>
   }
 }
 
+export async function getFirstStepUrl(guideId: string): Promise<string | null> {
+  const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+  return steps[0]?.url || null;
+}
+
 export async function getFirstScreenshot(guideId: string): Promise<Screenshot | null> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   for (const step of steps) {
