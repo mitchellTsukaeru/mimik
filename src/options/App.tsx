@@ -57,7 +57,7 @@ export default function App() {
 
         <button
           onClick={handleSave}
-          className="w-full py-2 px-4 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors text-sm"
+          className="w-full py-2 px-4 bg-amber-600 text-white rounded-md font-medium hover:bg-amber-700 transition-colors text-sm"
         >
           {saved ? 'Saved!' : 'Save Settings'}
         </button>

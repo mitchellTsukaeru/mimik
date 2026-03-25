@@ -19,25 +19,14 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Record** | Click the extension, perform your workflow. Every click/input auto-captures a screenshot with the element highlighted and a description generated. rrweb DOM recording runs alongside for video-like playback. |
-| **Edit** | Side panel UI to reorder steps, rename titles, edit descriptions, blur sensitive areas on screenshots, delete steps. |
-| **Replay** | Open a saved guide and hit replay. The extension walks through each step on the live page — finds elements, clicks/types for you, advances automatically. |
-| **Export** | Download as self-contained HTML (offline), Markdown (for docs/wikis/repos), or PDF. All generated client-side. |
-| **Settings** | Optional AI API key (OpenAI/Anthropic) for auto-generated step descriptions. Tool works without it. |
-| **Storage** | All guides saved locally in IndexedDB. No account, no server, no data leaves the browser. |
-
-## Not in Scope (v1)
-
-- Backend / server of any kind
-- User accounts / auth
-- Team collaboration
-- Sharing via URL
-- Embed system
-- Voice transcription
-- Integrations (Notion, Slack, etc.)
-- PII auto-redaction (can add in v2, it's client-side)
+| Feature      | Description                                                                                                                                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Record**   | Click the extension, perform your workflow. Every click/input auto-captures a screenshot with the element highlighted and a description generated. rrweb DOM recording runs alongside for video-like playback. |
+| **Edit**     | Side panel UI to reorder steps, rename titles, edit descriptions, blur sensitive areas on screenshots, delete steps.                                                                                           |
+| **Replay**   | Open a saved guide and hit replay. The extension walks through each step on the live page — finds elements, clicks/types for you, advances automatically.                                                      |
+| **Export**   | Download as self-contained HTML (offline), Markdown (for docs/wikis/repos), or PDF. All generated client-side.                                                                                                 |
+| **Settings** | Optional AI API key (OpenAI/Anthropic) for auto-generated step descriptions. Tool works without it.                                                                                                            |
+| **Storage**  | All guides saved locally in IndexedDB. No account, no server, no data leaves the browser.                                                                                                                      |
 
 ## Tech Stack
 
@@ -57,13 +46,3 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 - **Workflow engine** is an XState state machine managing capture lifecycle, guidance, and replay
 - **Replay** finds elements on live pages, executes click/type/scroll actions, advances through steps
 - **rrweb** records DOM mutations for video-like session playback
-
-## Differentiators vs Competitors
-
-- **No account required** — install and use immediately
-- **No data leaves the browser** — screenshots and guides stored locally
-- **No limits** — unlimited guides, no watermarks, no per-seat pricing
-- **True offline exports** — self-contained HTML with base64 embedded screenshots
-- **Markdown export** — git-friendly, store guides alongside code in your repo
-- **Replay** — automated workflow replay from saved guides
-- **Open source, MIT licensed**

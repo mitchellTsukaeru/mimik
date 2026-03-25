@@ -92,7 +92,7 @@ export default function StepCard({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDragEnd={handleDragEnd}
-      className={`p-3 border rounded-lg mb-2 ${dragOver ? 'border-t-2 border-blue-500' : 'border-gray-200'}`}
+      className={`p-3 border rounded-lg mb-2 ${dragOver ? 'border-t-2 border-amber-500' : 'border-gray-200'}`}
     >
       <div className="flex items-start gap-2">
         {dragHandleProps && (
@@ -100,7 +100,7 @@ export default function StepCard({
             <GripVertical size={14} className="text-gray-300" />
           </div>
         )}
-        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">
+        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">
           {step.index + 1}
         </span>
         <div className="flex-1 min-w-0">
@@ -116,7 +116,7 @@ export default function StepCard({
             </div>
           )}
           <textarea
-            className="w-full text-sm border border-transparent hover:border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded p-1 resize-none"
+            className="w-full text-sm border border-transparent hover:border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded p-1 resize-none"
             value={description}
             rows={2}
             onChange={(e) => setDescription(e.target.value)}
@@ -131,7 +131,7 @@ export default function StepCard({
                 <>
                   <button
                     onClick={() => onBlur?.(step.id)}
-                    className="text-gray-400 hover:text-blue-500 p-1 rounded"
+                    className="text-gray-400 hover:text-amber-500 p-1 rounded"
                     title="Blur sensitive area"
                   >
                     <EyeOff size={14} />

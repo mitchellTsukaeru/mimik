@@ -199,7 +199,7 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-amber-600 hover:bg-amber-700 rounded"
               title="Save blurred screenshot"
             >
               <Check size={14} />

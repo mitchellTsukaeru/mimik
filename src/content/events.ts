@@ -69,7 +69,7 @@ function createHighlightOverlay(): HTMLDivElement {
   el.style.cssText = `
     position: fixed;
     pointer-events: none;
-    border: 3px solid #3B82F6;
+    outline: 2.5px dashed #F59E0B;
     border-radius: 6px;
     z-index: 2147483647;
     box-sizing: border-box;

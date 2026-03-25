@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Maximize2 } from 'lucide-react';
 import { getGuide, updateGuideTitle, updateStepDescription, deleteStep, reorderSteps, updateScreenshotBlob } from '../shared/guide-service';
 import type { Guide, Step, Screenshot } from '../shared/types';
 import StepCard from './StepCard';
@@ -123,11 +123,28 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
             <ArrowLeft size={18} />
           </button>
           <input
-            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none w-full"
+            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-amber-500 focus:outline-none w-full"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleTitleBlur}
           />
+          <button
+            onClick={() => {
+              const url = chrome.runtime.getURL(`/fullview.html?guideId=${guideId}`);
+              chrome.tabs.query({ url: chrome.runtime.getURL('/fullview.html*') }).then(tabs => {
+                if (tabs.length > 0 && tabs[0].id) {
+                  chrome.tabs.update(tabs[0].id, { active: true, url: chrome.runtime.getURL(`/fullview.html?guideId=${guideId}`) });
+                  if (tabs[0].windowId) chrome.windows.update(tabs[0].windowId, { focused: true });
+                } else {
+                  chrome.tabs.create({ url });
+                }
+              });
+            }}
+            className="flex-shrink-0 text-gray-400 hover:text-amber-600 p-1 rounded"
+            title="Open full view"
+          >
+            <Maximize2 size={16} />
+          </button>
           <div className="ml-auto flex-shrink-0">
             <ExportMenu
               guideId={guideId}
@@ -146,7 +163,7 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
           data.steps.map((step, idx) => (
             <div key={step.id}>
               {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
-                <div className="h-1 bg-blue-500 rounded-full mx-4 mb-1" />
+                <div className="h-1 bg-amber-500 rounded-full mx-4 mb-1" />
               )}
               <StepCard
                 step={step}

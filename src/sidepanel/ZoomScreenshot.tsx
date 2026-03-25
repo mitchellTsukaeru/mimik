@@ -86,7 +86,7 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
 
         const scaleX = imgW / visW;
         const scaleY = imgH / visH;
-        ctx.strokeStyle = '#2563EB';
+        ctx.strokeStyle = '#D97706';
         ctx.lineWidth = 10;
         drawRoundedRect(
           ctx,
