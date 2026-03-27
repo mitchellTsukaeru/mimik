@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Trash2, GripVertical, EyeOff, Copy, Check } from 'lucide-react';
-import type { Step, Screenshot } from '../shared/types';
+import type { Step, Screenshot } from '@/guides/types';
 import ZoomScreenshot from './ZoomScreenshot';
 
 interface DragHandleProps {

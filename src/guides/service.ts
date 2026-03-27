@@ -1,4 +1,4 @@
-import { db } from './db-schema';
+import { db } from './db';
 import type { Guide, Step, Screenshot } from './types';
 
 export async function getGuides(): Promise<Guide[]> {

@@ -1,9 +1,11 @@
+import { browser } from '#imports';
 import { defineContentScript } from 'wxt/utils/define-content-script';
-import { startCapture } from '../src/content/events';
-import { startRrwebRecording } from '../src/content/rrweb-recorder';
-import { updateUrl } from '../src/content/spa-nav';
+import { sendMessage } from '@/lib/messaging';
+import { startCapture } from '@/capture/events';
+import { startRrwebRecording } from '@/capture/rrweb-recorder';
+import { updateUrl } from '@/capture/spa-nav';
 
-const CLEANUP_EVENT = `mimik_remove_content_script_${chrome.runtime.id}`;
+const CLEANUP_EVENT = `mimik_remove_content_script_${browser.runtime.id}`;
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -36,17 +38,18 @@ export default defineContentScript({
     function cleanup() {
       destroyed = true;
       endCapture();
-      chrome.runtime.onMessage.removeListener(messageHandler);
+      browser.runtime.onMessage.removeListener(messageHandler);
       document.removeEventListener(CLEANUP_EVENT, cleanup);
     }
 
     document.addEventListener(CLEANUP_EVENT, cleanup);
+    window.addEventListener('beforeunload', () => endCapture());
 
-    window.addEventListener('beforeunload', () => {
-      endCapture();
-    });
-
-    function messageHandler(msg: any, _sender: any, sendResponse: (r: any) => void) {
+    function messageHandler(
+      msg: Record<string, unknown>,
+      _sender: unknown,
+      sendResponse: (r: unknown) => void,
+    ) {
       if (destroyed) return false;
 
       if (msg.type === 'PING') {
@@ -60,7 +63,7 @@ export default defineContentScript({
       }
 
       if (msg.type === 'START_CAPTURE' && msg.guideId) {
-        beginCapture(msg.guideId);
+        beginCapture(msg.guideId as string);
         sendResponse({ started: true });
         return true;
       }
@@ -72,7 +75,7 @@ export default defineContentScript({
       }
 
       if (msg.type === 'SPA_NAVIGATE' && msg.url) {
-        updateUrl(msg.url);
+        updateUrl(msg.url as string);
         sendResponse({ updated: true });
         return true;
       }
@@ -80,18 +83,16 @@ export default defineContentScript({
       return false;
     }
 
-    chrome.runtime.onMessage.addListener(messageHandler);
+    browser.runtime.onMessage.addListener(messageHandler);
 
-    try {
-      chrome.runtime.sendMessage({ type: 'GET_STATE' }, (response) => {
-        if (chrome.runtime.lastError) return; // Extension context invalid
+    sendMessage('getState', undefined)
+      .then(res => {
         if (destroyed) return;
-        if (response?.state === 'recording' && response.currentGuideId) {
-          beginCapture(response.currentGuideId);
+        if (res.state === 'recording' && res.currentGuideId) {
+          beginCapture(res.currentGuideId);
         }
-      });
-    } catch {
-    }
+      })
+      .catch(() => {});
 
     console.log('[Mimik] Content script loaded');
   },

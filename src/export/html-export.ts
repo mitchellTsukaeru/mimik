@@ -1,4 +1,4 @@
-import type { Guide, Step, Screenshot } from '../shared/types';
+import type { Guide, Step, Screenshot } from '@/guides/types';
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {

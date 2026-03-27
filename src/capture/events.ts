@@ -1,3 +1,4 @@
+import { sendMessage } from '@/lib/messaging';
 import { extractElementMeta } from './element-meta';
 
 const FOCUSABLE_SELECTOR = 'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [tabindex], [contenteditable="true"]';
@@ -144,16 +145,8 @@ export function startCapture(guideId: string): () => void {
   }
 
   function sendAction(action: string, meta: ReturnType<typeof extractElementMeta>) {
-    try {
-      chrome.runtime.sendMessage({
-        type: 'USER_ACTION',
-        guideId,
-        action,
-        elementMeta: meta,
-      });
-    } catch (err) {
-      console.warn('[Mimik] Failed to send action', err);
-    }
+    sendMessage('userAction', { guideId, action, elementMeta: meta })
+      .catch(err => console.warn('[Mimik] Failed to send action', err));
   }
 
   function resetWindow() {

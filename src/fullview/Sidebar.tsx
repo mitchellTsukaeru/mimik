@@ -1,7 +1,7 @@
 import { FileText, Star, Trash2, ArrowLeft } from 'lucide-react';
 import type { Route } from './router';
 import { navigate } from './router';
-import type { Step } from '../shared/types';
+import type { Step } from '@/guides/types';
 
 interface SidebarProps {
   route: Route;
@@ -43,7 +43,7 @@ export default function Sidebar({
               onClick={() => onStepClick?.(step.id)}
               className={`w-full text-left px-3 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors ${
                 activeStepId === step.id
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-amber-50 text-amber-700'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >

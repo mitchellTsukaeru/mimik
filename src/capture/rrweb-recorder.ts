@@ -1,3 +1,4 @@
+import { sendMessage } from '@/lib/messaging';
 // @ts-expect-error rrweb 1.1.3 type resolution
 import { record } from 'rrweb';
 
@@ -10,12 +11,8 @@ export function startRrwebRecording(guideId: string): () => void {
   function flushChunk() {
     if (eventBuffer.length === 0) return;
     const chunk = eventBuffer.splice(0);
-    chrome.runtime.sendMessage({
-      type: 'RRWEB_CHUNK',
-      guideId,
-      events: chunk,
-      timestamp: Date.now(),
-    });
+    sendMessage('rrwebChunk', { guideId, events: chunk, timestamp: Date.now() })
+      .catch(() => {});
   }
 
   const stopRecord = record({

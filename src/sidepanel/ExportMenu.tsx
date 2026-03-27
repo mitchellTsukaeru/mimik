@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, FileCode, FileText, FileDown, Loader2 } from 'lucide-react';
-import type { Guide, Step, Screenshot } from '../shared/types';
-import { exportGuideAsHTML } from '../export/html-export';
-import { exportGuideAsMarkdown } from '../export/markdown-export';
-import { exportGuideAsPDF } from '../export/pdf-export';
+import type { Guide, Step, Screenshot } from '@/guides/types';
+import { exportGuideAsHTML } from '@/export/html-export';
+import { exportGuideAsMarkdown } from '@/export/markdown-export';
+import { exportGuideAsPDF } from '@/export/pdf-export';
 
 interface ExportMenuProps {
   guideId: string;

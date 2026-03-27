@@ -1,8 +1,9 @@
-import { db } from '../shared/db-schema';
-import type { Screenshot, ElementMeta } from '../shared/types';
+import { captureVisibleTab } from '@/lib/browser-api';
+import { db } from '@/guides/db';
+import type { Screenshot, ElementMeta } from '@/guides/types';
 
 export async function captureAndStore(tabId: number, stepId: string): Promise<Screenshot> {
-  const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 90 });
+  const dataUrl = await captureVisibleTab('jpeg', 90);
   const blob = await fetch(dataUrl).then(r => r.blob());
   const screenshot: Screenshot = {
     id: crypto.randomUUID(), stepId, blob, mimeType: 'image/jpeg', width: 0, height: 0,
@@ -20,10 +21,7 @@ export async function captureAnnotated(
   stepId: string,
   elementMeta: ElementMeta
 ): Promise<Screenshot> {
-  const dataUrl = await chrome.tabs.captureVisibleTab(null, {
-    format: 'jpeg',
-    quality: 90,
-  });
+  const dataUrl = await captureVisibleTab('jpeg', 90);
 
   const blob = await fetch(dataUrl).then(r => r.blob());
   const img = await createImageBitmap(blob);
