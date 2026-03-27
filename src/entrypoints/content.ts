@@ -1,6 +1,9 @@
+import { logger } from '@/lib/logger';
 import { browser } from '#imports';
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendMessage } from '@/lib/messaging';
+import { TabMessage } from '@/lib/tab-messages';
+import { CaptureState } from '@/capture/machine';
 import { startCapture } from '@/capture/events';
 import { startRrwebRecording } from '@/capture/rrweb-recorder';
 import { updateUrl } from '@/capture/spa-nav';
@@ -22,6 +25,7 @@ export default defineContentScript({
 
     function beginCapture(guideId: string) {
       if (destroyed) return;
+      logger.info('Begin capture → guideId:', guideId);
       stopCapture?.();
       stopRrweb?.();
       stopCapture = startCapture(guideId);
@@ -29,6 +33,7 @@ export default defineContentScript({
     }
 
     function endCapture() {
+      if (stopCapture) logger.info('End capture');
       stopCapture?.();
       stopRrweb?.();
       stopCapture = null;
@@ -52,29 +57,29 @@ export default defineContentScript({
     ) {
       if (destroyed) return false;
 
-      if (msg.type === 'PING') {
+      if (msg.type === TabMessage.PING) {
         sendResponse({ alive: true });
         return true;
       }
 
-      if (msg.type === 'GET_ROUTE') {
+      if (msg.type === TabMessage.GET_ROUTE) {
         sendResponse({ alive: true, capturing: !!stopCapture });
         return true;
       }
 
-      if (msg.type === 'START_CAPTURE' && msg.guideId) {
+      if (msg.type === TabMessage.START_CAPTURE && msg.guideId) {
         beginCapture(msg.guideId as string);
         sendResponse({ started: true });
         return true;
       }
 
-      if (msg.type === 'STOP_CAPTURE') {
+      if (msg.type === TabMessage.STOP_CAPTURE) {
         endCapture();
         sendResponse({ stopped: true });
         return true;
       }
 
-      if (msg.type === 'SPA_NAVIGATE' && msg.url) {
+      if (msg.type === TabMessage.URL_CHANGED && msg.url) {
         updateUrl(msg.url as string);
         sendResponse({ updated: true });
         return true;
@@ -88,12 +93,12 @@ export default defineContentScript({
     sendMessage('getState', undefined)
       .then(res => {
         if (destroyed) return;
-        if (res.state === 'recording' && res.currentGuideId) {
+        if (res.state === CaptureState.RECORDING && res.currentGuideId) {
           beginCapture(res.currentGuideId);
         }
       })
       .catch(() => {});
 
-    console.log('[Mimik] Content script loaded');
+    logger.info('Content script loaded →', window.location.href);
   },
 });

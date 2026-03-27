@@ -1,7 +1,10 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { Video, Search } from 'lucide-react';
 import { sendMessage } from '@/lib/messaging';
 import { getActiveTab } from '@/lib/browser-api';
+import { connectToBackground } from '@/lib/port';
+import { CaptureState } from '@/capture/machine';
 import LibraryView from './LibraryView';
 import GuideEditor from './GuideEditor';
 import RecordingView from './RecordingView';
@@ -41,27 +44,25 @@ export default function App() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    sendMessage('ping', undefined).then(res => {
-      if (res.alive) setIsAlive(true);
-    }).catch(() => {});
-
-    const interval = setInterval(() => {
-      sendMessage('getState', undefined).then(res => {
-        if (res.state === 'recording') {
+    const disconnect = connectToBackground({
+      onConnect: () => setIsAlive(true),
+      onDisconnect: () => setIsAlive(false),
+      onStateUpdate: (update) => {
+        if (update.state === CaptureState.RECORDING) {
           setIsRecording(true);
-          if (res.currentGuideId) {
+          if (update.currentGuideId) {
             setView(prev => {
               if (prev.name === 'recording') return prev;
-              return { name: 'recording', guideId: res.currentGuideId! };
+              return { name: 'recording', guideId: update.currentGuideId! };
             });
           }
         } else {
           setIsRecording(false);
         }
-      }).catch(() => {});
-    }, 1000);
+      },
+    });
 
-    return () => clearInterval(interval);
+    return disconnect;
   }, []);
 
   const handleStartRecording = useCallback(async () => {
@@ -75,7 +76,7 @@ export default function App() {
         setView({ name: 'recording', guideId: res.guideId });
       }
     } catch (err) {
-      console.error('[Mimik] START_RECORDING error', err);
+      logger.error(' START_RECORDING error', err);
     }
   }, []);
 
@@ -91,7 +92,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error('[Mimik] STOP_RECORDING error', err);
+      logger.error(' STOP_RECORDING error', err);
     }
   }, []);
 
