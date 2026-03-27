@@ -1,34 +1,30 @@
+import { logger } from '@/lib/logger';
 import { localStorage } from '@/lib/browser-api';
 import { captureAnnotated } from '@/capture/screenshot';
 import { buildFallbackDescription } from '@/capture/step-description';
 import { getAIDescription } from '@/capture/ai-description';
-import { db } from '@/guides/db';
+import { createStep, addStepToGuide, updateStepDescription } from '@/guides/service';
 import { getActor } from './actor';
 import type { Browser } from '#imports';
-import type { ElementMeta } from '@/guides/types';
+import { CaptureState } from '@/capture/machine';
+import type { UserActionData, UserActionResponse } from '@/lib/messaging';
 
 let captureQueue: Promise<void> = Promise.resolve();
 
 function enqueue(fn: () => Promise<void>): void {
   captureQueue = captureQueue
     .then(fn)
-    .catch((err) => console.error('[Mimik] Capture error', err));
-}
-
-interface UserActionData {
-  guideId: string;
-  action: string;
-  elementMeta: ElementMeta;
+    .catch((err) => logger.error(' Capture error', err));
 }
 
 export function handleUserAction(
   data: UserActionData,
   sender: Browser.runtime.MessageSender,
-): { stepId: string } | { ignored: true } | { error: string } {
+): UserActionResponse {
   const actor = getActor();
   const snap = actor.getSnapshot();
 
-  if (snap.value !== 'recording') {
+  if (snap.value !== CaptureState.RECORDING) {
     return { ignored: true };
   }
 
@@ -53,10 +49,10 @@ export function handleUserAction(
       screenshotId = screenshot.id;
       screenshotBlob = screenshot.blob;
     } catch (err) {
-      console.warn('[Mimik] Screenshot capture failed, storing step without screenshot', err);
+      logger.warn(' Screenshot capture failed, storing step without screenshot', err);
     }
 
-    await db.steps.add({
+    await createStep({
       id: stepId,
       guideId,
       index: stepIndex,
@@ -67,13 +63,7 @@ export function handleUserAction(
       screenshotId,
     });
 
-    const guide = await db.guides.get(guideId);
-    if (guide) {
-      await db.guides.update(guideId, {
-        stepIds: [...guide.stepIds, stepId],
-        updatedAt: Date.now(),
-      });
-    }
+    await addStepToGuide(guideId, stepId);
 
     if (screenshotBlob) {
       (async () => {
@@ -89,11 +79,11 @@ export function handleUserAction(
               settings.aiApiKey as string,
             );
             if (aiDescription) {
-              await db.steps.update(stepId, { description: aiDescription });
+              await updateStepDescription(stepId, aiDescription);
             }
           }
         } catch (err) {
-          console.error('[Mimik] AI description update failed', err);
+          logger.error(' AI description update failed', err);
         }
       })();
     }

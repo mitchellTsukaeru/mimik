@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Check, Trash2, Square } from 'lucide-react';
 import { getActiveTab } from '@/lib/browser-api';
-import { db } from '@/guides/db';
+import { getStepsForGuide, getScreenshotsForSteps, deleteStep, getGuide } from '@/guides/service';
 import type { Step, Screenshot } from '@/guides/types';
 import ZoomScreenshot from './ZoomScreenshot';
 
@@ -40,10 +40,9 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadSteps = useCallback(async () => {
-    const allSteps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    const allSteps = await getStepsForGuide(guideId);
     const screenshotIds = allSteps.map(s => s.screenshotId).filter(Boolean) as string[];
-    const screenshots = await db.screenshots.where('id').anyOf(screenshotIds).toArray();
-    const screenshotMap = new Map(screenshots.map(s => [s.stepId, s]));
+    const screenshotMap = await getScreenshotsForSteps(screenshotIds);
 
     setSteps(prev => {
       const oldUrls = new Map(prev.map(p => [p.step.id, p.objectUrl]));
@@ -93,22 +92,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   }, []);
 
   const handleDeleteStep = useCallback(async (stepId: string) => {
-    const step = await db.steps.get(stepId);
-    if (step?.screenshotId) {
-      await db.screenshots.delete(step.screenshotId);
-    }
-    await db.steps.delete(stepId);
-    const guide = await db.guides.get(guideId);
-    if (guide) {
-      const newStepIds = guide.stepIds.filter(id => id !== stepId);
-      await db.guides.update(guideId, { stepIds: newStepIds, updatedAt: Date.now() });
-      const remaining = await db.steps.where('guideId').equals(guideId).sortBy('index');
-      for (let i = 0; i < remaining.length; i++) {
-        if (remaining[i].index !== i) {
-          await db.steps.update(remaining[i].id, { index: i });
-        }
-      }
-    }
+    await deleteStep(guideId, stepId);
     await loadSteps();
   }, [guideId, loadSteps]);
 

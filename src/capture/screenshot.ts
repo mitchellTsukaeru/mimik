@@ -1,5 +1,5 @@
 import { captureVisibleTab } from '@/lib/browser-api';
-import { db } from '@/guides/db';
+import { saveScreenshot } from '@/guides/service';
 import type { Screenshot, ElementMeta } from '@/guides/types';
 
 export async function captureAndStore(tabId: number, stepId: string): Promise<Screenshot> {
@@ -8,7 +8,7 @@ export async function captureAndStore(tabId: number, stepId: string): Promise<Sc
   const screenshot: Screenshot = {
     id: crypto.randomUUID(), stepId, blob, mimeType: 'image/jpeg', width: 0, height: 0,
   };
-  await db.screenshots.add(screenshot);
+  await saveScreenshot(screenshot);
   return screenshot;
 }
 
@@ -43,6 +43,6 @@ export async function captureAnnotated(
   };
 
   img.close();
-  await db.screenshots.add(screenshot);
+  await saveScreenshot(screenshot);
   return screenshot;
 }
