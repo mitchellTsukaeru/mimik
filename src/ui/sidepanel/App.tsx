@@ -50,12 +50,6 @@ export default function App() {
       onStateUpdate: (update) => {
         if (update.state === CaptureState.RECORDING) {
           setIsRecording(true);
-          if (update.currentGuideId) {
-            setView(prev => {
-              if (prev.name === 'recording') return prev;
-              return { name: 'recording', guideId: update.currentGuideId! };
-            });
-          }
         } else {
           setIsRecording(false);
         }

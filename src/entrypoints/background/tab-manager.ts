@@ -25,6 +25,14 @@ export async function injectContentScript(tabId: number): Promise<void> {
   }
 }
 
+export async function showNotificationOnTab(tabId: number): Promise<void> {
+  try {
+    await sendMessageToTab(tabId, { type: TabMessage.SHOW_NOTIFICATION });
+  } catch (err) {
+    logger.warn('showNotificationOnTab failed', err);
+  }
+}
+
 export async function broadcastStartCapture(guideId: string): Promise<void> {
   try {
     const tabs = await queryTabs({});

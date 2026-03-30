@@ -1,6 +1,6 @@
 import { defineBackground } from "#imports";
 import { logger } from "@/lib/logger";
-import { setSidePanelBehavior } from "@/lib/browser-api";
+import { setSidePanelBehavior, getActiveTab } from "@/lib/browser-api";
 import { onMessage } from "@/lib/messaging";
 import { setupPortListener, broadcastStateToPanel } from "@/lib/port";
 import { createGuide, saveRrwebChunk } from "@/core/guides/service";
@@ -11,7 +11,7 @@ import {
   getStateUpdate,
   waitUntilReady,
 } from "./actor";
-import { broadcastStartCapture, broadcastStopCapture } from "./tab-manager";
+import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from "./tab-manager";
 import { handleUserAction } from "./step-pipeline";
 import { registerNavigationListeners } from "./navigation";
 
@@ -50,6 +50,11 @@ export default defineBackground(() => {
     const guideId = actor.getSnapshot().context.currentGuideId!;
 
     await createGuide(guideId);
+
+    const activeTab = await getActiveTab();
+    if (activeTab?.id) {
+      await showNotificationOnTab(activeTab.id);
+    }
 
     await broadcastStartCapture(guideId);
     logger.info("Recording started → guideId:", guideId);
