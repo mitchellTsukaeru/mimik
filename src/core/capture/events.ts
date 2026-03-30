@@ -4,13 +4,13 @@ import { extractElementMeta } from './element-meta';
 
 const FOCUSABLE_SELECTOR = 'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [tabindex], [contenteditable="true"]';
 
-const MERGE_MAX_ABSORB = 6;
-const MERGE_WINDOW_MS = 500;
-const MERGE_WINDOW_MS = 5;
+const MERGE_WINDOW_MS = 800;
+const MERGE_MAX_ABSORB = 4;
+const DEDUP_MS = 300;
+const DRAG_MIN_PX = 30;
+const INTERCEPT_DELAY_MS = 100;
+const MAX_ELEMENT_RATIO = 0.8;
 
-const DRAG_MIN_PX = 40;
-
-const DEDUP_MS = 200;
 let lastClickTarget: Element | null = null;
 let lastClickTime = 0;
 
@@ -39,89 +39,103 @@ function isNavigatingClick(el: HTMLElement): boolean {
   return true;
 }
 
-interface MergeWindow {
-  target: Element;
-  bounds: DOMRect;
-}
-
-function timeGap(a: DOMRect, b: DOMRect): number {
-  const dx = Math.max(a.left - (b.left + b.width), b.left - (a.left + a.width), 0);
-  const dy = Math.max(a.top - (b.top + b.height), b.top - (a.top + a.height), 0);
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-function sameTarget(a: DOMRect, b: DOMRect): boolean {
-  return Math.abs(a.left - b.left) <= MERGE_WINDOW_MS
-      && Math.abs(a.top - b.top) <= MERGE_WINDOW_MS;
-}
-
-function shouldAbsorb(entries: MergeWindow[], target: Element, bounds: DOMRect): boolean {
-  if (entries.length >= MERGE_MAX_ABSORB) return false;
-  if (entries.some(e => e.target === target)) return false;
-  if (entries.length > 0 && !sameTarget(entries[0].bounds, bounds)) return false;
-  if (entries.some(e => timeGap(e.bounds, bounds) > MERGE_WINDOW_MS)) return false;
-  return true;
-}
-
-const MAX_ELEMENT_RATIO = 0.8;
-
-function createHighlightOverlay(): HTMLDivElement {
-  const el = document.createElement('div');
-  el.setAttribute('data-mimik-ignore', '');
-  el.style.cssText = `
-    position: fixed;
-    pointer-events: none;
-    outline: 2.5px dashed #F59E0B;
-    border-radius: 6px;
-    z-index: 2147483647;
-    box-sizing: border-box;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  `;
-  document.documentElement.appendChild(el);
-  return el;
-}
-
 function isTooLarge(el: Element): boolean {
   const rect = el.getBoundingClientRect();
   return (rect.width / window.innerWidth > MAX_ELEMENT_RATIO)
       && (rect.height / window.innerHeight > MAX_ELEMENT_RATIO);
 }
 
-export function startCapture(guideId: string): () => void {
-  let highlightEl: HTMLDivElement | null = null;
+interface HighlightHost {
+  host: HTMLElement;
+  overlay: HTMLDivElement;
+}
+
+function createHighlightOverlay(): HighlightHost {
+  const host = document.createElement('mimik-highlight');
+  host.setAttribute('data-mimik-ignore', '');
+  host.style.cssText = 'position:fixed;top:0;left:0;z-index:2147483647;pointer-events:none;';
+  const shadow = host.attachShadow({ mode: 'closed' });
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    pointer-events: none;
+    outline: 2.5px dashed #F59E0B;
+    outline-offset: 3px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  `;
+  shadow.appendChild(overlay);
+  document.documentElement.appendChild(host);
+  return { host, overlay };
+}
+
+interface MergeWindow {
+  startTime: number;
+  count: number;
+  timer: ReturnType<typeof setTimeout> | null;
+  firstTarget: Element | null;
+}
+
+function createMergeWindow(): MergeWindow {
+  return { startTime: 0, count: 0, timer: null, firstTarget: null };
+}
+
+function shouldAbsorb(win: MergeWindow, target: Element): boolean {
+  if (win.count === 0) return false;
+  const elapsed = Date.now() - win.startTime;
+  if (elapsed >= MERGE_WINDOW_MS) return false;
+  if (win.count >= MERGE_MAX_ABSORB) return false;
+  if (target === win.firstTarget) return false;
+  return true;
+}
+
+function resetWindow(win: MergeWindow): void {
+  if (win.timer) clearTimeout(win.timer);
+  win.startTime = 0;
+  win.count = 0;
+  win.timer = null;
+  win.firstTarget = null;
+}
+
+export interface CaptureHandle {
+  stop: () => void;
+  hideOverlay: () => void;
+  showOverlay: () => void;
+}
+
+export function startCapture(guideId: string): CaptureHandle {
+  let highlight: HighlightHost | null = null;
   let hoveredElement: Element | null = null;
   let hideTimer: ReturnType<typeof setTimeout> | null = null;
   let rafId: number | null = null;
-
-  let mergeWin: MergeWindow[] = [];
-  let mergeTimer: ReturnType<typeof setTimeout> | null = null;
-
   let dragStartX: number | null = null;
   let dragStartY: number | null = null;
   let dragStartElement: Element | null = null;
-
   let eventQueue: Promise<void> = Promise.resolve();
+  const mergeWin = createMergeWindow();
 
   function enqueue(fn: () => void) {
     eventQueue = eventQueue.then(() => {
-      try { fn(); } catch (err) { logger.warn(' Event handler error', err); }
+      try { fn(); } catch (err) { logger.warn('Event handler error', err); }
     });
   }
 
   function showHighlight(target: Element) {
-    if (!highlightEl) highlightEl = createHighlightOverlay();
+    if (!highlight) highlight = createHighlightOverlay();
     if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
     const rect = target.getBoundingClientRect();
-    highlightEl.style.top = `${rect.top - 3}px`;
-    highlightEl.style.left = `${rect.left - 3}px`;
-    highlightEl.style.width = `${rect.width + 6}px`;
-    highlightEl.style.height = `${rect.height + 6}px`;
-    highlightEl.style.opacity = '1';
+    highlight.overlay.style.top = `${rect.top}px`;
+    highlight.overlay.style.left = `${rect.left}px`;
+    highlight.overlay.style.width = `${rect.width}px`;
+    highlight.overlay.style.height = `${rect.height}px`;
+    highlight.overlay.style.opacity = '1';
   }
 
   function hideHighlight() {
-    if (highlightEl) highlightEl.style.opacity = '0';
+    if (highlight) highlight.overlay.style.opacity = '0';
   }
 
   function handleMouseOver(e: MouseEvent) {
@@ -147,33 +161,28 @@ export function startCapture(guideId: string): () => void {
 
   function sendAction(action: string, meta: ReturnType<typeof extractElementMeta>) {
     sendMessage('userAction', { guideId, action, elementMeta: meta })
-      .catch(err => logger.warn(' Failed to send action', err));
-  }
-
-  function resetWindow() {
-    if (mergeTimer) { clearTimeout(mergeTimer); mergeTimer = null; }
-    mergeWin = [];
+      .catch(err => logger.warn('Failed to send action', err));
   }
 
   function tryMergeOrSend(target: HTMLElement, action: string) {
-    const bounds = target.getBoundingClientRect();
-
-    if (mergeWin.length > 0 && shouldAbsorb(mergeWin, target, bounds)) {
-      mergeWin.push({ target, bounds });
-      if (mergeTimer) clearTimeout(mergeTimer);
-      mergeTimer = setTimeout(resetWindow, 600);
+    if (shouldAbsorb(mergeWin, target)) {
+      mergeWin.count++;
+      if (mergeWin.timer) clearTimeout(mergeWin.timer);
+      mergeWin.timer = setTimeout(() => resetWindow(mergeWin), MERGE_WINDOW_MS);
       return;
     }
 
-    resetWindow();
-    mergeWin.push({ target, bounds });
-    mergeTimer = setTimeout(resetWindow, 600);
+    resetWindow(mergeWin);
+    mergeWin.startTime = Date.now();
+    mergeWin.count = 1;
+    mergeWin.firstTarget = target;
+    mergeWin.timer = setTimeout(() => resetWindow(mergeWin), MERGE_WINDOW_MS);
 
     try {
       const meta = extractElementMeta(target);
       sendAction(action, meta);
     } catch (err) {
-      logger.warn(' Failed to capture action', err);
+      logger.warn('Failed to capture action', err);
     }
   }
 
@@ -198,9 +207,10 @@ export function startCapture(guideId: string): () => void {
 
         const anchor = target.closest('a[href]') as HTMLAnchorElement;
         if (anchor) {
-          setTimeout(() => {
-            window.location.href = anchor.href;
-          }, 150);
+          const href = anchor.href;
+          requestAnimationFrame(() => {
+            setTimeout(() => { window.location.href = href; }, INTERCEPT_DELAY_MS);
+          });
         }
         return;
       }
@@ -228,7 +238,7 @@ export function startCapture(guideId: string): () => void {
         const meta = extractElementMeta(target);
         sendAction(`keydown:${e.key}`, meta);
       } catch (err) {
-        logger.warn(' Failed to capture keydown', err);
+        logger.warn('Failed to capture keydown', err);
       }
     });
   }
@@ -246,7 +256,7 @@ export function startCapture(guideId: string): () => void {
         const meta = extractElementMeta(target);
         sendAction('input', meta);
       } catch (err) {
-        logger.warn(' Failed to capture input', err);
+        logger.warn('Failed to capture input', err);
       }
     });
   }
@@ -259,9 +269,9 @@ export function startCapture(guideId: string): () => void {
     enqueue(() => {
       try {
         const meta = extractElementMeta(target);
-        sendAction(e.type, meta); // 'copy', 'paste', or 'cut'
+        sendAction(e.type, meta);
       } catch (err) {
-        logger.warn(' Failed to capture clipboard', err);
+        logger.warn('Failed to capture clipboard', err);
       }
     });
   }
@@ -290,7 +300,7 @@ export function startCapture(guideId: string): () => void {
             const meta = extractElementMeta(target);
             sendAction('drag', meta);
           } catch (err) {
-            logger.warn(' Failed to capture drag', err);
+            logger.warn('Failed to capture drag', err);
           }
         });
       }
@@ -307,33 +317,43 @@ export function startCapture(guideId: string): () => void {
   window.addEventListener('copy', handleClipboard as EventListener, { capture: true });
   window.addEventListener('paste', handleClipboard as EventListener, { capture: true });
   window.addEventListener('cut', handleClipboard as EventListener, { capture: true });
-
   window.addEventListener('mousedown', handleMouseDown, { capture: true });
   window.addEventListener('mouseup', handleMouseUp, { capture: true });
-
   window.addEventListener('mouseover', handleMouseOver, { capture: true });
   window.addEventListener('mouseout', handleMouseOut, { capture: true });
 
-  return () => {
-    window.removeEventListener('click', handleClick, { capture: true });
-    window.removeEventListener('auxclick', handleAuxClick, { capture: true });
-    window.removeEventListener('keydown', handleKeydown, { capture: true });
-    window.removeEventListener('input', handleInput, { capture: true });
-    window.removeEventListener('copy', handleClipboard as EventListener, { capture: true });
-    window.removeEventListener('paste', handleClipboard as EventListener, { capture: true });
-    window.removeEventListener('cut', handleClipboard as EventListener, { capture: true });
-    window.removeEventListener('mousedown', handleMouseDown, { capture: true });
-    window.removeEventListener('mouseup', handleMouseUp, { capture: true });
-    window.removeEventListener('mouseover', handleMouseOver, { capture: true });
-    window.removeEventListener('mouseout', handleMouseOut, { capture: true });
-    if (hideTimer) clearTimeout(hideTimer);
-    if (rafId) cancelAnimationFrame(rafId);
-    if (mergeTimer) clearTimeout(mergeTimer);
-    if (highlightEl) {
-      highlightEl.remove();
-      highlightEl = null;
-    }
-    hoveredElement = null;
-    mergeWin = [];
+  return {
+    stop() {
+      window.removeEventListener('click', handleClick, { capture: true });
+      window.removeEventListener('auxclick', handleAuxClick, { capture: true });
+      window.removeEventListener('keydown', handleKeydown, { capture: true });
+      window.removeEventListener('input', handleInput, { capture: true });
+      window.removeEventListener('copy', handleClipboard as EventListener, { capture: true });
+      window.removeEventListener('paste', handleClipboard as EventListener, { capture: true });
+      window.removeEventListener('cut', handleClipboard as EventListener, { capture: true });
+      window.removeEventListener('mousedown', handleMouseDown, { capture: true });
+      window.removeEventListener('mouseup', handleMouseUp, { capture: true });
+      window.removeEventListener('mouseover', handleMouseOver, { capture: true });
+      window.removeEventListener('mouseout', handleMouseOut, { capture: true });
+      if (hideTimer) clearTimeout(hideTimer);
+      if (rafId) cancelAnimationFrame(rafId);
+      resetWindow(mergeWin);
+      if (highlight) {
+        highlight.host.remove();
+        highlight = null;
+      }
+      hoveredElement = null;
+    },
+    hideOverlay() {
+      logger.debug('hideOverlay called, highlight exists:', !!highlight);
+      if (highlight) {
+        highlight.host.style.display = 'none';
+        logger.debug('Overlay hidden, display:', highlight.host.style.display);
+      }
+    },
+    showOverlay() {
+      logger.debug('showOverlay called');
+      if (highlight) highlight.host.style.display = '';
+    },
   };
 }

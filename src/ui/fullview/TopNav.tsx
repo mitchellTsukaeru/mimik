@@ -45,7 +45,6 @@ export default function TopNav({ route, guideCounts, guideTitle, search, onSearc
       </button>
 
       {route.page === 'guide' ? (
-        /* Guide mode: back button + guide title */
         <>
           <button
             onClick={() => navigate({ page: 'library', category: 'all' })}
@@ -67,7 +66,6 @@ export default function TopNav({ route, guideCounts, guideTitle, search, onSearc
           )}
         </>
       ) : (
-        /* Library mode: nav items */
         navItems.map(item => {
           const active = route.page === 'library' && route.category === item.key;
           return (

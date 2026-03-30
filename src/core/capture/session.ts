@@ -1,9 +1,9 @@
 import { logger } from '@/lib/logger';
-import { startCapture } from './events';
+import { startCapture, type CaptureHandle } from './events';
 import { startRrwebRecording } from './rrweb-recorder';
 
 export class CaptureSession {
-  private stopEvents: (() => void) | null = null;
+  private capture: CaptureHandle | null = null;
   private stopReplay: (() => void) | null = null;
   private activeGuideId: string | null = null;
   private disabled = false;
@@ -28,7 +28,7 @@ export class CaptureSession {
 
     logger.info('Capture started → guideId:', guideId);
     this.activeGuideId = guideId;
-    this.stopEvents = startCapture(guideId);
+    this.capture = startCapture(guideId);
     this.stopReplay = startRrwebRecording(guideId);
   }
 
@@ -36,11 +36,21 @@ export class CaptureSession {
     if (!this.isActive) return;
 
     logger.info('Capture stopped → guideId:', this.activeGuideId);
-    this.stopEvents?.();
+    this.capture?.stop();
     this.stopReplay?.();
-    this.stopEvents = null;
+    this.capture = null;
     this.stopReplay = null;
     this.activeGuideId = null;
+  }
+
+  hideOverlay(): void {
+    logger.debug('CaptureSession.hideOverlay, capture exists:', !!this.capture);
+    this.capture?.hideOverlay();
+  }
+
+  showOverlay(): void {
+    logger.debug('CaptureSession.showOverlay');
+    this.capture?.showOverlay();
   }
 
   dispose(): void {

@@ -57,8 +57,8 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
         const bh = bounds.height * dpr;
 
         const PAD_RATIO = 0.3;
-        const padH = PAD_RATIO * imgW;  // horizontal padding = 30% of image width
-        const padV = PAD_RATIO * imgH;  // vertical padding = 30% of image height
+        const padH = PAD_RATIO * imgW;
+        const padV = PAD_RATIO * imgH;
         const imgAspect = imgW / imgH;
         const elAspect = bw / bh;
 
@@ -86,16 +86,18 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
 
         const scaleX = imgW / visW;
         const scaleY = imgH / visH;
-        ctx.strokeStyle = '#D97706';
-        ctx.lineWidth = 10;
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 6;
+        ctx.setLineDash([12, 6]);
         drawRoundedRect(
           ctx,
           (bx - cropX) * scaleX,
           (by - cropY) * scaleY,
           bw * scaleX,
           bh * scaleY,
-          20
+          12
         );
+        ctx.setLineDash([]);
       } else {
         ctx.drawImage(img, 0, 0, imgW, imgH);
       }
