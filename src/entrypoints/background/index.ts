@@ -27,9 +27,7 @@ export default defineBackground(() => {
     waitUntilReady().then(() => {
       try {
         port.postMessage(getStateUpdate());
-      } catch {
-        /* disconnected */
-      }
+      } catch {}
     });
   });
 

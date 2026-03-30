@@ -49,8 +49,7 @@ export function registerNavigationListeners() {
         if (isInjectableTab(tab)) {
           await injectContentScript(activeInfo.tabId);
         }
-      } catch {
-      }
+      } catch {}
     }
   });
 
@@ -67,8 +66,7 @@ export function registerNavigationListeners() {
       logger.debug("Tab loaded → injecting content script on tab", tabId);
       try {
         await injectContentScript(tabId);
-      } catch {
-      }
+      } catch {}
     }
   });
 }

@@ -4,11 +4,63 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendMessage } from '@/lib/messaging';
 import { TabMessage } from '@/lib/tab-messages';
 import { CaptureState } from '@/core/capture/machine';
-import { startCapture } from '@/core/capture/events';
-import { startRrwebRecording } from '@/core/capture/rrweb-recorder';
+import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';
 
-const CLEANUP_EVENT = `mimik_remove_content_script_${browser.runtime.id}`;
+const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
+
+function createTabMessageHandler(session: CaptureSession) {
+  return function handleTabMessage(
+    msg: Record<string, unknown>,
+    _sender: unknown,
+    sendResponse: (r: unknown) => void,
+  ) {
+    if (session.isDisabled) return false;
+
+    switch (msg.type) {
+      case TabMessage.PING:
+        sendResponse({ alive: true });
+        return true;
+
+      case TabMessage.GET_ROUTE:
+        sendResponse({ alive: true, capturing: session.isActive });
+        return true;
+
+      case TabMessage.START_CAPTURE:
+        if (msg.guideId) {
+          session.start(msg.guideId as string);
+          sendResponse({ started: true });
+        }
+        return true;
+
+      case TabMessage.STOP_CAPTURE:
+        session.stop();
+        sendResponse({ stopped: true });
+        return true;
+
+      case TabMessage.URL_CHANGED:
+        if (msg.url) {
+          updateUrl(msg.url as string);
+          sendResponse({ updated: true });
+        }
+        return true;
+
+      default:
+        return false;
+    }
+  };
+}
+
+function syncWithBackground(session: CaptureSession) {
+  sendMessage('getState', undefined)
+    .then(res => {
+      if (session.isDisabled) return;
+      if (res.state === CaptureState.RECORDING && res.currentGuideId) {
+        session.start(res.currentGuideId);
+      }
+    })
+    .catch(() => {});
+}
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -19,85 +71,17 @@ export default defineContentScript({
   main() {
     document.dispatchEvent(new CustomEvent(CLEANUP_EVENT));
 
-    let stopCapture: (() => void) | null = null;
-    let stopRrweb: (() => void) | null = null;
-    let destroyed = false;
+    const session = new CaptureSession();
+    const handleTabMessage = createTabMessageHandler(session);
 
-    function beginCapture(guideId: string) {
-      if (destroyed) return;
-      logger.info('Begin capture → guideId:', guideId);
-      stopCapture?.();
-      stopRrweb?.();
-      stopCapture = startCapture(guideId);
-      stopRrweb = startRrwebRecording(guideId);
-    }
+    document.addEventListener(CLEANUP_EVENT, () => {
+      session.dispose();
+      browser.runtime.onMessage.removeListener(handleTabMessage);
+    });
 
-    function endCapture() {
-      if (stopCapture) logger.info('End capture');
-      stopCapture?.();
-      stopRrweb?.();
-      stopCapture = null;
-      stopRrweb = null;
-    }
-
-    function cleanup() {
-      destroyed = true;
-      endCapture();
-      browser.runtime.onMessage.removeListener(messageHandler);
-      document.removeEventListener(CLEANUP_EVENT, cleanup);
-    }
-
-    document.addEventListener(CLEANUP_EVENT, cleanup);
-    window.addEventListener('beforeunload', () => endCapture());
-
-    function messageHandler(
-      msg: Record<string, unknown>,
-      _sender: unknown,
-      sendResponse: (r: unknown) => void,
-    ) {
-      if (destroyed) return false;
-
-      if (msg.type === TabMessage.PING) {
-        sendResponse({ alive: true });
-        return true;
-      }
-
-      if (msg.type === TabMessage.GET_ROUTE) {
-        sendResponse({ alive: true, capturing: !!stopCapture });
-        return true;
-      }
-
-      if (msg.type === TabMessage.START_CAPTURE && msg.guideId) {
-        beginCapture(msg.guideId as string);
-        sendResponse({ started: true });
-        return true;
-      }
-
-      if (msg.type === TabMessage.STOP_CAPTURE) {
-        endCapture();
-        sendResponse({ stopped: true });
-        return true;
-      }
-
-      if (msg.type === TabMessage.URL_CHANGED && msg.url) {
-        updateUrl(msg.url as string);
-        sendResponse({ updated: true });
-        return true;
-      }
-
-      return false;
-    }
-
-    browser.runtime.onMessage.addListener(messageHandler);
-
-    sendMessage('getState', undefined)
-      .then(res => {
-        if (destroyed) return;
-        if (res.state === CaptureState.RECORDING && res.currentGuideId) {
-          beginCapture(res.currentGuideId);
-        }
-      })
-      .catch(() => {});
+    window.addEventListener('beforeunload', () => session.stop());
+    browser.runtime.onMessage.addListener(handleTabMessage);
+    syncWithBackground(session);
 
     logger.info('Content script loaded →', window.location.href);
   },

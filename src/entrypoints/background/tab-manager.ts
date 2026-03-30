@@ -21,8 +21,7 @@ export async function injectContentScript(tabId: number): Promise<void> {
   } catch {
     try {
       await executeScript(tabId, ['/content-scripts/content.js']);
-    } catch {
-    }
+    } catch {}
   }
 }
 
