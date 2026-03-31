@@ -4,6 +4,7 @@ import type { Guide, Step, Screenshot } from '@/core/guides/types';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
+import { Button } from '@/ui/components/ui/button';
 
 interface ExportMenuProps {
   guideId: string;
@@ -29,96 +30,65 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
     }
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  async function handleExportHTML() {
+  async function handleExport(type: 'html' | 'markdown' | 'pdf') {
     setOpen(false);
     setExporting(true);
     try {
-      const html = await exportGuideAsHTML(guide, steps, screenshots);
-      downloadFile(html, `${guide.title}.html`, 'text/html');
+      if (type === 'html') {
+        const html = await exportGuideAsHTML(guide, steps, screenshots);
+        downloadFile(html, `${guide.title}.html`, 'text/html');
+      } else if (type === 'markdown') {
+        const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+        downloadFile(md, `${guide.title}.md`, 'text/markdown');
+      } else {
+        const blob = await exportGuideAsPDF(guide, steps, screenshots);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${guide.title}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } finally {
       setExporting(false);
     }
   }
 
-  async function handleExportMarkdown() {
-    setOpen(false);
-    setExporting(true);
-    try {
-      const md = await exportGuideAsMarkdown(guide, steps, screenshots);
-      downloadFile(md, `${guide.title}.md`, 'text/markdown');
-    } finally {
-      setExporting(false);
-    }
-  }
-
-  async function handleExportPDF() {
-    setOpen(false);
-    setExporting(true);
-    try {
-      const blob = await exportGuideAsPDF(guide, steps, screenshots);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${guide.title}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setExporting(false);
-    }
-  }
+  const items = [
+    { type: 'html' as const, icon: FileCode, label: 'HTML' },
+    { type: 'markdown' as const, icon: FileText, label: 'Markdown' },
+    { type: 'pdf' as const, icon: FileDown, label: 'PDF' },
+  ];
 
   return (
     <div ref={menuRef} className="relative">
-      <button
-        className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ background: '#451a03', color: '#FDE68A' }}
+      <Button
+        size="sm"
         onClick={() => setOpen(prev => !prev)}
         disabled={exporting}
-        title="Export guide"
       >
-        {exporting ? (
-          <Loader2 size={14} className="animate-spin" />
-        ) : (
-          <Download size={14} />
-        )}
+        {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
         Export
-      </button>
+      </Button>
 
       {open && !exporting && (
-        <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
-          <button
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            onClick={handleExportHTML}
-          >
-            <FileCode size={14} />
-            HTML
-          </button>
-          <button
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            onClick={handleExportMarkdown}
-          >
-            <FileText size={14} />
-            Markdown
-          </button>
-          <button
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            onClick={handleExportPDF}
-          >
-            <FileDown size={14} />
-            PDF
-          </button>
+        <div className="absolute right-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg py-1 z-10">
+          {items.map((item) => (
+            <button
+              key={item.type}
+              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-secondary"
+              onClick={() => handleExport(item.type)}
+            >
+              <item.icon size={14} />
+              {item.label}
+            </button>
+          ))}
         </div>
       )}
     </div>

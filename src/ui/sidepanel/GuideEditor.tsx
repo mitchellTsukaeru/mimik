@@ -3,6 +3,7 @@ import { ArrowLeft, Maximize2, Layers } from 'lucide-react';
 import { getExtensionURL, queryTabs, updateTab, focusWindow, createTab } from '@/lib/browser-api';
 import { getGuide, updateGuideTitle, updateStepDescription, deleteStep, reorderSteps, updateScreenshotBlob } from '@/core/guides/service';
 import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import { Input } from '@/ui/components/ui/input';
 import StepCard from './StepCard';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
@@ -39,9 +40,7 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
     setLoading(false);
   }, [guideId]);
 
-  useEffect(() => {
-    loadGuide();
-  }, [loadGuide]);
+  useEffect(() => { loadGuide(); }, [loadGuide]);
 
   const handleTitleBlur = useCallback(async () => {
     if (!data || title === data.guide.title) return;
@@ -53,10 +52,7 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
     await updateStepDescription(stepId, description);
     setData(prev => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        steps: prev.steps.map(s => s.id === stepId ? { ...s, description } : s),
-      };
+      return { ...prev, steps: prev.steps.map(s => s.id === stepId ? { ...s, description } : s) };
     });
   }, []);
 
@@ -87,18 +83,16 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
     setBlurringStepId(null);
   }, [blurringStepId, data]);
 
-  if (loading) {
-    return <p className="text-sm text-gray-500 p-4">Loading...</p>;
-  }
+  if (loading) return <p className="text-sm text-warm p-4">Loading...</p>;
 
   if (notFound || !data) {
     return (
       <div className="p-4">
-        <button onClick={onBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
+        <button onClick={onBack} className="flex items-center gap-1 text-sm text-warm hover:text-foreground mb-4">
           <ArrowLeft size={18} />
           Back
         </button>
-        <p className="text-sm text-red-500">Guide not found</p>
+        <p className="text-sm text-destructive">Guide not found</p>
       </div>
     );
   }
@@ -106,32 +100,20 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
   const blurScreenshot = blurringStepId ? data.screenshots.get(blurringStepId) : undefined;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       {blurringStepId && blurScreenshot && (
-        <BlurCanvas
-          screenshot={blurScreenshot}
-          onSave={handleBlurSave}
-          onCancel={() => setBlurringStepId(null)}
-        />
+        <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
-          <button
-            onClick={onBack}
-            className="flex-shrink-0 p-1 rounded"
-            style={{ color: '#9ca3af' }}
-            title="Back to library"
-          >
+          <button onClick={onBack} className="shrink-0 p-1 rounded text-warm hover:text-foreground" title="Back to library">
             <ArrowLeft size={18} />
           </button>
-          <input
-            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:outline-none w-full"
-            style={{ color: '#451a03' }}
+          <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleTitleBlur}
-            onFocus={(e) => { e.target.style.borderColor = '#F59E0B'; }}
-            onBlurCapture={(e) => { e.target.style.borderColor = 'transparent'; }}
+            className="text-lg font-bold bg-transparent border-0 border-b border-transparent hover:border-border focus-visible:ring-0 focus-visible:border-accent shadow-none p-0 h-auto text-foreground"
           />
           <button
             onClick={() => {
@@ -145,36 +127,28 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
                 }
               });
             }}
-            className="flex-shrink-0 p-1.5 rounded-md transition-colors hover:bg-amber-50"
-            style={{ color: '#9ca3af' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#F59E0B'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; }}
+            className="shrink-0 p-1.5 rounded-md transition-colors text-warm hover:text-accent hover:bg-secondary"
             title="Open in full view"
           >
             <Maximize2 size={15} />
           </button>
-          <div className="ml-auto flex-shrink-0">
-            <ExportMenu
-              guideId={guideId}
-              guide={data.guide}
-              steps={data.steps}
-              screenshots={data.screenshots}
-            />
+          <div className="ml-auto shrink-0">
+            <ExportMenu guideId={guideId} guide={data.guide} steps={data.steps} screenshots={data.screenshots} />
           </div>
         </div>
-        <p className="text-[11px] flex items-center gap-1" style={{ color: '#92400E', marginLeft: '34px' }}>
+        <p className="text-[11px] flex items-center gap-1 text-muted-foreground" style={{ marginLeft: '34px' }}>
           <Layers size={11} />
           {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
         </p>
       </div>
       <div className="px-4 pt-1 pb-4">
         {data.steps.length === 0 ? (
-          <p className="text-sm text-gray-500">No steps in this guide.</p>
+          <p className="text-sm text-warm">No steps in this guide.</p>
         ) : (
           data.steps.map((step, idx) => (
             <div key={step.id}>
               {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
-                <div className="h-1 bg-amber-500 rounded-full mx-4 mb-1" />
+                <div className="h-1 bg-accent rounded-full mx-4 mb-1" />
               )}
               <StepCard
                 step={step}
@@ -183,14 +157,8 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
                 onDelete={handleDeleteStep}
                 onBlur={(stepId) => setBlurringStepId(stepId)}
                 dragHandleProps={{
-                  onDragStart: (e: React.DragEvent) => {
-                    setDragIndex(idx);
-                    e.dataTransfer.effectAllowed = 'move';
-                  },
-                  onDragOver: (e: React.DragEvent) => {
-                    e.preventDefault();
-                    setDragOverIndex(idx);
-                  },
+                  onDragStart: (e: React.DragEvent) => { setDragIndex(idx); e.dataTransfer.effectAllowed = 'move'; },
+                  onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDragOverIndex(idx); },
                   onDragEnd: () => {
                     if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
                       setData(prev => {

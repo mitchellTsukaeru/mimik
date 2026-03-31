@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
-import { Trash2, GripVertical, EyeOff, Copy, Check } from 'lucide-react';
+import { Trash2, EyeOff, Copy, Check } from 'lucide-react';
 import type { Step, Screenshot } from '@/core/guides/types';
 import ZoomScreenshot from './ZoomScreenshot';
 
@@ -21,42 +21,20 @@ interface StepCardProps {
 }
 
 export default function StepCard({
-  step,
-  screenshot,
-  onDescriptionChange,
-  onDelete,
-  dragHandleProps,
-  onBlur,
+  step, screenshot, onDescriptionChange, onDelete, dragHandleProps, onBlur,
 }: StepCardProps) {
   const [description, setDescription] = useState(step.description);
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (screenshot?.blob) {
-      const url = URL.createObjectURL(screenshot.blob);
-      setObjectUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    }
-  }, [screenshot]);
-
-  useEffect(() => {
-    setDescription(step.description);
-  }, [step.description]);
+  useEffect(() => { setDescription(step.description); }, [step.description]);
 
   const handleDescriptionBlur = () => {
-    if (description !== step.description) {
-      onDescriptionChange(step.id, description);
-    }
+    if (description !== step.description) onDescriptionChange(step.id, description);
   };
 
   const handleDelete = () => {
-    if (window.confirm('Delete this step?')) {
-      onDelete(step.id);
-    }
+    if (window.confirm('Delete this step?')) onDelete(step.id);
   };
 
   const handleCopy = async () => {
@@ -77,50 +55,30 @@ export default function StepCard({
     dragHandleProps?.onDragOver(e);
   };
 
-  const handleDragLeave = () => {
-    setDragOver(false);
-  };
-
-  const handleDragEnd = () => {
-    setDragOver(false);
-    dragHandleProps?.onDragEnd();
-  };
-
   return (
     <div
       draggable={!!dragHandleProps}
       onDragStart={dragHandleProps?.onDragStart}
       onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDragEnd={handleDragEnd}
-      className={`rounded-xl mb-3 overflow-hidden transition-shadow ${dragOver ? 'ring-2 ring-amber-500' : ''}`}
-      style={{ border: '1px solid #E8E2DA', background: '#fff' }}
+      onDragLeave={() => setDragOver(false)}
+      onDragEnd={() => { setDragOver(false); dragHandleProps?.onDragEnd(); }}
+      className={`rounded-xl mb-3 overflow-hidden transition-shadow border border-border bg-card ${dragOver ? 'ring-2 ring-accent' : ''}`}
     >
-      {/* Screenshot */}
       {screenshot ? (
-        <ZoomScreenshot
-          screenshot={screenshot}
-          alt={`Step ${step.index + 1} screenshot`}
-          className="!rounded-none !border-0"
-        />
+        <ZoomScreenshot screenshot={screenshot} alt={`Step ${step.index + 1} screenshot`} className="!rounded-none !border-0" />
       ) : (
-        <div className="w-full h-32 flex items-center justify-center text-sm" style={{ background: '#f5f3ef', color: '#9ca3af' }}>
+        <div className="w-full h-32 flex items-center justify-center text-sm bg-secondary text-warm">
           No screenshot
         </div>
       )}
 
-      {/* Body */}
       <div className="px-3 pt-2 pb-2">
         <div className="flex items-center gap-2">
-          <span
-            className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-bold flex-shrink-0"
-            style={{ background: '#451a03', color: '#FDE68A' }}
-          >
+          <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-bold shrink-0 bg-primary text-primary-foreground">
             {step.index + 1}
           </span>
           <textarea
-            className="w-full text-[13px] font-medium resize-none outline-none border-0 bg-transparent p-0 leading-snug flex-1"
-            style={{ color: '#451a03' }}
+            className="w-full text-[13px] font-medium resize-none outline-none border-0 bg-transparent p-0 leading-snug flex-1 text-foreground"
             value={description}
             rows={1}
             onChange={(e) => setDescription(e.target.value)}
@@ -133,20 +91,14 @@ export default function StepCard({
               <>
                 <button
                   onClick={() => onBlur?.(step.id)}
-                  className="p-1 rounded-md transition-colors"
-                  style={{ color: '#d1d5db' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#F59E0B'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = '#d1d5db'; }}
+                  className="p-1 rounded-md transition-colors text-border hover:text-accent"
                   title="Blur sensitive area"
                 >
                   <EyeOff size={13} />
                 </button>
                 <button
                   onClick={handleCopy}
-                  className="p-1 rounded-md transition-colors"
-                  style={{ color: copied ? '#16a34a' : '#d1d5db' }}
-                  onMouseEnter={(e) => { if (!copied) e.currentTarget.style.color = '#16a34a'; }}
-                  onMouseLeave={(e) => { if (!copied) e.currentTarget.style.color = '#d1d5db'; }}
+                  className={`p-1 rounded-md transition-colors ${copied ? 'text-green-600' : 'text-border hover:text-green-600'}`}
                   title="Copy screenshot"
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -155,10 +107,7 @@ export default function StepCard({
             )}
             <button
               onClick={handleDelete}
-              className="p-1 rounded-md transition-colors"
-              style={{ color: '#d1d5db' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#d1d5db'; }}
+              className="p-1 rounded-md transition-colors text-border hover:text-red-500"
               title="Delete step"
             >
               <Trash2 size={13} />
