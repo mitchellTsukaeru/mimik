@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Check, Trash2, Square } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { getActiveTab } from '@/lib/browser-api';
-import { getStepsForGuide, getScreenshotsForSteps, deleteStep, getGuide } from '@/core/guides/service';
+import { getStepsForGuide, getScreenshotsForSteps, deleteStep } from '@/core/guides/service';
 import type { Step, Screenshot } from '@/core/guides/types';
 import ZoomScreenshot from './ZoomScreenshot';
 
@@ -12,31 +12,28 @@ interface RecordingViewProps {
 
 function extractDomain(url: string): string {
   try {
-    const u = new URL(url);
-    return u.hostname.replace(/^www\./, '');
+    return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     return '';
   }
 }
 
-function getFaviconUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
-  } catch {
-    return '';
-  }
+function timeAgo(createdAt: number): string {
+  const diff = Math.floor((Date.now() - createdAt) / 1000);
+  if (diff < 3) return 'Just now';
+  if (diff < 60) return `${diff}s ago`;
+  return `${Math.floor(diff / 60)}m ago`;
 }
 
 interface LiveStep {
   step: Step;
   screenshot?: Screenshot;
-  objectUrl?: string;
 }
 
 export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
+  const [, setTick] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadSteps = useCallback(async () => {
@@ -44,20 +41,10 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
     const screenshotIds = allSteps.map(s => s.screenshotId).filter(Boolean) as string[];
     const screenshotMap = await getScreenshotsForSteps(screenshotIds);
 
-    setSteps(prev => {
-      const oldUrls = new Map(prev.map(p => [p.step.id, p.objectUrl]));
-      const newSteps = allSteps.map(step => {
-        const screenshot = screenshotMap.get(step.id);
-        const existing = oldUrls.get(step.id);
-        if (existing && prev.find(p => p.step.id === step.id)?.screenshot?.id === screenshot?.id) {
-          return { step, screenshot, objectUrl: existing };
-        }
-        if (existing) URL.revokeObjectURL(existing);
-        const objectUrl = screenshot?.blob ? URL.createObjectURL(screenshot.blob) : undefined;
-        return { step, screenshot, objectUrl };
-      });
-      return newSteps;
-    });
+    setSteps(allSteps.map(step => ({
+      step,
+      screenshot: screenshotMap.get(step.id),
+    })));
 
     if (allSteps.length > 0 && !siteUrl) {
       setSiteUrl(allSteps[0].url || '');
@@ -67,22 +54,20 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   useEffect(() => {
     loadSteps();
     const interval = setInterval(loadSteps, 800);
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [loadSteps]);
 
   useEffect(() => {
-    return () => {
-      steps.forEach(s => {
-        if (s.objectUrl) URL.revokeObjectURL(s.objectUrl);
-      });
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const interval = setInterval(() => setTick(t => t + 1), 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scroll = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scroll();
+    const t1 = setTimeout(scroll, 300);
+    const t2 = setTimeout(scroll, 800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [steps.length]);
 
   useEffect(() => {
@@ -97,97 +82,86 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   }, [guideId, loadSteps]);
 
   const domain = extractDomain(siteUrl);
-  const favicon = getFaviconUrl(siteUrl);
-
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-5">
-          {/* Site header */}
-          <div className="flex items-center gap-3 mb-5">
-            {favicon && (
-              <img
-                src={favicon}
-                alt=""
-                className="w-8 h-8 rounded"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            )}
-            <span className="text-base font-semibold text-gray-900">{domain || 'Recording...'}</span>
-          </div>
-
-          {steps.length === 0 ? (
-            <p className="text-sm text-gray-400">Ready to capture!</p>
-          ) : (
-            <div className="space-y-1">
-              {steps.map((liveStep, idx) => {
-                const isLast = idx === steps.length - 1;
-                return (
-                  <div key={liveStep.step.id}>
-                    {/* Step row */}
-                    <div className="flex items-start gap-3 group py-1.5">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 text-gray-500 text-xs font-medium flex-shrink-0 mt-0.5">
-                        {liveStep.step.index + 1}
-                      </span>
-                      <p className="text-sm text-gray-800 flex-1 pt-0.5 leading-snug">
-                        {liveStep.step.description}
-                      </p>
-                      <button
-                        onClick={() => handleDeleteStep(liveStep.step.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 p-0.5 flex-shrink-0"
-                        title="Delete step"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    {/* Show screenshot only for the last step */}
-                    {isLast && liveStep.screenshot && (
-                      <div className="ml-9 mt-2 mb-2">
-                        <ZoomScreenshot
-                          screenshot={liveStep.screenshot}
-                          alt={`Step ${liveStep.step.index + 1}`}
-                          className="shadow-sm"
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
+    <div className="flex flex-col h-screen bg-white relative">
+      {/* Floating recording pill */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border shadow-sm" style={{ borderColor: '#E8E2DA' }}>
+        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+        <span className="text-xs font-semibold" style={{ color: '#451a03' }}>
+          Recording · {steps.length} {steps.length === 1 ? 'step' : 'steps'}
+        </span>
       </div>
 
-      {/* Bottom toolbar */}
-      <div className="flex-shrink-0 border-t border-gray-100 bg-white">
-        <div className="flex items-center justify-center gap-4 py-3 px-4">
-          <button
-            onClick={onStop}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
-            title="Finish recording"
-          >
-            <Check size={20} strokeWidth={3} />
-          </button>
-          <button
-            onClick={onStop}
-            className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-300 transition-colors"
-            title="Discard recording"
-          >
-            <Square size={16} />
-          </button>
-          <button
-            onClick={() => {
-              const last = steps[steps.length - 1];
-              if (last) handleDeleteStep(last.step.id);
-            }}
-            className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-colors"
-            title="Delete last step"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
+      {/* Feed */}
+      <div className="flex-1 overflow-y-auto pt-12">
+        {steps.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-1">
+            <span className="text-sm font-medium" style={{ color: '#9ca3af' }}>Ready to capture!</span>
+            <span className="text-xs" style={{ color: '#d1d5db' }}>Click on the page to start</span>
+          </div>
+        ) : (
+          <div>
+            {steps.map((liveStep, idx) => (
+              <div key={liveStep.step.id}>
+                {/* Post */}
+                <div className="px-4 pb-4 group">
+                  {liveStep.screenshot && (
+                    <div className="mb-2">
+                      <ZoomScreenshot
+                        screenshot={liveStep.screenshot}
+                        alt={liveStep.step.description}
+                        className="shadow-sm"
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[13px] font-medium leading-snug" style={{ color: '#451a03' }}>
+                        {liveStep.step.description}
+                      </p>
+                      <span className="text-[10px]" style={{ color: '#9ca3af' }}>
+                        {timeAgo(liveStep.step.timestamp)} · {extractDomain(liveStep.step.url || siteUrl)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteStep(liveStep.step.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
+                      style={{ color: '#d1d5db' }}
+                      title="Delete step"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                </div>
+                {/* Divider */}
+                {idx < steps.length - 1 && (
+                  <div className="mx-4 mb-4" style={{ height: 1, background: '#E8E2DA' }} />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Bottom bar */}
+      <div className="flex-shrink-0 border-t px-4 py-2.5 flex items-center gap-2" style={{ borderColor: '#E8E2DA' }}>
+        <button
+          onClick={onStop}
+          className="flex-1 h-10 rounded-full font-semibold text-[13px] flex items-center justify-center gap-2 transition-colors"
+          style={{ background: '#451a03', color: '#FDE68A' }}
+        >
+          <Check size={16} strokeWidth={3} />
+          Finish Recording
+        </button>
+        <button
+          onClick={onStop}
+          className="w-10 h-10 rounded-full border flex items-center justify-center transition-colors hover:border-red-300 hover:text-red-400"
+          style={{ borderColor: '#E8E2DA', color: '#9ca3af' }}
+          title="Discard"
+        >
+          <X size={16} />
+        </button>
       </div>
     </div>
   );
