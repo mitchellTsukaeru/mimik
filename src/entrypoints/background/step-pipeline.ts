@@ -82,14 +82,16 @@ export function handleUserAction(
     if (screenshotBlob) {
       (async () => {
         try {
-          const settings = await localStorage.get(['aiApiKey', 'aiProvider']);
+          const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
           if (settings.aiApiKey) {
-            const provider = (settings.aiProvider as 'openai' | 'anthropic') || 'openai';
+            const provider = (settings.aiProvider as string) || 'openai';
+            const model = (settings.aiModel as string) || 'gpt-4o-mini';
             const aiDescription = await getAIDescription(
               screenshotBlob,
               data.action,
               data.elementMeta,
               provider,
+              model,
               settings.aiApiKey as string,
             );
             if (aiDescription) {
@@ -97,7 +99,7 @@ export function handleUserAction(
             }
           }
         } catch (err) {
-          logger.error(' AI description update failed', err);
+          logger.error('AI description update failed', err);
         }
       })();
     }
