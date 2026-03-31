@@ -57,7 +57,7 @@ export default function SearchModal() {
   }, [filtered, selected, handleSelect]);
 
   return (
-    <Dialog open={open} onOpenChange={setSearchOpen}>
+    <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
       <DialogPortal>
         <DialogOverlay className="!bg-transparent backdrop-blur-sm" />
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setSearchOpen(false)}>

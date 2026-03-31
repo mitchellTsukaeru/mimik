@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, FileText, Star } from 'lucide-react';
-import { getGuides, softDeleteGuide, toggleStar, getFirstStepUrl } from '@/core/guides/service';
+import { getGuides, softDeleteGuide, toggleStar, getFirstStepUrl, onGuidesChanged, type GuideChangeEvent } from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
 import { getFaviconUrl, extractDomain, formatRelativeTime } from '@/lib/utils';
 
@@ -42,10 +42,18 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
 
   useEffect(() => { loadGuides(); }, [loadGuides]);
 
+  useEffect(() => onGuidesChanged((event: GuideChangeEvent) => {
+    if (event.type === 'starred') {
+      setGuides(prev => prev.map(g => g.id === event.id ? { ...g, starred: event.starred } : g));
+    } else {
+      loadGuides();
+    }
+  }), [loadGuides]);
+
   const handleStar = useCallback(async (e: React.MouseEvent, guideId: string) => {
     e.stopPropagation();
+    setGuides(prev => prev.map(g => g.id === guideId ? { ...g, starred: !g.starred } : g));
     await toggleStar(guideId);
-    await loadGuides();
   }, [loadGuides]);
 
   const handleDelete = useCallback(async (e: React.MouseEvent, guideId: string) => {

@@ -1,6 +1,20 @@
 import { db } from './db';
 import type { Guide, Step, Screenshot, RrwebEventChunk } from './types';
 
+export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
+
+const guidesChannel = new BroadcastChannel('mimik-guides');
+
+export function onGuidesChanged(callback: (event: GuideChangeEvent) => void): () => void {
+  const handler = (e: MessageEvent<GuideChangeEvent>) => callback(e.data);
+  guidesChannel.addEventListener('message', handler);
+  return () => guidesChannel.removeEventListener('message', handler);
+}
+
+function notifyGuidesChanged(event: GuideChangeEvent) {
+  guidesChannel.postMessage(event);
+}
+
 export async function createGuide(guideId: string): Promise<Guide> {
   const guide: Guide = {
     id: guideId,
@@ -58,16 +72,19 @@ export async function toggleStar(id: string): Promise<boolean> {
   const guide = await db.guides.get(id);
   if (!guide) return false;
   const starred = !guide.starred;
-  await db.guides.update(id, { starred, updatedAt: Date.now() });
+  await db.guides.update(id, { starred });
+  notifyGuidesChanged({ type: 'starred', id, starred });
   return starred;
 }
 
 export async function softDeleteGuide(id: string): Promise<void> {
   await db.guides.update(id, { deletedAt: Date.now(), updatedAt: Date.now() });
+  notifyGuidesChanged({ type: 'mutated' });
 }
 
 export async function restoreGuide(id: string): Promise<void> {
   await db.guides.update(id, { deletedAt: null, updatedAt: Date.now() });
+  notifyGuidesChanged({ type: 'mutated' });
 }
 
 export async function permanentlyDeleteGuide(id: string): Promise<void> {
@@ -77,6 +94,7 @@ export async function permanentlyDeleteGuide(id: string): Promise<void> {
   await db.steps.where('guideId').equals(id).delete();
   await db.rrwebEvents.where('guideId').equals(id).delete();
   await db.guides.delete(id);
+  notifyGuidesChanged({ type: 'mutated' });
 }
 
 export async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {

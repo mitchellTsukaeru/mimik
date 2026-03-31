@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LayoutGrid, LayoutList, FileText } from 'lucide-react';
-import { getGuides, getStarredGuides, getTrashedGuides, softDeleteGuide, permanentlyDeleteGuide, restoreGuide, toggleStar, getFirstScreenshot } from '@/core/guides/service';
+import { getGuides, getStarredGuides, getTrashedGuides, softDeleteGuide, permanentlyDeleteGuide, restoreGuide, toggleStar, getFirstScreenshot, onGuidesChanged, type GuideChangeEvent } from '@/core/guides/service';
 import type { Guide, Screenshot } from '@/core/guides/types';
 import { useFullviewStore } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
@@ -28,6 +28,11 @@ export default function LibraryContent({ category }: LibraryContentProps) {
     (localStorage.getItem('mimik-display') as 'list' | 'grid') || 'list'
   );
 
+  const refreshCounts = useCallback(async () => {
+    const [all, starred, trashed] = await Promise.all([getGuides(), getStarredGuides(), getTrashedGuides()]);
+    setCounts({ all: all.length, starred: starred.length, trash: trashed.length });
+  }, [setCounts]);
+
   const loadGuides = useCallback(async () => {
     setLoading(true);
     const [all, starred, trashed] = await Promise.all([getGuides(), getStarredGuides(), getTrashedGuides()]);
@@ -47,13 +52,27 @@ export default function LibraryContent({ category }: LibraryContentProps) {
 
   useEffect(() => { loadGuides(); }, [loadGuides]);
 
+  useEffect(() => onGuidesChanged((event: GuideChangeEvent) => {
+    if (event.type === 'starred') {
+      setGuides(prev => prev.map(g => g.id === event.id ? { ...g, starred: event.starred } : g));
+      refreshCounts();
+    } else {
+      loadGuides();
+    }
+  }), [refreshCounts, loadGuides]);
+
   const toggleDisplay = () => {
     const next = display === 'list' ? 'grid' : 'list';
     setDisplay(next);
     localStorage.setItem('mimik-display', next);
   };
 
-  const handleStar = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await toggleStar(id); await loadGuides(); };
+  const handleStar = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setGuides(prev => prev.map(g => g.id === id ? { ...g, starred: !g.starred } : g));
+    await toggleStar(id);
+    await refreshCounts();
+  };
   const handleTrash = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await softDeleteGuide(id); await loadGuides(); };
   const handleRestore = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await restoreGuide(id); await loadGuides(); };
   const handlePermanentDelete = async (e: React.MouseEvent, id: string) => {
