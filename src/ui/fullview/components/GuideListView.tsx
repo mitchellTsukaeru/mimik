@@ -1,0 +1,74 @@
+import { Star, Trash2, RotateCcw } from 'lucide-react';
+import type { Guide } from '@/core/guides/types';
+import { formatDate } from '@/lib/utils';
+import { navigate } from '../router';
+
+interface GuideListViewProps {
+  guides: Guide[];
+  category: 'all' | 'starred' | 'trash';
+  onStar: (e: React.MouseEvent, id: string) => void;
+  onTrash: (e: React.MouseEvent, id: string) => void;
+  onRestore: (e: React.MouseEvent, id: string) => void;
+  onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+}
+
+export default function GuideListView({
+  guides, category, onStar, onTrash, onRestore, onPermanentDelete,
+}: GuideListViewProps) {
+  return (
+    <div className="rounded-xl overflow-hidden bg-card border border-border">
+      {guides.map((guide, idx) => (
+        <div
+          key={guide.id}
+          onClick={() => navigate({ page: 'guide', guideId: guide.id })}
+          className="flex items-center px-5 py-3.5 cursor-pointer transition-colors group hover:bg-secondary"
+          style={{ borderBottom: idx < guides.length - 1 ? '1px solid var(--color-border)' : undefined }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
+            <p className="text-xs mt-0.5 text-muted-foreground">
+              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatDate(guide.updatedAt)}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {category !== 'trash' ? (
+              <>
+                <button
+                  onClick={(e) => onStar(e, guide.id)}
+                  className="p-1.5 rounded-lg transition-colors text-warm hover:text-accent"
+                  title={guide.starred ? 'Unstar' : 'Star'}
+                >
+                  <Star size={14} fill={guide.starred ? 'currentColor' : 'none'} />
+                </button>
+                <button
+                  onClick={(e) => onTrash(e, guide.id)}
+                  className="p-1.5 rounded-lg transition-colors text-warm hover:text-red-600"
+                  title="Move to trash"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={(e) => onRestore(e, guide.id)}
+                  className="p-1.5 rounded-lg transition-colors text-warm hover:text-green-600"
+                  title="Restore"
+                >
+                  <RotateCcw size={14} />
+                </button>
+                <button
+                  onClick={(e) => onPermanentDelete(e, guide.id)}
+                  className="p-1.5 rounded-lg transition-colors text-warm hover:text-red-600"
+                  title="Delete permanently"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

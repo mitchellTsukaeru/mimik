@@ -1,21 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LayoutGrid, LayoutList, Star, Trash2, RotateCcw, FileText } from 'lucide-react';
+import { LayoutGrid, LayoutList, FileText } from 'lucide-react';
 import { getGuides, getStarredGuides, getTrashedGuides, softDeleteGuide, permanentlyDeleteGuide, restoreGuide, toggleStar, getFirstScreenshot } from '@/core/guides/service';
 import type { Guide, Screenshot } from '@/core/guides/types';
-import { navigate } from './router';
-import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
+import { useFullviewStore } from '@/stores/fullview';
+import { Button } from '@/ui/components/ui/button';
+import GuideListView from './components/GuideListView';
+import GuideGridView from './components/GuideGridView';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
-  onCountsChange: (counts: { all: number; starred: number; trash: number }) => void;
-  searchQuery?: string;
 }
 
-function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+const titles: Record<string, string> = { all: 'All Guides', starred: 'Starred', trash: 'Trash' };
+const emptyMessages: Record<string, string> = {
+  all: 'No guides yet. Start a capture from the Mimik extension.',
+  starred: 'No starred guides. Star a guide to find it quickly.',
+  trash: 'Trash is empty.',
+};
 
-export default function LibraryContent({ category, onCountsChange, searchQuery = '' }: LibraryContentProps) {
+export default function LibraryContent({ category }: LibraryContentProps) {
+  const setCounts = useFullviewStore((s) => s.setCounts);
+
   const [guides, setGuides] = useState<Guide[]>([]);
   const [thumbnails, setThumbnails] = useState<Map<string, Screenshot>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -25,10 +30,8 @@ export default function LibraryContent({ category, onCountsChange, searchQuery =
 
   const loadGuides = useCallback(async () => {
     setLoading(true);
-    const [all, starred, trashed] = await Promise.all([
-      getGuides(), getStarredGuides(), getTrashedGuides(),
-    ]);
-    onCountsChange({ all: all.length, starred: starred.length, trash: trashed.length });
+    const [all, starred, trashed] = await Promise.all([getGuides(), getStarredGuides(), getTrashedGuides()]);
+    setCounts({ all: all.length, starred: starred.length, trash: trashed.length });
 
     const current = category === 'starred' ? starred : category === 'trash' ? trashed : all;
     setGuides(current);
@@ -40,7 +43,7 @@ export default function LibraryContent({ category, onCountsChange, searchQuery =
     }
     setThumbnails(thumbMap);
     setLoading(false);
-  }, [category, onCountsChange]);
+  }, [category, setCounts]);
 
   useEffect(() => { loadGuides(); }, [loadGuides]);
 
@@ -50,143 +53,42 @@ export default function LibraryContent({ category, onCountsChange, searchQuery =
     localStorage.setItem('mimik-display', next);
   };
 
-  const filtered = searchQuery
-    ? guides.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase()))
-    : guides;
-
-  const handleStar = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    await toggleStar(id);
-    await loadGuides();
-  };
-
-  const handleTrash = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    await softDeleteGuide(id);
-    await loadGuides();
-  };
-
-  const handleRestore = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    await restoreGuide(id);
-    await loadGuides();
-  };
-
+  const handleStar = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await toggleStar(id); await loadGuides(); };
+  const handleTrash = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await softDeleteGuide(id); await loadGuides(); };
+  const handleRestore = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await restoreGuide(id); await loadGuides(); };
   const handlePermanentDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!window.confirm('Permanently delete this guide? This cannot be undone.')) return;
-    await permanentlyDeleteGuide(id);
-    await loadGuides();
-  };
-
-  const titles: Record<string, string> = { all: 'All Guides', starred: 'Starred', trash: 'Trash' };
-  const emptyMessages: Record<string, string> = {
-    all: 'No guides yet. Start a capture from the Mimik extension.',
-    starred: 'No starred guides. Star a guide to find it quickly.',
-    trash: 'Trash is empty.',
+    await permanentlyDeleteGuide(id); await loadGuides();
   };
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold" style={{ color: '#451a03' }}>{titles[category]}</h2>
-        <button
-          onClick={toggleDisplay}
-          className="p-2 rounded-lg transition-colors"
-          style={{ border: '1px solid #E8E2DA', color: '#6B5D40' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = '#FEF3C7'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-          title={display === 'list' ? 'Grid view' : 'List view'}
-        >
+        <h2 className="text-2xl font-bold text-foreground">{titles[category]}</h2>
+        <Button variant="outline" size="icon-sm" onClick={toggleDisplay} title={display === 'list' ? 'Grid view' : 'List view'}>
           {display === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
-        </button>
+        </Button>
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-400 py-12 text-center">Loading...</p>
-      ) : filtered.length === 0 ? (
+        <p className="text-sm py-12 text-center text-warm">Loading...</p>
+      ) : guides.length === 0 ? (
         <div className="text-center py-20">
-          <FileText size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-lg text-gray-500">{searchQuery ? 'No matching guides' : emptyMessages[category]}</p>
+          <FileText size={40} className="mx-auto mb-3 text-border" />
+          <p className="text-lg text-muted-foreground">{emptyMessages[category]}</p>
         </div>
       ) : display === 'list' ? (
-        <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-          {filtered.map((guide, idx) => (
-            <div
-              key={guide.id}
-              onClick={() => navigate({ page: 'guide', guideId: guide.id })}
-              className={`flex items-center px-5 py-3.5 cursor-pointer hover:bg-gray-50 transition-colors group ${
-                idx < filtered.length - 1 ? 'border-b border-gray-100' : ''
-              }`}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{guide.title}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatDate(guide.updatedAt)}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {category !== 'trash' ? (
-                  <>
-                    <button onClick={(e) => handleStar(e, guide.id)}
-                      className={`p-1.5 rounded-lg hover:bg-gray-100 ${guide.starred ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'}`}
-                      title={guide.starred ? 'Unstar' : 'Star'}>
-                      <Star size={14} fill={guide.starred ? 'currentColor' : 'none'} />
-                    </button>
-                    <button onClick={(e) => handleTrash(e, guide.id)}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"
-                      title="Move to trash">
-                      <Trash2 size={14} />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={(e) => handleRestore(e, guide.id)}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-green-600 hover:bg-green-50"
-                      title="Restore">
-                      <RotateCcw size={14} />
-                    </button>
-                    <button onClick={(e) => handlePermanentDelete(e, guide.id)}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"
-                      title="Delete permanently">
-                      <Trash2 size={14} />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <GuideListView
+          guides={guides}
+          category={category}
+          onStar={handleStar}
+          onTrash={handleTrash}
+          onRestore={handleRestore}
+          onPermanentDelete={handlePermanentDelete}
+        />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(guide => {
-            const thumb = thumbnails.get(guide.id);
-            return (
-              <div
-                key={guide.id}
-                onClick={() => navigate({ page: 'guide', guideId: guide.id })}
-                className="border border-gray-200 rounded-xl bg-white overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
-              >
-                <div className="h-36 bg-gray-100 overflow-hidden">
-                  {thumb ? (
-                    <ZoomScreenshot screenshot={thumb} alt={guide.title} className="!rounded-none !border-0" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <FileText size={32} />
-                    </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="text-sm font-medium text-gray-900 truncate">{guide.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatDate(guide.updatedAt)}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <GuideGridView guides={guides} thumbnails={thumbnails} />
       )}
     </div>
   );
