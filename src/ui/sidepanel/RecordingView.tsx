@@ -59,15 +59,12 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   }, []);
 
   useEffect(() => {
+    if (steps.length === 0) return;
     const scroll = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     scroll();
-    const t1 = setTimeout(scroll, 300);
-    const t2 = setTimeout(scroll, 800);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, []);
+    const t = setTimeout(scroll, 300);
+    return () => clearTimeout(t);
+  }, [steps.length]);
 
   useEffect(() => {
     getActiveTab().then((tab) => {

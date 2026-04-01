@@ -19,7 +19,7 @@ export async function generateGuideTitle(
       prompt: GUIDE_TITLE_PROMPT.replace('{{steps}}', formatted),
       maxOutputTokens: 30,
     });
-    return text.trim() || null;
+    return text.trim().replace(/^"|"$/g, '') || null;
   } catch (err) {
     logger.error('Guide title generation failed', err);
     return null;

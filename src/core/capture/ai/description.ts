@@ -17,7 +17,7 @@ export async function getAIDescription(
       prompt: STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(domContext)),
       maxOutputTokens: 50,
     });
-    return text.trim() || null;
+    return text.trim().replace(/^"|"$/g, '') || null;
   } catch (err) {
     logger.error('AI description failed, using fallback', err);
     return null;
