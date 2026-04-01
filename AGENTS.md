@@ -22,12 +22,32 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 ```
 src/
 ├── core/                    # Business logic (no UI dependencies)
-│   ├── capture/             # Recording pipeline, event detection, screenshots
+│   ├── capture/             # Recording pipeline
+│   │   ├── ai/              # AI description + title generation (Vercel AI SDK)
+│   │   │   ├── description.ts   # getAIDescription (DOM context → AI → step text)
+│   │   │   ├── title.ts         # generateGuideTitle (steps → AI → guide name)
+│   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic model lists)
+│   │   │   ├── prompts.ts       # Prompt templates
+│   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic)
+│   │   ├── dom/              # DOM extraction utilities
+│   │   │   ├── context.ts       # DOMContext extraction + serialization
+│   │   │   ├── element-meta.ts  # extractElementMeta (selector, text, aria, rect)
+│   │   │   └── element-utils.ts # findFocusableAncestor, isTextField, etc.
+│   │   ├── events/           # Event capture system
+│   │   │   ├── handlers.ts      # CaptureController class + startCapture
+│   │   │   ├── highlight.ts     # HighlightManager (dashed border overlay)
+│   │   │   └── input-session.ts # InputSession (typing lifecycle)
+│   │   ├── machine.ts        # xstate capture state machine
+│   │   ├── rrweb-recorder.ts # DOM recording for replay
+│   │   ├── session.ts        # CaptureSession (lifecycle manager)
+│   │   ├── spa-nav.ts        # SPA navigation tracking
+│   │   ├── start-notification.ts # Recording notification overlay
+│   │   └── step-description.ts   # Fallback rule-based descriptions
 │   ├── export/              # HTML, PDF, Markdown export generators
 │   └── guides/              # Data layer: types, Dexie DB, CRUD service
 ├── entrypoints/             # Chrome extension entry points (WXT)
 │   ├── background/          # Service worker: state machine, message handlers, tab management
-│   ├── content.ts           # Content script: event capture, overlay, rrweb recording
+│   ├── content.ts           # Content script: CaptureSession, event listeners, rrweb
 │   ├── sidepanel/           # Side panel React mount
 │   ├── fullview/            # Full-page view React mount
 │   └── options/             # Settings page React mount
@@ -59,6 +79,8 @@ src/
     │   ├── ExportMenu.tsx
     │   ├── BlurCanvas.tsx
     │   └── ZoomScreenshot.tsx
+    ├── shared/              # Shared UI components
+    │   └── SettingsView.tsx  # AI settings (provider, model, API key)
     └── options/             # Settings page
         └── App.tsx
 ```
@@ -72,16 +94,17 @@ src/
 | Persistence | Dexie (IndexedDB) | Guides, steps, screenshots, rrweb chunks |
 | Service worker recovery | sessionStorage | xstate machine snapshot persistence |
 | Background → Sidepanel | Port messaging | Real-time state broadcast |
+| Cross-context sync | BroadcastChannel | Guide mutations (star, delete) across sidepanel/fullview |
 
 ## Extension Entry Points
 
 | Entry Point | File | Purpose |
 |-------------|------|---------|
-| Background | `entrypoints/background/` | Service worker: xstate actor, message handlers, tab management, navigation tracking |
-| Content Script | `entrypoints/content.ts` | Injected into all tabs: CaptureSession, event listeners, rrweb, highlight overlay |
-| Side Panel | `entrypoints/sidepanel/` | Recording controls, library, guide editor |
+| Background | `entrypoints/background/` | Service worker: xstate actor, message handlers, tab management |
+| Content Script | `entrypoints/content.ts` | Injected into all tabs: CaptureSession, event listeners, rrweb |
+| Side Panel | `entrypoints/sidepanel/` | Recording controls, library, guide editor, settings |
 | Full View | `entrypoints/fullview/` | Dashboard: library browse, guide viewer, Ctrl+K search |
-| Options | `entrypoints/options/` | AI API key settings (OpenAI / Anthropic) |
+| Options | `entrypoints/options/` | Settings page (shared SettingsView in centered card) |
 
 ## Messaging
 
@@ -92,13 +115,15 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 **Extension messages** (webext-core, `lib/messaging.ts`):
 - `getState` → current capture state, step count, guide ID
 - `startRecording({url})` → creates guide, returns guideId
-- `stopRecording()` → finalizes guide
-- `userAction({guideId, action, elementMeta})` → processes captured step
+- `stopRecording()` → finalizes guide, generates AI title
+- `captureStep({guideId, action, elementMeta, domContext})` → screenshots + creates step
+- `updateInputStep({stepId, description})` → updates typing step description
+- `finalizeInputStep({stepId, elementMeta, domContext})` → final screenshot + AI description
 - `rrwebChunk({guideId, events, timestamp})` → stores DOM recording chunk
 
 **Tab messages** (content script ↔ background, `lib/tab-messages.ts`):
 - `PING` / `START_CAPTURE` / `STOP_CAPTURE` — lifecycle
-- `HIDE_OVERLAY` / `SHOW_OVERLAY` — overlay toggle before/after screenshot
+- `HIDE_OVERLAY` / `SHOW_OVERLAY` — overlay toggle (fallback, used for non-click captures)
 - `SHOW_NOTIFICATION` — "Recording started" overlay
 - `URL_CHANGED` / `GET_ROUTE` — SPA navigation tracking
 
@@ -108,21 +133,47 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 1. User clicks "Start Capture" in sidepanel
 2. Background transitions xstate machine IDLE → RECORDING
 3. Creates Guide in IndexedDB, broadcasts `START_CAPTURE` to all tabs
-4. Content scripts initialize CaptureSession (event listeners + rrweb)
+4. Content scripts create CaptureSession → CaptureController (event listeners) + rrweb
 5. Shows recording notification overlay on active tab
 
-**Capture a step:**
-1. Content script detects user action (click, input, drag)
-2. Extracts ElementMeta (selector, text, aria labels, position)
-3. Sends `userAction` to background
-4. Background hides overlay → `captureVisibleTab` → shows overlay
-5. Optionally sends screenshot to AI for description (OpenAI/Anthropic)
-6. Saves Step + Screenshot to IndexedDB
+**Capture a click:**
+1. Content script's CaptureController detects click via DOM event listener
+2. Click handler pushes async work into PQueue (concurrency: 1)
+3. Queue processes: hides overlay instantly → sends `captureStep` to background → waits
+4. Background calls `captureVisibleTab` (overlay is hidden, page hasn't reacted yet)
+5. Saves Screenshot + Step to IndexedDB
+6. Optionally generates AI description from DOM context text (not screenshot)
+7. Returns `{ stepId }` → content script shows overlay → queue processes next event
+
+**Capture text input (typing):**
+1. Click on text field → CaptureController starts InputSession → `captureStep` with initial screenshot
+2. Each keystroke → InputSession.update() → `updateInputStep` (description only, fire-and-forget)
+3. Enter/Escape/focusout → InputSession.finalize() → `finalizeInputStep` → final screenshot replaces initial + AI description
+4. Result: one step for entire typing interaction
 
 **Stop recording:**
 1. Background transitions RECORDING → IDLE
-2. Broadcasts `STOP_CAPTURE`, content scripts flush rrweb events
-3. Opens fullview dashboard with the guide
+2. Broadcasts `STOP_CAPTURE`, content scripts flush pending input sessions + rrweb events
+3. Background generates guide title from step descriptions + URLs via AI
+4. Opens fullview dashboard with the guide
+
+## DOM Context (AI Input)
+
+Instead of sending screenshots to the AI for step descriptions, Mimik extracts a lightweight DOM context (~50-100 tokens) from around the target element:
+
+```
+Page: "Public profile - Settings" /settings/profile
+Container: form "Public profile"
+Heading: "Public profile"
+Siblings: input "Name", input "Email", textarea "Bio", button "Update profile"
+→ Target: button "Update profile" (click)
+```
+
+Extraction walks up from the target element to find:
+- Page title + URL path
+- Nearest semantic container (form, nav, dialog, section) or 3 levels up
+- Nearest heading
+- Sibling interactive elements in the same container (max 10)
 
 ## Export Formats
 
@@ -147,7 +198,8 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 | Messaging | webext-core |
 | Session recording | rrweb |
 | Export | jsPDF, client-side HTML/Markdown |
-| AI (optional) | OpenAI SDK, Anthropic SDK |
+| AI (optional) | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) |
+| Event queue | p-queue (concurrency: 1) |
 | Icons | Lucide React |
 | Dates | dayjs |
 | DOM utils | css-selector-generator |
@@ -172,10 +224,13 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 
 ## Key Technical Details
 
-- **Screenshot capture** uses `chrome.tabs.captureVisibleTab` with overlay hidden to avoid capturing the highlight
-- **Event deduplication** merges fast clicks within 300ms on same element; max 4 clicks per 800ms window
+- **Async event queue** in content script (PQueue, concurrency 1) serializes capture work — each action awaits the full background round-trip before the next starts
+- **Overlay hidden from content script side** (instant `display:none`) before sending capture message — no round-trip delay for overlay toggle
+- **Input session** aggregates all typing on a field into one step — click creates it, keystrokes update description, finalize takes final screenshot
+- **DOM context** sent as text to AI instead of screenshots — 15-30x cheaper per step
 - **Highlight overlay** uses a custom web component (`<mimik-highlight>`) with closed Shadow DOM at max z-index
 - **Content script injection** pings first, falls back to `chrome.scripting.executeScript()` for tabs without the script
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
 - **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency)
+- **Cross-context sync** via BroadcastChannel — star/delete events update other views without full reload
