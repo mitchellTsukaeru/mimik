@@ -1,5 +1,6 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { ElementMeta } from '@/core/guides/types';
+import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
 
 export interface GetStateResponse {
@@ -21,16 +22,36 @@ export interface StopRecordingResponse {
   guideId?: string;
 }
 
-export interface UserActionData {
+export interface CaptureStepData {
   guideId: string;
   action: string;
   elementMeta: ElementMeta;
+  domContext?: DOMContext;
 }
 
-export type UserActionResponse =
+export type CaptureStepResponse =
   | { stepId: string }
   | { ignored: true }
   | { error: string };
+
+export interface UpdateInputStepData {
+  stepId: string;
+  description: string;
+}
+
+export interface UpdateInputStepResponse {
+  updated: boolean;
+}
+
+export interface FinalizeInputStepData {
+  stepId: string;
+  elementMeta: ElementMeta;
+  domContext?: DOMContext;
+}
+
+export interface FinalizeInputStepResponse {
+  updated: boolean;
+}
 
 export interface RrwebChunkData {
   guideId: string;
@@ -46,7 +67,9 @@ interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
-  userAction(data: UserActionData): UserActionResponse;
+  captureStep(data: CaptureStepData): CaptureStepResponse;
+  updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
+  finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;
   rrwebChunk(data: RrwebChunkData): RrwebChunkResponse;
 }
 
