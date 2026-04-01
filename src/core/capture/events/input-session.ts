@@ -22,7 +22,7 @@ export class InputSession {
   }
 
   async start(target: HTMLElement) {
-    this.hl.hideInstant();
+    await this.hl.hideInstant();
     try {
       const res = await sendMessage('captureStep', {
         guideId: this.guideId,
@@ -54,7 +54,7 @@ export class InputSession {
     const stepId = this.stepId;
     this.stepId = null;
     this.target = null;
-    this.hl.hideInstant();
+    await this.hl.hideInstant();
     try {
       await sendMessage('finalizeInputStep', {
         stepId,

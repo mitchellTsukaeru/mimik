@@ -4,11 +4,22 @@ export const FOCUSABLE_SELECTOR =
 const MAX_ELEMENT_RATIO = 0.8;
 
 export function findFocusableAncestor(el: Element): HTMLElement {
-  const focusable = el.closest(FOCUSABLE_SELECTOR);
-  if (focusable instanceof HTMLElement) return focusable;
+  let cursor: Element | null = el;
+  while (cursor) {
+    const match: Element | null = cursor.closest(FOCUSABLE_SELECTOR);
+    if (match instanceof HTMLElement) return match;
+    if (match) {
+      cursor = match.parentElement;
+      continue;
+    }
+    break;
+  }
   if (el instanceof HTMLElement) return el;
-  if (el.parentElement instanceof HTMLElement) return el.parentElement;
-  return document.body;
+  let parent: Element | null = el.parentElement;
+  while (parent && !(parent instanceof HTMLElement)) {
+    parent = parent.parentElement;
+  }
+  return (parent as HTMLElement) ?? document.body;
 }
 
 export function isTextField(el: Element): boolean {

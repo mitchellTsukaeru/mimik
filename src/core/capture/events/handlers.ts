@@ -58,7 +58,7 @@ class CaptureController {
   }
 
   private async captureAction(action: string, target: HTMLElement) {
-    this.hl.hideInstant();
+    await this.hl.hideInstant();
     try {
       await sendMessage('captureStep', {
         guideId: this.guideId,

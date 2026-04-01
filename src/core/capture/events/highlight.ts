@@ -20,10 +20,31 @@ export function createHighlight(): Highlight {
   return { host, overlay };
 }
 
+const MIN_RECT_PX = 5;
+const STICKY_MS = 350;
+
+function resolveRect(target: Element): DOMRect {
+  const rect = target.getBoundingClientRect();
+  if (rect.width >= MIN_RECT_PX && rect.height >= MIN_RECT_PX) return rect;
+  const parent = target.parentElement;
+  if (parent && parent !== document.body) {
+    const parentRect = parent.getBoundingClientRect();
+    if (parentRect.width >= MIN_RECT_PX && parentRect.height >= MIN_RECT_PX) return parentRect;
+  }
+  return rect;
+}
+
+function waitForRepaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
 export class HighlightManager {
   private highlight: Highlight | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
   private rafId: number | null = null;
+  private stickyUntil = 0;
   hoveredElement: Element | null = null;
 
   show(target: Element) {
@@ -32,20 +53,24 @@ export class HighlightManager {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
     }
-    const rect = target.getBoundingClientRect();
+    const rect = resolveRect(target);
     this.highlight.overlay.style.top = `${rect.top}px`;
     this.highlight.overlay.style.left = `${rect.left}px`;
     this.highlight.overlay.style.width = `${rect.width}px`;
     this.highlight.overlay.style.height = `${rect.height}px`;
     this.highlight.overlay.style.opacity = '1';
+    this.stickyUntil = Date.now() + STICKY_MS;
   }
 
   hide() {
     if (this.highlight) this.highlight.overlay.style.opacity = '0';
   }
 
-  hideInstant() {
-    if (this.highlight) this.highlight.host.style.display = 'none';
+  async hideInstant(): Promise<void> {
+    if (this.highlight) {
+      this.highlight.host.style.display = 'none';
+      await waitForRepaint();
+    }
   }
 
   showInstant() {
@@ -54,6 +79,9 @@ export class HighlightManager {
 
   scheduleShow(target: Element) {
     if (target === this.hoveredElement) return;
+    if (this.hoveredElement && Date.now() < this.stickyUntil && this.hoveredElement.contains(target)) {
+      return;
+    }
     this.hoveredElement = target;
     if (this.rafId) cancelAnimationFrame(this.rafId);
     this.rafId = requestAnimationFrame(() => this.show(target));
@@ -73,5 +101,6 @@ export class HighlightManager {
       this.highlight = null;
     }
     this.hoveredElement = null;
+    this.stickyUntil = 0;
   }
 }
