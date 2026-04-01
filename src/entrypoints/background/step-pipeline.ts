@@ -80,28 +80,26 @@ export function handleUserAction(
     await addStepToGuide(guideId, stepId);
 
     if (screenshotBlob) {
-      (async () => {
-        try {
-          const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
-          if (settings.aiApiKey) {
-            const provider = (settings.aiProvider as string) || 'openai';
-            const model = (settings.aiModel as string) || 'gpt-4o-mini';
-            const aiDescription = await getAIDescription(
-              screenshotBlob,
-              data.action,
-              data.elementMeta,
-              provider,
-              model,
-              settings.aiApiKey as string,
-            );
-            if (aiDescription) {
-              await updateStepDescription(stepId, aiDescription);
-            }
+      try {
+        const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
+        if (settings.aiApiKey) {
+          const provider = (settings.aiProvider as string) || 'openai';
+          const model = (settings.aiModel as string) || 'gpt-4o-mini';
+          const aiDescription = await getAIDescription(
+            screenshotBlob,
+            data.action,
+            data.elementMeta,
+            provider,
+            model,
+            settings.aiApiKey as string,
+          );
+          if (aiDescription) {
+            await updateStepDescription(stepId, aiDescription);
           }
-        } catch (err) {
-          logger.error('AI description update failed', err);
         }
-      })();
+      } catch (err) {
+        logger.error('AI description update failed', err);
+      }
     }
   });
 

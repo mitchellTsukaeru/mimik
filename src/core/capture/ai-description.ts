@@ -11,6 +11,30 @@ function createModel(provider: string, model: string, apiKey: string) {
   return createOpenAI({ apiKey })(model);
 }
 
+export async function generateGuideTitle(
+  stepDescriptions: string[],
+  provider: string,
+  model: string,
+  apiKey: string,
+): Promise<string | null> {
+  if (stepDescriptions.length === 0) return null;
+
+  const steps = stepDescriptions.map((d, i) => `${i + 1}. ${d}`).join('\n');
+  const prompt = `These are the steps of a browser workflow:\n\n${steps}\n\nWrite a short title (max 8 words) that describes what this workflow does. Examples: "Create a new GitHub repository", "Update profile settings in Slack". Just the title, no quotes, no preamble.`;
+
+  try {
+    const { text } = await generateText({
+      model: createModel(provider, model, apiKey),
+      prompt,
+      maxOutputTokens: 30,
+    });
+    return text.trim() || null;
+  } catch (err) {
+    logger.error('Guide title generation failed', err);
+    return null;
+  }
+}
+
 export async function getAIDescription(
   blob: Blob,
   action: string,
