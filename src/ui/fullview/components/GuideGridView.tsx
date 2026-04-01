@@ -1,7 +1,7 @@
 import type { Guide, Screenshot } from '@/core/guides/types';
 import { formatDate } from '@/lib/utils';
-import { navigate } from '../router';
 import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
+import { navigate } from '../router';
 
 function MimikEyes() {
   return (
@@ -41,7 +41,8 @@ export default function GuideGridView({ guides, thumbnails }: GuideGridViewProps
             <div className="p-3">
               <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
               <p className="text-xs mt-0.5 text-muted-foreground">
-                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatDate(guide.updatedAt)}
+                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
+                {formatDate(guide.updatedAt)}
               </p>
             </div>
           </div>

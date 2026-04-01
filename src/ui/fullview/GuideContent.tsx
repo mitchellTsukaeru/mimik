@@ -1,11 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getGuide, updateGuideTitle, updateStepDescription, deleteStep, updateScreenshotBlob } from '@/core/guides/service';
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
-import { useFullviewStore } from '@/stores/fullview';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  deleteStep,
+  getGuide,
+  updateGuideTitle,
+  updateScreenshotBlob,
+  updateStepDescription,
+} from '@/core/guides/service';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { extractDomain } from '@/lib/utils';
-import { Input } from '@/ui/components/ui/input';
-import GuideStepList from './components/GuideStepList';
+import { useFullviewStore } from '@/stores/fullview';
 import BlurCanvas from '@/ui/sidepanel/BlurCanvas';
+import GuideStepList from './components/GuideStepList';
 
 interface GuideContentProps {
   guideId: string;
@@ -38,12 +43,14 @@ export default function GuideContent({ guideId }: GuideContentProps) {
     setLoading(false);
   }, [guideId, setGuideTitle, setGuideExportData]);
 
-  useEffect(() => { loadGuide(); }, [loadGuide]);
+  useEffect(() => {
+    loadGuide();
+  }, [loadGuide]);
 
   const handleTitleBlur = useCallback(async () => {
     if (!data || title === data.guide.title) return;
     await updateGuideTitle(guideId, title);
-    setData((prev) => prev ? { ...prev, guide: { ...prev.guide, title } } : prev);
+    setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title } } : prev));
     document.title = `${title} — Mimik`;
   }, [data, guideId, title]);
 
@@ -51,28 +58,34 @@ export default function GuideContent({ guideId }: GuideContentProps) {
     await updateStepDescription(stepId, description);
     setData((prev) => {
       if (!prev) return prev;
-      return { ...prev, steps: prev.steps.map((s) => s.id === stepId ? { ...s, description } : s) };
+      return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
     });
   }, []);
 
-  const handleDeleteStep = useCallback(async (stepId: string) => {
-    await deleteStep(guideId, stepId);
-    await loadGuide();
-  }, [guideId, loadGuide]);
+  const handleDeleteStep = useCallback(
+    async (stepId: string) => {
+      await deleteStep(guideId, stepId);
+      await loadGuide();
+    },
+    [guideId, loadGuide],
+  );
 
-  const handleBlurSave = useCallback(async (blob: Blob) => {
-    if (!blurringStepId || !data) return;
-    const screenshot = data.screenshots.get(blurringStepId);
-    if (!screenshot) return;
-    await updateScreenshotBlob(screenshot.id, blob);
-    setData((prev) => {
-      if (!prev) return prev;
-      const newScreenshots = new Map(prev.screenshots);
-      newScreenshots.set(blurringStepId, { ...screenshot, blob });
-      return { ...prev, screenshots: newScreenshots };
-    });
-    setBlurringStepId(null);
-  }, [blurringStepId, data]);
+  const handleBlurSave = useCallback(
+    async (blob: Blob) => {
+      if (!blurringStepId || !data) return;
+      const screenshot = data.screenshots.get(blurringStepId);
+      if (!screenshot) return;
+      await updateScreenshotBlob(screenshot.id, blob);
+      setData((prev) => {
+        if (!prev) return prev;
+        const newScreenshots = new Map(prev.screenshots);
+        newScreenshots.set(blurringStepId, { ...screenshot, blob });
+        return { ...prev, screenshots: newScreenshots };
+      });
+      setBlurringStepId(null);
+    },
+    [blurringStepId, data],
+  );
 
   if (loading) return <p className="text-sm py-12 text-center text-warm">Loading...</p>;
   if (!data) return <p className="text-sm py-12 text-center text-warm">Guide not found.</p>;
@@ -88,14 +101,23 @@ export default function GuideContent({ guideId }: GuideContentProps) {
 
       <input
         value={title}
-        onChange={(e) => { setTitle(e.target.value); setGuideTitle(e.target.value); }}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          setGuideTitle(e.target.value);
+        }}
         onBlur={handleTitleBlur}
         className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 h-auto text-foreground"
       />
 
       <p className="text-xs mt-1 mb-8 text-muted-foreground">
-        Created {new Date(data.guide.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        {' · '}{data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
+        Created{' '}
+        {new Date(data.guide.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}
+        {' · '}
+        {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
         {domain ? ` · ${domain}` : ''}
       </p>
 
@@ -106,7 +128,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         onDescriptionChange={handleDescriptionChange}
         onDelete={handleDeleteStep}
         onBlur={(stepId) => setBlurringStepId(stepId)}
-        onReorder={(newSteps) => setData((prev) => prev ? { ...prev, steps: newSteps } : prev)}
+        onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}
       />
     </div>
   );

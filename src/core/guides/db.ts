@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Guide, Step, Screenshot, RrwebEventChunk } from './types';
+import type { Guide, RrwebEventChunk, Screenshot, Step } from './types';
 
 export class MimikDB extends Dexie {
   guides!: EntityTable<Guide, 'id'>;

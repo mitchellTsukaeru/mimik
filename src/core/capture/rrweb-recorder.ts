@@ -1,6 +1,6 @@
-import { sendMessage } from '@/lib/messaging';
 // @ts-expect-error rrweb 1.1.3 type resolution
 import { record } from 'rrweb';
+import { sendMessage } from '@/lib/messaging';
 
 const MAX_BUFFER_SIZE = 10_000;
 
@@ -11,8 +11,7 @@ export function startRrwebRecording(guideId: string): () => void {
   function flushChunk() {
     if (eventBuffer.length === 0) return;
     const chunk = eventBuffer.splice(0);
-    sendMessage('rrwebChunk', { guideId, events: chunk, timestamp: Date.now() })
-      .catch(() => {});
+    sendMessage('rrwebChunk', { guideId, events: chunk, timestamp: Date.now() }).catch(() => {});
   }
 
   const stopRecord = record({

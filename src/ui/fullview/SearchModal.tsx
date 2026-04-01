@@ -1,16 +1,19 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getFirstStepUrl, getGuides } from '@/core/guides/service';
+import type { Guide } from '@/core/guides/types';
+import { getFaviconUrl } from '@/lib/utils';
+import { useFullviewStore } from '@/stores/fullview';
 import { Dialog, DialogOverlay, DialogPortal } from '@/ui/components/ui/dialog';
 import { Input } from '@/ui/components/ui/input';
-import { getGuides, getFirstStepUrl } from '@/core/guides/service';
-import type { Guide } from '@/core/guides/types';
-import { useFullviewStore } from '@/stores/fullview';
-import { getFaviconUrl } from '@/lib/utils';
-import { navigate } from './router';
-import SearchResults from './components/SearchResults';
 import KeyboardHints from './components/KeyboardHints';
+import SearchResults from './components/SearchResults';
+import { navigate } from './router';
 
-interface GuideResult { guide: Guide; favicon: string }
+interface GuideResult {
+  guide: Guide;
+  favicon: string;
+}
 
 export default function SearchModal() {
   const open = useFullviewStore((s) => s.searchOpen);
@@ -41,20 +44,31 @@ export default function SearchModal() {
     }
   }, [open, loadResults]);
 
-  const filtered = query
-    ? results.filter((r) => r.guide.title.toLowerCase().includes(query.toLowerCase()))
-    : results;
+  const filtered = query ? results.filter((r) => r.guide.title.toLowerCase().includes(query.toLowerCase())) : results;
 
-  const handleSelect = useCallback((guideId: string) => {
-    setSearchOpen(false);
-    navigate({ page: 'guide', guideId });
-  }, [setSearchOpen]);
+  const handleSelect = useCallback(
+    (guideId: string) => {
+      setSearchOpen(false);
+      navigate({ page: 'guide', guideId });
+    },
+    [setSearchOpen],
+  );
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setSelected((s) => Math.min(s + 1, filtered.length - 1)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setSelected((s) => Math.max(s - 1, 0)); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (filtered[selected]) handleSelect(filtered[selected].guide.id); }
-  }, [filtered, selected, handleSelect]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelected((s) => Math.min(s + 1, filtered.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelected((s) => Math.max(s - 1, 0));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (filtered[selected]) handleSelect(filtered[selected].guide.id);
+      }
+    },
+    [filtered, selected, handleSelect],
+  );
 
   return (
     <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
@@ -72,7 +86,10 @@ export default function SearchModal() {
                 ref={inputRef}
                 placeholder="Search guides..."
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setSelected(0); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelected(0);
+                }}
                 className="flex-1 text-[15px] font-medium border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 h-auto text-foreground"
               />
               {query && (

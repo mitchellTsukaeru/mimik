@@ -1,4 +1,5 @@
-export const FOCUSABLE_SELECTOR = 'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [tabindex], [contenteditable="true"]';
+export const FOCUSABLE_SELECTOR =
+  'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [tabindex], [contenteditable="true"]';
 
 const MAX_ELEMENT_RATIO = 0.8;
 
@@ -26,8 +27,7 @@ export function isNavigatingClick(el: HTMLElement): boolean {
 
 export function isTooLarge(el: Element): boolean {
   const rect = el.getBoundingClientRect();
-  return (rect.width / window.innerWidth > MAX_ELEMENT_RATIO)
-      && (rect.height / window.innerHeight > MAX_ELEMENT_RATIO);
+  return rect.width / window.innerWidth > MAX_ELEMENT_RATIO && rect.height / window.innerHeight > MAX_ELEMENT_RATIO;
 }
 
 export function isMimikElement(el: Element): boolean {

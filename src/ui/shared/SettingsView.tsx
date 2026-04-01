@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
 import { ArrowLeft, Shield } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
-import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -56,47 +56,40 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       <div className="flex-1 px-4 py-5 space-y-5">
         {/* Provider */}
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1.5">
-            AI Provider
-          </label>
+          <label className="block text-xs font-semibold text-foreground mb-1.5">AI Provider</label>
           <select
             value={provider}
             onChange={(e) => handleProviderChange(e.target.value as AIProviderKey)}
             className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
           >
             {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
-              <option key={key} value={key}>{cfg.label}</option>
+              <option key={key} value={key}>
+                {cfg.label}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Model */}
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1.5">
-            Model
-          </label>
+          <label className="block text-xs font-semibold text-foreground mb-1.5">Model</label>
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
           >
             {providerConfig.models.map((m) => (
-              <option key={m.id} value={m.id}>{m.label}</option>
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
             ))}
           </select>
         </div>
 
         {/* API Key */}
         <div>
-          <label className="block text-xs font-semibold text-foreground mb-1.5">
-            API Key
-          </label>
-          <Input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-..."
-          />
+          <label className="block text-xs font-semibold text-foreground mb-1.5">API Key</label>
+          <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
           <p className="mt-1.5 text-[10px] text-muted-foreground">
             Used for generating step descriptions automatically.
           </p>
@@ -110,7 +103,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         {/* Privacy note */}
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">
           <Shield size={12} className="shrink-0 mt-0.5 text-amber" />
-          <span>Your API key is stored locally and only sent to the selected AI provider. No data leaves your browser otherwise.</span>
+          <span>
+            Your API key is stored locally and only sent to the selected AI provider. No data leaves your browser
+            otherwise.
+          </span>
         </div>
       </div>
     </div>

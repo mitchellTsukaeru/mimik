@@ -1,4 +1,4 @@
-import { Star, Trash2, RotateCcw } from 'lucide-react';
+import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import type { Guide } from '@/core/guides/types';
 import { formatDate } from '@/lib/utils';
 import { navigate } from '../router';
@@ -13,7 +13,12 @@ interface GuideListViewProps {
 }
 
 export default function GuideListView({
-  guides, category, onStar, onTrash, onRestore, onPermanentDelete,
+  guides,
+  category,
+  onStar,
+  onTrash,
+  onRestore,
+  onPermanentDelete,
 }: GuideListViewProps) {
   return (
     <div className="rounded-xl overflow-hidden bg-card border border-border">

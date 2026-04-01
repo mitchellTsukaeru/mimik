@@ -1,19 +1,19 @@
-import { logger } from '@/lib/logger';
-import { localStorage, captureVisibleTab } from '@/lib/browser-api';
-import { buildFallbackDescription } from '@/core/capture/step-description';
 import { getAIDescription } from '@/core/capture/ai/description';
-import { createStep, addStepToGuide, updateStepDescription, saveScreenshot } from '@/core/guides/service';
-import { db } from '@/core/guides/db';
-import { getActor } from './actor';
-import { CaptureState } from '@/core/capture/machine';
-import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
-import type { ElementMeta, Screenshot } from '@/core/guides/types';
 import type { DOMContext } from '@/core/capture/dom/context';
+import { CaptureState } from '@/core/capture/machine';
+import { buildFallbackDescription } from '@/core/capture/step-description';
+import { db } from '@/core/guides/db';
+import { addStepToGuide, createStep, saveScreenshot, updateStepDescription } from '@/core/guides/service';
+import type { ElementMeta, Screenshot } from '@/core/guides/types';
+import { captureVisibleTab, localStorage } from '@/lib/browser-api';
+import { logger } from '@/lib/logger';
+import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
+import { getActor } from './actor';
 
 async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string | undefined> {
   try {
     const dataUrl = await captureVisibleTab('jpeg', 90);
-    const blob = await fetch(dataUrl).then(r => r.blob());
+    const blob = await fetch(dataUrl).then((r) => r.blob());
     const img = await createImageBitmap(blob);
     const screenshot: Screenshot = {
       id: crypto.randomUUID(),
@@ -69,8 +69,11 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   await addStepToGuide(guideId, stepId);
 
   if (data.action !== 'input' && data.domContext) {
-    try { await tryAIDescription(stepId, data.domContext); }
-    catch (err) { logger.error('AI description failed', err); }
+    try {
+      await tryAIDescription(stepId, data.domContext);
+    } catch (err) {
+      logger.error('AI description failed', err);
+    }
   }
 
   return { stepId };
@@ -91,7 +94,10 @@ export async function handleFinalizeInputStep(
   }
 
   if (domContext) {
-    try { await tryAIDescription(stepId, domContext); }
-    catch (err) { logger.error('AI description failed on finalize', err); }
+    try {
+      await tryAIDescription(stepId, domContext);
+    } catch (err) {
+      logger.error('AI description failed on finalize', err);
+    }
   }
 }

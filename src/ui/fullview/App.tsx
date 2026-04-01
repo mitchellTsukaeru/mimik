@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { useRoute } from './router';
 import { useFullviewStore } from '@/stores/fullview';
-import TopNav from './TopNav';
-import LibraryContent from './LibraryContent';
 import GuideContent from './GuideContent';
+import LibraryContent from './LibraryContent';
+import { useRoute } from './router';
 import SearchModal from './SearchModal';
+import TopNav from './TopNav';
 
 export default function FullViewApp() {
   const route = useRoute();

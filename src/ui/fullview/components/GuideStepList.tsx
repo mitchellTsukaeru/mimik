@@ -1,6 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
-import type { Step, Screenshot } from '@/core/guides/types';
+import { useEffect, useRef, useState } from 'react';
 import { reorderSteps } from '@/core/guides/service';
+import type { Screenshot, Step } from '@/core/guides/types';
 import { useFullviewStore } from '@/stores/fullview';
 import StepCard from '@/ui/sidepanel/StepCard';
 
@@ -15,8 +15,13 @@ interface GuideStepListProps {
 }
 
 export default function GuideStepList({
-  guideId, steps, screenshots,
-  onDescriptionChange, onDelete, onBlur, onReorder,
+  guideId,
+  steps,
+  screenshots,
+  onDescriptionChange,
+  onDelete,
+  onBlur,
+  onReorder,
 }: GuideStepListProps) {
   const scrollToStepId = useFullviewStore((s) => s.scrollToStepId);
   const setActiveStepId = useFullviewStore((s) => s.setActiveStepId);
@@ -43,7 +48,7 @@ export default function GuideStepList({
       },
       { threshold: 0.5 },
     );
-    stepRefs.current.forEach((el) => observer.observe(el));
+    for (const el of stepRefs.current.values()) observer.observe(el);
     return () => observer.disconnect();
   }, [steps, setActiveStepId]);
 
@@ -52,7 +57,10 @@ export default function GuideStepList({
       const newSteps = [...steps];
       const [moved] = newSteps.splice(dragIndex, 1);
       newSteps.splice(dragOverIndex, 0, moved);
-      reorderSteps(guideId, newSteps.map((s) => s.id));
+      reorderSteps(
+        guideId,
+        newSteps.map((s) => s.id),
+      );
       onReorder(newSteps);
     }
     setDragIndex(null);
@@ -68,7 +76,10 @@ export default function GuideStepList({
       {steps.map((step, idx) => (
         <div
           key={step.id}
-          ref={(el) => { if (el) stepRefs.current.set(step.id, el); else stepRefs.current.delete(step.id); }}
+          ref={(el) => {
+            if (el) stepRefs.current.set(step.id, el);
+            else stepRefs.current.delete(step.id);
+          }}
           data-step-id={step.id}
         >
           {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
@@ -81,8 +92,14 @@ export default function GuideStepList({
             onDelete={onDelete}
             onBlur={onBlur}
             dragHandleProps={{
-              onDragStart: (e: React.DragEvent) => { setDragIndex(idx); e.dataTransfer.effectAllowed = 'move'; },
-              onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDragOverIndex(idx); },
+              onDragStart: (e: React.DragEvent) => {
+                setDragIndex(idx);
+                e.dataTransfer.effectAllowed = 'move';
+              },
+              onDragOver: (e: React.DragEvent) => {
+                e.preventDefault();
+                setDragOverIndex(idx);
+              },
               onDragEnd: handleDragEnd,
             }}
           />

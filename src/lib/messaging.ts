@@ -1,7 +1,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
-import type { ElementMeta } from '@/core/guides/types';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
+import type { ElementMeta } from '@/core/guides/types';
 
 export interface GetStateResponse {
   state: CaptureStateValue;
@@ -29,10 +29,7 @@ export interface CaptureStepData {
   domContext?: DOMContext;
 }
 
-export type CaptureStepResponse =
-  | { stepId: string }
-  | { ignored: true }
-  | { error: string };
+export type CaptureStepResponse = { stepId: string } | { ignored: true } | { error: string };
 
 export interface UpdateInputStepData {
   stepId: string;

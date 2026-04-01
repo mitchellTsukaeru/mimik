@@ -1,16 +1,16 @@
-import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from 'react';
-import { Video, Search, Settings } from 'lucide-react';
-import { sendMessage } from '@/lib/messaging';
-import { getActiveTab, getExtensionURL, queryTabs, updateTab, focusWindow, createTab } from '@/lib/browser-api';
-import { connectToBackground } from '@/lib/port';
+import { Search, Settings, Video } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { CaptureState } from '@/core/capture/machine';
+import { createTab, focusWindow, getActiveTab, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
+import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
+import { connectToBackground } from '@/lib/port';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
-import LibraryView from './LibraryView';
-import GuideEditor from './GuideEditor';
-import RecordingView from './RecordingView';
 import SettingsView from '@/ui/shared/SettingsView';
+import GuideEditor from './GuideEditor';
+import LibraryView from './LibraryView';
+import RecordingView from './RecordingView';
 
 type View =
   | { name: 'library' }
@@ -22,28 +22,46 @@ function MascotIcon({ size = 44 }: { size?: number }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size}>
       <defs>
-        <clipPath id="cc"><circle cx="100" cy="100" r="95"/></clipPath>
+        <clipPath id="cc">
+          <circle cx="100" cy="100" r="95" />
+        </clipPath>
       </defs>
       <g clipPath="url(#cc)">
         <rect x="-50" y="-50" width="300" height="300" className="fill-gold" />
-        <rect x="30" y="-80" width="50" height="400" className="fill-accent" transform="rotate(45, 100, 100)" opacity="0.15"/>
-        <rect x="90" y="-80" width="50" height="400" fill="#D97706" transform="rotate(45, 100, 100)" opacity="0.12"/>
-        <rect x="-30" y="-80" width="50" height="400" fill="#FCD34D" transform="rotate(45, 100, 100)" opacity="0.15"/>
-        <rect x="150" y="-80" width="50" height="400" className="fill-amber-light" transform="rotate(45, 100, 100)" opacity="0.1"/>
+        <rect
+          x="30"
+          y="-80"
+          width="50"
+          height="400"
+          className="fill-accent"
+          transform="rotate(45, 100, 100)"
+          opacity="0.15"
+        />
+        <rect x="90" y="-80" width="50" height="400" fill="#D97706" transform="rotate(45, 100, 100)" opacity="0.12" />
+        <rect x="-30" y="-80" width="50" height="400" fill="#FCD34D" transform="rotate(45, 100, 100)" opacity="0.15" />
+        <rect
+          x="150"
+          y="-80"
+          width="50"
+          height="400"
+          className="fill-amber-light"
+          transform="rotate(45, 100, 100)"
+          opacity="0.1"
+        />
       </g>
       <rect x="30" y="95" width="140" height="68" rx="5" className="fill-primary" />
       <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className="fill-brown-dark" />
       <rect x="30" y="93" width="140" height="3" className="fill-gold" />
-      <path d="M68 122 Q76 112 84 122" className="stroke-gold" strokeWidth="5" fill="none" strokeLinecap="round"/>
-      <path d="M116 122 Q124 112 132 122" className="stroke-gold" strokeWidth="5" fill="none" strokeLinecap="round"/>
-      <path d="M84 138 Q100 148 116 138" className="stroke-gold" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+      <path d="M68 122 Q76 112 84 122" className="stroke-gold" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <path d="M116 122 Q124 112 132 122" className="stroke-gold" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <path d="M84 138 Q100 148 116 138" className="stroke-gold" strokeWidth="3.5" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
 
 export default function App() {
   const [isAlive, setIsAlive] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [_isRecording, setIsRecording] = useState(false);
   const [view, setView] = useState<View>({ name: 'library' });
   const [search, setSearch] = useState('');
 
@@ -128,7 +146,9 @@ export default function App() {
               <Settings size={15} />
             </button>
           </div>
-          <span className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${isAlive ? 'text-foreground bg-white/30' : 'text-brown/50 bg-white/15'}`}>
+          <span
+            className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${isAlive ? 'text-foreground bg-white/30' : 'text-brown/50 bg-white/15'}`}
+          >
             {isAlive ? 'Connected' : 'Connecting...'}
           </span>
         </div>

@@ -1,4 +1,4 @@
-import { createMachine, assign, type SnapshotFrom } from 'xstate';
+import { assign, createMachine, type SnapshotFrom } from 'xstate';
 
 export const CaptureState = {
   IDLE: 'IDLE',

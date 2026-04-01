@@ -1,21 +1,17 @@
-import { logger } from '@/lib/logger';
-import { browser } from '#imports';
 import { defineContentScript } from 'wxt/utils/define-content-script';
-import { sendMessage } from '@/lib/messaging';
-import { TabMessage } from '@/lib/tab-messages';
+import { browser } from '#imports';
 import { CaptureState } from '@/core/capture/machine';
 import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';
 import { showStartNotification } from '@/core/capture/start-notification';
+import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
+import { TabMessage } from '@/lib/tab-messages';
 
 const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
 
 function createTabMessageHandler(session: CaptureSession) {
-  return function handleTabMessage(
-    msg: Record<string, unknown>,
-    _sender: unknown,
-    sendResponse: (r: unknown) => void,
-  ) {
+  return function handleTabMessage(msg: Record<string, unknown>, _sender: unknown, sendResponse: (r: unknown) => void) {
     if (session.isDisabled) return false;
 
     switch (msg.type) {
@@ -73,7 +69,7 @@ function createTabMessageHandler(session: CaptureSession) {
 
 function syncWithBackground(session: CaptureSession) {
   sendMessage('getState', undefined)
-    .then(res => {
+    .then((res) => {
       if (session.isDisabled) return;
       if (res.state === CaptureState.RECORDING && res.currentGuideId) {
         session.start(res.currentGuideId);

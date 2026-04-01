@@ -1,5 +1,5 @@
+import { executeScript, queryTabs, sendMessageToTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
-import { sendMessageToTab, executeScript, queryTabs } from '@/lib/browser-api';
 import { TabMessage } from '@/lib/tab-messages';
 
 export function isInjectableTab(tab: { url?: string; pendingUrl?: string }): boolean {

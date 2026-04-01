@@ -1,8 +1,14 @@
 import PQueue from 'p-queue';
 import { sendMessage } from '@/lib/messaging';
-import { extractElementMeta } from '../dom/element-meta';
 import { extractDOMContext } from '../dom/context';
-import { findFocusableAncestor, isTextField, isNavigatingClick, isTooLarge, isMimikElement } from '../dom/element-utils';
+import { extractElementMeta } from '../dom/element-meta';
+import {
+  findFocusableAncestor,
+  isMimikElement,
+  isNavigatingClick,
+  isTextField,
+  isTooLarge,
+} from '../dom/element-utils';
 import { HighlightManager } from './highlight';
 import { InputSession } from './input-session';
 
@@ -115,7 +121,11 @@ class CaptureController {
       const anchor = target.closest('a[href]') as HTMLAnchorElement;
       if (anchor) {
         const href = anchor.href;
-        requestAnimationFrame(() => setTimeout(() => { window.location.href = href; }, INTERCEPT_DELAY_MS));
+        requestAnimationFrame(() =>
+          setTimeout(() => {
+            window.location.href = href;
+          }, INTERCEPT_DELAY_MS),
+        );
       }
       return;
     }
@@ -148,7 +158,15 @@ class CaptureController {
   private onInput(e: Event) {
     const target = e.target;
     if (!target || !(target instanceof HTMLElement)) return;
-    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target.isContentEditable)) return;
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target.isContentEditable
+      )
+    )
+      return;
 
     if (target instanceof HTMLSelectElement) {
       this.queue.add(() => this.captureAction('input', target));
@@ -174,7 +192,10 @@ class CaptureController {
   }
 
   private onClipboard(e: Event) {
-    const target = (e as ClipboardEvent).target instanceof HTMLElement ? (e as ClipboardEvent).target as HTMLElement : document.activeElement;
+    const target =
+      (e as ClipboardEvent).target instanceof HTMLElement
+        ? ((e as ClipboardEvent).target as HTMLElement)
+        : document.activeElement;
     if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
     this.queue.add(() => this.captureAction(e.type, target));
   }
@@ -219,8 +240,12 @@ class CaptureController {
     this.hl.dispose();
   }
 
-  hideOverlay() { this.hl.hideInstant(); }
-  showOverlay() { this.hl.showInstant(); }
+  hideOverlay() {
+    this.hl.hideInstant();
+  }
+  showOverlay() {
+    this.hl.showInstant();
+  }
 }
 
 export function startCapture(guideId: string): CaptureHandle {

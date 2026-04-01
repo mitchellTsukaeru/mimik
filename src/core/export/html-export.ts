@@ -1,4 +1,4 @@
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -15,7 +15,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 export async function exportGuideAsHTML(
   guide: Guide,
   steps: Step[],
-  screenshots: Map<string, Screenshot>
+  screenshots: Map<string, Screenshot>,
 ): Promise<string> {
   const stepSections: string[] = [];
 

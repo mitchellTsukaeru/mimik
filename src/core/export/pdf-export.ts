@@ -1,6 +1,6 @@
-import { logger } from '@/lib/logger';
 import { jsPDF } from 'jspdf';
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import { logger } from '@/lib/logger';
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -14,7 +14,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 export async function exportGuideAsPDF(
   guide: Guide,
   steps: Step[],
-  screenshots: Map<string, Screenshot>
+  screenshots: Map<string, Screenshot>,
 ): Promise<Blob> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();

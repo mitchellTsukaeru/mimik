@@ -28,7 +28,10 @@ export class HighlightManager {
 
   show(target: Element) {
     if (!this.highlight) this.highlight = createHighlight();
-    if (this.hideTimer) { clearTimeout(this.hideTimer); this.hideTimer = null; }
+    if (this.hideTimer) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
     const rect = target.getBoundingClientRect();
     this.highlight.overlay.style.top = `${rect.top}px`;
     this.highlight.overlay.style.left = `${rect.left}px`;
@@ -65,7 +68,10 @@ export class HighlightManager {
   dispose() {
     if (this.hideTimer) clearTimeout(this.hideTimer);
     if (this.rafId) cancelAnimationFrame(this.rafId);
-    if (this.highlight) { this.highlight.host.remove(); this.highlight = null; }
+    if (this.highlight) {
+      this.highlight.host.remove();
+      this.highlight = null;
+    }
     this.hoveredElement = null;
   }
 }

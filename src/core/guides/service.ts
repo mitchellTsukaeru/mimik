@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { Guide, Step, Screenshot, RrwebEventChunk } from './types';
+import type { Guide, RrwebEventChunk, Screenshot, Step } from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
@@ -29,29 +29,40 @@ export async function createGuide(guideId: string): Promise<Guide> {
   return guide;
 }
 
-export async function getGuide(id: string): Promise<{ guide: Guide; steps: Step[]; screenshots: Map<string, Screenshot> } | null> {
+export async function getGuide(
+  id: string,
+): Promise<{ guide: Guide; steps: Step[]; screenshots: Map<string, Screenshot> } | null> {
   const guide = await db.guides.get(id);
   if (!guide) return null;
   const steps = await db.steps.where('guideId').equals(id).sortBy('index');
-  const screenshotIds = steps.map(s => s.screenshotId).filter(Boolean) as string[];
+  const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
   const screenshotRows = await db.screenshots.where('id').anyOf(screenshotIds).toArray();
-  const screenshots = new Map(screenshotRows.map(s => [s.stepId, s]));
+  const screenshots = new Map(screenshotRows.map((s) => [s.stepId, s]));
   return { guide, steps, screenshots };
 }
 
 export async function getGuides(): Promise<Guide[]> {
-  return db.guides.orderBy('updatedAt').reverse()
-    .filter(g => g.deletedAt == null).toArray();
+  return db.guides
+    .orderBy('updatedAt')
+    .reverse()
+    .filter((g) => g.deletedAt == null)
+    .toArray();
 }
 
 export async function getStarredGuides(): Promise<Guide[]> {
-  return db.guides.orderBy('updatedAt').reverse()
-    .filter(g => g.starred === true && g.deletedAt == null).toArray();
+  return db.guides
+    .orderBy('updatedAt')
+    .reverse()
+    .filter((g) => g.starred === true && g.deletedAt == null)
+    .toArray();
 }
 
 export async function getTrashedGuides(): Promise<Guide[]> {
-  return db.guides.orderBy('updatedAt').reverse()
-    .filter(g => g.deletedAt != null).toArray();
+  return db.guides
+    .orderBy('updatedAt')
+    .reverse()
+    .filter((g) => g.deletedAt != null)
+    .toArray();
 }
 
 export async function updateGuideTitle(id: string, title: string): Promise<void> {
@@ -89,7 +100,7 @@ export async function restoreGuide(id: string): Promise<void> {
 
 export async function permanentlyDeleteGuide(id: string): Promise<void> {
   const steps = await db.steps.where('guideId').equals(id).toArray();
-  const screenshotIds = steps.map(s => s.screenshotId).filter(Boolean) as string[];
+  const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
   await db.screenshots.where('id').anyOf(screenshotIds).delete();
   await db.steps.where('guideId').equals(id).delete();
   await db.rrwebEvents.where('guideId').equals(id).delete();
@@ -126,7 +137,7 @@ export async function deleteStep(guideId: string, stepId: string): Promise<void>
   await db.steps.delete(stepId);
   const guide = await db.guides.get(guideId);
   if (guide) {
-    const newStepIds = guide.stepIds.filter(id => id !== stepId);
+    const newStepIds = guide.stepIds.filter((id) => id !== stepId);
     await db.guides.update(guideId, { stepIds: newStepIds, updatedAt: Date.now() });
     const remaining = await db.steps.where('guideId').equals(guideId).sortBy('index');
     for (let i = 0; i < remaining.length; i++) {
@@ -152,7 +163,7 @@ export async function updateScreenshotBlob(screenshotId: string, blob: Blob): Pr
 
 export async function getScreenshotsForSteps(stepIds: string[]): Promise<Map<string, Screenshot>> {
   const rows = await db.screenshots.where('id').anyOf(stepIds).toArray();
-  return new Map(rows.map(s => [s.stepId, s]));
+  return new Map(rows.map((s) => [s.stepId, s]));
 }
 
 export async function getFirstScreenshot(guideId: string): Promise<Screenshot | null> {

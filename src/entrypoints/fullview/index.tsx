@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import FullViewApp from '@/ui/fullview/App';
 import '@/ui/sidepanel/index.css';

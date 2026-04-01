@@ -1,13 +1,14 @@
 import type { ElementMeta } from '@/core/guides/types';
 
 export function buildFallbackDescription(action: string, meta: ElementMeta): string {
-  const target = meta.ariaLabel
-    || meta.placeholder
-    || meta.textContent?.slice(0, 80)
-    || meta.altText
-    || meta.name
-    || meta.role
-    || meta.tag;
+  const target =
+    meta.ariaLabel ||
+    meta.placeholder ||
+    meta.textContent?.slice(0, 80) ||
+    meta.altText ||
+    meta.name ||
+    meta.role ||
+    meta.tag;
 
   if (action.startsWith('keydown:')) {
     const key = action.split(':')[1];

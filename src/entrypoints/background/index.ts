@@ -1,20 +1,14 @@
-import { defineBackground } from "#imports";
-import { logger } from "@/lib/logger";
-import { setSidePanelBehavior, getActiveTab, localStorage } from "@/lib/browser-api";
-import { onMessage } from "@/lib/messaging";
-import { setupPortListener, broadcastStateToPanel } from "@/lib/port";
-import { createGuide, saveRrwebChunk, getStepsForGuide, updateGuideTitle, updateStepDescription } from "@/core/guides/service";
-import { generateGuideTitle } from "@/core/capture/ai/title";
-import { handleCaptureStep, handleUpdateInputStep, handleFinalizeInputStep } from "./step-pipeline";
-import {
-  initActor,
-  initActorFallback,
-  getActor,
-  getStateUpdate,
-  waitUntilReady,
-} from "./actor";
-import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from "./tab-manager";
-import { registerNavigationListeners } from "./navigation";
+import { defineBackground } from '#imports';
+import { generateGuideTitle } from '@/core/capture/ai/title';
+import { createGuide, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
+import { getActiveTab, localStorage, setSidePanelBehavior } from '@/lib/browser-api';
+import { logger } from '@/lib/logger';
+import { onMessage } from '@/lib/messaging';
+import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
+import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
+import { registerNavigationListeners } from './navigation';
+import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
+import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
 
 async function generateTitleInBackground(guideId: string) {
   try {
@@ -22,11 +16,9 @@ async function generateTitleInBackground(guideId: string) {
     if (!settings.aiApiKey) return;
 
     const steps = await getStepsForGuide(guideId);
-    const allSteps = steps.filter(s => s.description).map(s => ({ description: s.description, url: s.url }));
+    const allSteps = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
     if (allSteps.length === 0) return;
-    const stepsWithUrl = allSteps.length > 15
-      ? [...allSteps.slice(0, 10), ...allSteps.slice(-5)]
-      : allSteps;
+    const stepsWithUrl = allSteps.length > 15 ? [...allSteps.slice(0, 10), ...allSteps.slice(-5)] : allSteps;
 
     const provider = (settings.aiProvider as string) || 'openai';
     const model = (settings.aiModel as string) || 'gpt-4o-mini';
@@ -41,16 +33,18 @@ async function generateTitleInBackground(guideId: string) {
 }
 
 export default defineBackground(() => {
-  logger.info("Background service worker started");
+  logger.info('Background service worker started');
 
   setSidePanelBehavior(true);
   initActor().catch(initActorFallback);
   registerNavigationListeners();
 
   setupPortListener((port) => {
-    logger.debug("Panel connected via port");
+    logger.debug('Panel connected via port');
     waitUntilReady().then(() => {
-      try { port.postMessage(getStateUpdate()); } catch {}
+      try {
+        port.postMessage(getStateUpdate());
+      } catch {}
     });
   });
 
@@ -58,15 +52,15 @@ export default defineBackground(() => {
     getActor().subscribe(() => broadcastStateToPanel(getStateUpdate()));
   });
 
-  onMessage("getState", async () => {
+  onMessage('getState', async () => {
     await waitUntilReady();
     return getStateUpdate();
   });
 
-  onMessage("startRecording", async ({ data }) => {
+  onMessage('startRecording', async ({ data }) => {
     await waitUntilReady();
     const actor = getActor();
-    actor.send({ type: "START_RECORDING", url: data.url });
+    actor.send({ type: 'START_RECORDING', url: data.url });
     const guideId = actor.getSnapshot().context.currentGuideId!;
 
     await createGuide(guideId);
@@ -78,36 +72,36 @@ export default defineBackground(() => {
     return { guideId };
   });
 
-  onMessage("stopRecording", async () => {
+  onMessage('stopRecording', async () => {
     await waitUntilReady();
     const actor = getActor();
     const guideId = actor.getSnapshot().context.currentGuideId;
     await broadcastStopCapture();
-    actor.send({ type: "STOP_RECORDING" });
+    actor.send({ type: 'STOP_RECORDING' });
 
     if (guideId) generateTitleInBackground(guideId);
 
     return { success: true, guideId: guideId ?? undefined };
   });
 
-  onMessage("captureStep", async ({ data }) => {
+  onMessage('captureStep', async ({ data }) => {
     await waitUntilReady();
     return handleCaptureStep(data);
   });
 
-  onMessage("updateInputStep", async ({ data }) => {
+  onMessage('updateInputStep', async ({ data }) => {
     await waitUntilReady();
     await handleUpdateInputStep(data.stepId, data.description);
     return { updated: true };
   });
 
-  onMessage("finalizeInputStep", async ({ data }) => {
+  onMessage('finalizeInputStep', async ({ data }) => {
     await waitUntilReady();
     await handleFinalizeInputStep(data.stepId, data.elementMeta, data.domContext);
     return { updated: true };
   });
 
-  onMessage("rrwebChunk", async ({ data }) => {
+  onMessage('rrwebChunk', async ({ data }) => {
     await saveRrwebChunk({
       id: crypto.randomUUID(),
       guideId: data.guideId,

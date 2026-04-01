@@ -1,6 +1,6 @@
 import { browser } from '#imports';
-import { logger } from '@/lib/logger';
 import type { CaptureStateValue } from '@/core/capture/machine';
+import { logger } from '@/lib/logger';
 
 const PORT_NAME = 'mimik-panel';
 

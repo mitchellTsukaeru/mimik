@@ -44,12 +44,24 @@ export interface Settings {
 }
 
 export interface ElementMeta {
-  tag: string; cssSelector: string; textContent: string | null;
-  ariaLabel: string | null; placeholder: string | null; altText: string | null;
-  name: string | null; role: string | null; href: string | null;
-  inputType: string | null; dataTestId: string | null;
+  tag: string;
+  cssSelector: string;
+  textContent: string | null;
+  ariaLabel: string | null;
+  placeholder: string | null;
+  altText: string | null;
+  name: string | null;
+  role: string | null;
+  href: string | null;
+  inputType: string | null;
+  dataTestId: string | null;
   rect: { x: number; y: number; width: number; height: number };
   devicePixelRatio: number;
 }
 
-export interface RrwebEventChunk { id: string; guideId: string; events: unknown[]; timestamp: number; }
+export interface RrwebEventChunk {
+  id: string;
+  guideId: string;
+  events: unknown[];
+  timestamp: number;
+}

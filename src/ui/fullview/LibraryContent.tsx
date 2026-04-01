@@ -1,11 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
-import { LayoutGrid, LayoutList, FileText } from 'lucide-react';
-import { getGuides, getStarredGuides, getTrashedGuides, softDeleteGuide, permanentlyDeleteGuide, restoreGuide, toggleStar, getFirstScreenshot, onGuidesChanged, type GuideChangeEvent } from '@/core/guides/service';
+import { FileText, LayoutGrid, LayoutList } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  type GuideChangeEvent,
+  getFirstScreenshot,
+  getGuides,
+  getStarredGuides,
+  getTrashedGuides,
+  onGuidesChanged,
+  permanentlyDeleteGuide,
+  restoreGuide,
+  softDeleteGuide,
+  toggleStar,
+} from '@/core/guides/service';
 import type { Guide, Screenshot } from '@/core/guides/types';
 import { useFullviewStore } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
-import GuideListView from './components/GuideListView';
 import GuideGridView from './components/GuideGridView';
+import GuideListView from './components/GuideListView';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
@@ -24,8 +35,8 @@ export default function LibraryContent({ category }: LibraryContentProps) {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [thumbnails, setThumbnails] = useState<Map<string, Screenshot>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [display, setDisplay] = useState<'list' | 'grid'>(() =>
-    (localStorage.getItem('mimik-display') as 'list' | 'grid') || 'list'
+  const [display, setDisplay] = useState<'list' | 'grid'>(
+    () => (localStorage.getItem('mimik-display') as 'list' | 'grid') || 'list',
   );
 
   const refreshCounts = useCallback(async () => {
@@ -50,16 +61,22 @@ export default function LibraryContent({ category }: LibraryContentProps) {
     setLoading(false);
   }, [category, setCounts]);
 
-  useEffect(() => { loadGuides(); }, [loadGuides]);
+  useEffect(() => {
+    loadGuides();
+  }, [loadGuides]);
 
-  useEffect(() => onGuidesChanged((event: GuideChangeEvent) => {
-    if (event.type === 'starred') {
-      setGuides(prev => prev.map(g => g.id === event.id ? { ...g, starred: event.starred } : g));
-      refreshCounts();
-    } else {
-      loadGuides();
-    }
-  }), [refreshCounts, loadGuides]);
+  useEffect(
+    () =>
+      onGuidesChanged((event: GuideChangeEvent) => {
+        if (event.type === 'starred') {
+          setGuides((prev) => prev.map((g) => (g.id === event.id ? { ...g, starred: event.starred } : g)));
+          refreshCounts();
+        } else {
+          loadGuides();
+        }
+      }),
+    [refreshCounts, loadGuides],
+  );
 
   const toggleDisplay = () => {
     const next = display === 'list' ? 'grid' : 'list';
@@ -69,23 +86,37 @@ export default function LibraryContent({ category }: LibraryContentProps) {
 
   const handleStar = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setGuides(prev => prev.map(g => g.id === id ? { ...g, starred: !g.starred } : g));
+    setGuides((prev) => prev.map((g) => (g.id === id ? { ...g, starred: !g.starred } : g)));
     await toggleStar(id);
     await refreshCounts();
   };
-  const handleTrash = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await softDeleteGuide(id); await loadGuides(); };
-  const handleRestore = async (e: React.MouseEvent, id: string) => { e.stopPropagation(); await restoreGuide(id); await loadGuides(); };
+  const handleTrash = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await softDeleteGuide(id);
+    await loadGuides();
+  };
+  const handleRestore = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await restoreGuide(id);
+    await loadGuides();
+  };
   const handlePermanentDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!window.confirm('Permanently delete this guide? This cannot be undone.')) return;
-    await permanentlyDeleteGuide(id); await loadGuides();
+    await permanentlyDeleteGuide(id);
+    await loadGuides();
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-foreground">{titles[category]}</h2>
-        <Button variant="outline" size="icon-sm" onClick={toggleDisplay} title={display === 'list' ? 'Grid view' : 'List view'}>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          onClick={toggleDisplay}
+          title={display === 'list' ? 'Grid view' : 'List view'}
+        >
           {display === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
         </Button>
       </div>

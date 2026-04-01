@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Screenshot } from '@/core/guides/types';
 
 interface ZoomScreenshotProps {
@@ -13,7 +13,11 @@ function clamp(val: number, min: number, max: number): number {
 
 function drawRoundedRect(
   ctx: OffscreenCanvasRenderingContext2D,
-  x: number, y: number, w: number, h: number, r: number
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
 ) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -40,7 +44,10 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
 
     (async () => {
       const img = await createImageBitmap(screenshot.blob);
-      if (cancelled) { img.close(); return; }
+      if (cancelled) {
+        img.close();
+        return;
+      }
 
       const imgW = img.width;
       const imgH = img.height;
@@ -89,14 +96,7 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
         ctx.strokeStyle = '#F59E0B';
         ctx.lineWidth = 6;
         ctx.setLineDash([12, 6]);
-        drawRoundedRect(
-          ctx,
-          (bx - cropX) * scaleX,
-          (by - cropY) * scaleY,
-          bw * scaleX,
-          bh * scaleY,
-          12
-        );
+        drawRoundedRect(ctx, (bx - cropX) * scaleX, (by - cropY) * scaleY, bw * scaleX, bh * scaleY, 12);
         ctx.setLineDash([]);
       } else {
         ctx.drawImage(img, 0, 0, imgW, imgH);
@@ -112,7 +112,9 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
       setCroppedUrl(url);
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [screenshot.blob, screenshot.bounds, screenshot.pixelRatio]);
 
   useEffect(() => {
@@ -125,11 +127,5 @@ export default function ZoomScreenshot({ screenshot, className = '', alt = '' }:
     return <div className={`bg-gray-100 rounded-lg animate-pulse h-32 ${className}`} />;
   }
 
-  return (
-    <img
-      src={croppedUrl}
-      alt={alt}
-      className={`w-full rounded-lg border border-gray-200 ${className}`}
-    />
-  );
+  return <img src={croppedUrl} alt={alt} className={`w-full rounded-lg border border-gray-200 ${className}`} />;
 }

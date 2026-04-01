@@ -1,7 +1,7 @@
+import { Check, Copy, EyeOff, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
-import { Trash2, EyeOff, Copy, Check } from 'lucide-react';
-import type { Step, Screenshot } from '@/core/guides/types';
 import ZoomScreenshot from './ZoomScreenshot';
 
 interface DragHandleProps {
@@ -21,13 +21,20 @@ interface StepCardProps {
 }
 
 export default function StepCard({
-  step, screenshot, onDescriptionChange, onDelete, dragHandleProps, onBlur,
+  step,
+  screenshot,
+  onDescriptionChange,
+  onDelete,
+  dragHandleProps,
+  onBlur,
 }: StepCardProps) {
   const [description, setDescription] = useState(step.description);
   const [dragOver, setDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => { setDescription(step.description); }, [step.description]);
+  useEffect(() => {
+    setDescription(step.description);
+  }, [step.description]);
 
   const handleDescriptionBlur = () => {
     if (description !== step.description) onDescriptionChange(step.id, description);
@@ -61,15 +68,20 @@ export default function StepCard({
       onDragStart={dragHandleProps?.onDragStart}
       onDragOver={handleDragOver}
       onDragLeave={() => setDragOver(false)}
-      onDragEnd={() => { setDragOver(false); dragHandleProps?.onDragEnd(); }}
+      onDragEnd={() => {
+        setDragOver(false);
+        dragHandleProps?.onDragEnd();
+      }}
       className={`rounded-xl mb-3 overflow-hidden transition-shadow border border-border bg-card ${dragOver ? 'ring-2 ring-accent' : ''}`}
     >
       {screenshot ? (
-        <ZoomScreenshot screenshot={screenshot} alt={`Step ${step.index + 1} screenshot`} className="!rounded-none !border-0" />
+        <ZoomScreenshot
+          screenshot={screenshot}
+          alt={`Step ${step.index + 1} screenshot`}
+          className="!rounded-none !border-0"
+        />
       ) : (
-        <div className="w-full h-32 flex items-center justify-center text-sm bg-secondary text-warm">
-          No screenshot
-        </div>
+        <div className="w-full h-32 flex items-center justify-center text-sm bg-secondary text-warm">No screenshot</div>
       )}
 
       <div className="px-3 pt-2 pb-2">

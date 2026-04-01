@@ -1,10 +1,10 @@
-import { FileText, Star, Trash2, Search, ChevronRight } from 'lucide-react';
-import type { Route } from './router';
-import { navigate } from './router';
+import { ChevronRight, FileText, Search, Star, Trash2 } from 'lucide-react';
 import { useFullviewStore } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
 import ExportMenu from '@/ui/sidepanel/ExportMenu';
 import MascotIcon from './components/MascotIcon';
+import type { Route } from './router';
+import { navigate } from './router';
 
 interface TopNavProps {
   route: Route;
@@ -29,39 +29,39 @@ export default function TopNav({ route }: TopNavProps) {
         onClick={() => navigate({ page: 'library', category: 'all' })}
         className="flex items-center gap-2 mr-4 cursor-pointer h-full"
       >
-        <div className="mb-1"><MascotIcon size={22} /></div>
+        <div className="mb-1">
+          <MascotIcon size={22} />
+        </div>
         <span className="text-[15px] font-bold tracking-tight text-foreground">Mimik</span>
       </button>
 
-      {route.page === 'guide' ? (
-        guideTitle && (
-          <>
-            <ChevronRight size={14} className="text-foreground opacity-25" />
-            <span className="text-[13px] font-medium truncate max-w-sm text-foreground">{guideTitle}</span>
-          </>
-        )
-      ) : (
-        navItems.map((item) => {
-          const active = route.page === 'library' && route.category === item.key;
-          const count = counts[item.key];
-          return (
-            <button
-              key={item.key}
-              onClick={() => navigate({ page: 'library', category: item.key })}
-              className={`flex items-center gap-1.5 text-[13px] h-8 px-3 rounded-md transition-all
+      {route.page === 'guide'
+        ? guideTitle && (
+            <>
+              <ChevronRight size={14} className="text-foreground opacity-25" />
+              <span className="text-[13px] font-medium truncate max-w-sm text-foreground">{guideTitle}</span>
+            </>
+          )
+        : navItems.map((item) => {
+            const active = route.page === 'library' && route.category === item.key;
+            const count = counts[item.key];
+            return (
+              <button
+                key={item.key}
+                onClick={() => navigate({ page: 'library', category: item.key })}
+                className={`flex items-center gap-1.5 text-[13px] h-8 px-3 rounded-md transition-all
                 ${active ? 'bg-primary text-primary-foreground font-semibold' : 'text-brown font-medium hover:bg-foreground/10'}`}
-            >
-              <item.icon size={13.5} />
-              {item.label}
-              {count > 0 && (
-                <span className={`text-[11px] ml-0.5 ${active ? 'text-primary-foreground/70' : 'text-amber-dark'}`}>
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })
-      )}
+              >
+                <item.icon size={13.5} />
+                {item.label}
+                {count > 0 && (
+                  <span className={`text-[11px] ml-0.5 ${active ? 'text-primary-foreground/70' : 'text-amber-dark'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
 
       {/* Right side */}
       <div className="ml-auto flex items-center gap-3">

@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Trash2, FileText, Star } from 'lucide-react';
-import { getGuides, softDeleteGuide, toggleStar, getFirstStepUrl, onGuidesChanged, type GuideChangeEvent } from '@/core/guides/service';
+import { FileText, Star, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  type GuideChangeEvent,
+  getFirstStepUrl,
+  getGuides,
+  onGuidesChanged,
+  softDeleteGuide,
+  toggleStar,
+} from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
-import { getFaviconUrl, extractDomain, formatRelativeTime } from '@/lib/utils';
+import { extractDomain, formatRelativeTime, getFaviconUrl } from '@/lib/utils';
 
 interface LibraryViewProps {
   onOpen: (guideId: string) => void;
@@ -32,7 +39,7 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
             favicon: url ? getFaviconUrl(url) : '',
             domain: url ? extractDomain(url) : '',
           };
-        })
+        }),
       );
       setGuides(withMeta);
     } finally {
@@ -40,30 +47,39 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
     }
   }, []);
 
-  useEffect(() => { loadGuides(); }, [loadGuides]);
+  useEffect(() => {
+    loadGuides();
+  }, [loadGuides]);
 
-  useEffect(() => onGuidesChanged((event: GuideChangeEvent) => {
-    if (event.type === 'starred') {
-      setGuides(prev => prev.map(g => g.id === event.id ? { ...g, starred: event.starred } : g));
-    } else {
-      loadGuides();
-    }
-  }), [loadGuides]);
+  useEffect(
+    () =>
+      onGuidesChanged((event: GuideChangeEvent) => {
+        if (event.type === 'starred') {
+          setGuides((prev) => prev.map((g) => (g.id === event.id ? { ...g, starred: event.starred } : g)));
+        } else {
+          loadGuides();
+        }
+      }),
+    [loadGuides],
+  );
 
   const handleStar = useCallback(async (e: React.MouseEvent, guideId: string) => {
     e.stopPropagation();
-    setGuides(prev => prev.map(g => g.id === guideId ? { ...g, starred: !g.starred } : g));
+    setGuides((prev) => prev.map((g) => (g.id === guideId ? { ...g, starred: !g.starred } : g)));
     await toggleStar(guideId);
-  }, [loadGuides]);
+  }, []);
 
-  const handleDelete = useCallback(async (e: React.MouseEvent, guideId: string) => {
-    e.stopPropagation();
-    await softDeleteGuide(guideId);
-    await loadGuides();
-  }, [loadGuides]);
+  const handleDelete = useCallback(
+    async (e: React.MouseEvent, guideId: string) => {
+      e.stopPropagation();
+      await softDeleteGuide(guideId);
+      await loadGuides();
+    },
+    [loadGuides],
+  );
 
   const filtered = searchQuery
-    ? guides.filter(g => g.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? guides.filter((g) => g.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : guides;
 
   if (loading) {
@@ -118,7 +134,8 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
             <p className="text-xs mt-0.5 text-warm">
-              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatRelativeTime(guide.updatedAt)}
+              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
+              {formatRelativeTime(guide.updatedAt)}
             </p>
           </div>
 

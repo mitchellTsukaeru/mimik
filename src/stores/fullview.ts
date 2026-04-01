@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
 
 interface GuideExportData {
   guideId: string;

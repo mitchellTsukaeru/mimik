@@ -2,8 +2,8 @@ import { generateText } from 'ai';
 import { logger } from '@/lib/logger';
 import type { DOMContext } from '../dom/context';
 import { serializeDOMContext } from '../dom/context';
-import { createModel } from './provider';
 import { STEP_DESCRIPTION_PROMPT } from './prompts';
+import { createModel } from './provider';
 
 export async function getAIDescription(
   domContext: DOMContext,

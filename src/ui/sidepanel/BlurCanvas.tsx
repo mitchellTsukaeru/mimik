@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
-import { Undo, Check, X } from 'lucide-react';
+import { Check, Undo, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Screenshot } from '@/core/guides/types';
 
 interface BlurCanvasProps {
@@ -19,7 +19,7 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
+  const [_currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
   const [blurRects, setBlurRects] = useState<Rect[]>([]);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const originalImageDataRef = useRef<ImageData | null>(null);
@@ -65,7 +65,10 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
     const blurred = new Uint8ClampedArray(data.length);
     for (let py = 0; py < rh; py++) {
       for (let px = 0; px < rw; px++) {
-        let r = 0, g = 0, b = 0, count = 0;
+        let r = 0,
+          g = 0,
+          b = 0,
+          count = 0;
         for (let dy = -radius; dy <= radius; dy++) {
           for (let dx = -radius; dx <= radius; dx++) {
             const nx = px + dx;
@@ -90,27 +93,30 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
     ctx.putImageData(blurredData, x0, y0);
   }, []);
 
-  const redrawCanvas = useCallback((rects: Rect[], previewRect?: Rect) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imgRef.current || !originalImageDataRef.current) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const redrawCanvas = useCallback(
+    (rects: Rect[], previewRect?: Rect) => {
+      const canvas = canvasRef.current;
+      if (!canvas || !imgRef.current || !originalImageDataRef.current) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    ctx.putImageData(originalImageDataRef.current, 0, 0);
+      ctx.putImageData(originalImageDataRef.current, 0, 0);
 
-    for (const rect of rects) {
-      applyBoxBlur(ctx, rect);
-    }
+      for (const rect of rects) {
+        applyBoxBlur(ctx, rect);
+      }
 
-    if (previewRect && previewRect.w !== 0 && previewRect.h !== 0) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeRect(previewRect.x, previewRect.y, previewRect.w, previewRect.h);
-      ctx.restore();
-    }
-  }, [applyBoxBlur]);
+      if (previewRect && previewRect.w !== 0 && previewRect.h !== 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(previewRect.x, previewRect.y, previewRect.w, previewRect.h);
+        ctx.restore();
+      }
+    },
+    [applyBoxBlur],
+  );
 
   const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement>): { x: number; y: number } => {
     const canvas = canvasRef.current!;
@@ -169,9 +175,13 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
   const handleSave = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.toBlob((blob) => {
-      if (blob) onSave(blob);
-    }, 'image/jpeg', 0.85);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) onSave(blob);
+      },
+      'image/jpeg',
+      0.85,
+    );
   };
 
   return (

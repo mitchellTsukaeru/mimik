@@ -1,5 +1,5 @@
-import { browser, Browser } from "#imports";
-import type { PublicPath } from "wxt/browser";
+import type { PublicPath } from 'wxt/browser';
+import { type Browser, browser } from '#imports';
 
 type HtmlPublicPath = Extract<PublicPath, `${string}.html`>;
 type ScriptPath = Extract<PublicPath, `${string}.js`>;
@@ -8,17 +8,11 @@ export function sendMessage(msg: Record<string, unknown>): Promise<unknown> {
   return browser.runtime.sendMessage(msg);
 }
 
-export function sendMessageWithCallback(
-  msg: Record<string, unknown>,
-  callback: (response: unknown) => void,
-): void {
+export function sendMessageWithCallback(msg: Record<string, unknown>, callback: (response: unknown) => void): void {
   browser.runtime.sendMessage(msg, callback);
 }
 
-export function sendMessageToTab(
-  tabId: number,
-  msg: Record<string, unknown>,
-): Promise<unknown> {
+export function sendMessageToTab(tabId: number, msg: Record<string, unknown>): Promise<unknown> {
   return browser.tabs.sendMessage(tabId, msg);
 }
 
@@ -27,7 +21,7 @@ export function onMessage(
     msg: unknown,
     sender: Browser.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
-  ) => boolean | void,
+  ) => boolean | undefined,
 ): void {
   browser.runtime.onMessage.addListener(handler);
 }
@@ -50,9 +44,7 @@ export function getExtensionId(): string {
   return browser.runtime.id;
 }
 
-export function queryTabs(
-  query: Browser.tabs.QueryInfo,
-): Promise<Browser.tabs.Tab[]> {
+export function queryTabs(query: Browser.tabs.QueryInfo): Promise<Browser.tabs.Tab[]> {
   return browser.tabs.query(query);
 }
 
@@ -68,31 +60,20 @@ export function getTab(tabId: number): Promise<Browser.tabs.Tab> {
   return browser.tabs.get(tabId);
 }
 
-export function createTab(
-  options: Browser.tabs.CreateProperties,
-): Promise<Browser.tabs.Tab> {
+export function createTab(options: Browser.tabs.CreateProperties): Promise<Browser.tabs.Tab> {
   return browser.tabs.create(options);
 }
 
-export function updateTab(
-  tabId: number,
-  props: Browser.tabs.UpdateProperties,
-): Promise<Browser.tabs.Tab | undefined> {
+export function updateTab(tabId: number, props: Browser.tabs.UpdateProperties): Promise<Browser.tabs.Tab | undefined> {
   return browser.tabs.update(tabId, props);
 }
 
-export function onTabActivated(
-  handler: (activeInfo: Browser.tabs.OnActivatedInfo) => void,
-): void {
+export function onTabActivated(handler: (activeInfo: Browser.tabs.OnActivatedInfo) => void): void {
   browser.tabs.onActivated.addListener(handler);
 }
 
 export function onTabUpdated(
-  handler: (
-    tabId: number,
-    changeInfo: Browser.tabs.OnUpdatedInfo,
-    tab: Browser.tabs.Tab,
-  ) => void,
+  handler: (tabId: number, changeInfo: Browser.tabs.OnUpdatedInfo, tab: Browser.tabs.Tab) => void,
 ): void {
   browser.tabs.onUpdated.addListener(handler);
 }
@@ -105,18 +86,11 @@ export function focusWindow(windowId: number): Promise<Browser.windows.Window> {
   return browser.windows.update(windowId, { focused: true });
 }
 
-export function captureVisibleTab(
-  format: "jpeg" | "png" = "jpeg",
-  quality = 90,
-): Promise<string> {
+export function captureVisibleTab(format: 'jpeg' | 'png' = 'jpeg', quality = 90): Promise<string> {
   return browser.tabs.captureVisibleTab({ format, quality });
 }
 
-export function executeScript(
-  tabId: number,
-  files: ScriptPath[],
-  allFrames = true,
-): Promise<unknown> {
+export function executeScript(tabId: number, files: ScriptPath[], allFrames = true): Promise<unknown> {
   return browser.scripting.executeScript({
     target: { tabId, allFrames },
     files,
@@ -141,17 +115,13 @@ export function setSidePanelBehavior(openOnActionClick: boolean): void {
 }
 
 export function onNavigationCompleted(
-  handler: (
-    details: Browser.webNavigation.WebNavigationFramedCallbackDetails,
-  ) => void,
+  handler: (details: Browser.webNavigation.WebNavigationFramedCallbackDetails) => void,
 ): void {
   browser.webNavigation.onCompleted.addListener(handler);
 }
 
 export function onHistoryStateUpdated(
-  handler: (
-    details: Browser.webNavigation.WebNavigationTransitionCallbackDetails,
-  ) => void,
+  handler: (details: Browser.webNavigation.WebNavigationTransitionCallbackDetails) => void,
 ): void {
   browser.webNavigation.onHistoryStateUpdated.addListener(handler);
 }

@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { Check, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
+import type { Screenshot, Step } from '@/core/guides/types';
 import { getActiveTab } from '@/lib/browser-api';
-import { getStepsForGuide, getScreenshotsForSteps, deleteStep } from '@/core/guides/service';
-import type { Step, Screenshot } from '@/core/guides/types';
 import { extractDomain } from '@/lib/utils';
 import { Button } from '@/ui/components/ui/button';
 import ZoomScreenshot from './ZoomScreenshot';
@@ -32,13 +32,15 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
 
   const loadSteps = useCallback(async () => {
     const allSteps = await getStepsForGuide(guideId);
-    const screenshotIds = allSteps.map(s => s.screenshotId).filter(Boolean) as string[];
+    const screenshotIds = allSteps.map((s) => s.screenshotId).filter(Boolean) as string[];
     const screenshotMap = await getScreenshotsForSteps(screenshotIds);
 
-    setSteps(allSteps.map(step => ({
-      step,
-      screenshot: screenshotMap.get(step.id),
-    })));
+    setSteps(
+      allSteps.map((step) => ({
+        step,
+        screenshot: screenshotMap.get(step.id),
+      })),
+    );
 
     if (allSteps.length > 0 && !siteUrl) {
       setSiteUrl(allSteps[0].url || '');
@@ -52,7 +54,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
   }, [loadSteps]);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 5000);
+    const interval = setInterval(() => setTick((t) => t + 1), 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -61,21 +63,27 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
     scroll();
     const t1 = setTimeout(scroll, 300);
     const t2 = setTimeout(scroll, 800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [steps.length]);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
 
   useEffect(() => {
-    getActiveTab().then(tab => {
+    getActiveTab().then((tab) => {
       if (tab?.url) setSiteUrl(tab.url);
     });
   }, []);
 
-  const handleDeleteStep = useCallback(async (stepId: string) => {
-    await deleteStep(guideId, stepId);
-    await loadSteps();
-  }, [guideId, loadSteps]);
+  const handleDeleteStep = useCallback(
+    async (stepId: string) => {
+      await deleteStep(guideId, stepId);
+      await loadSteps();
+    },
+    [guideId, loadSteps],
+  );
 
-  const domain = extractDomain(siteUrl);
+  const _domain = extractDomain(siteUrl);
   return (
     <div className="flex flex-col h-screen bg-card relative">
       {/* Floating recording pill */}
@@ -125,9 +133,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
                     </button>
                   </div>
                 </div>
-                {idx < steps.length - 1 && (
-                  <div className="mx-4 mb-4 h-px bg-border" />
-                )}
+                {idx < steps.length - 1 && <div className="mx-4 mb-4 h-px bg-border" />}
               </div>
             ))}
           </div>

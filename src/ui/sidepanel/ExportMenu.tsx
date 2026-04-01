@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { Download, FileCode, FileText, FileDown, Loader2 } from 'lucide-react';
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import { Download, FileCode, FileDown, FileText, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { Button } from '@/ui/components/ui/button';
 
 interface ExportMenuProps {
@@ -68,11 +68,7 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
 
   return (
     <div ref={menuRef} className="relative">
-      <Button
-        size="sm"
-        onClick={() => setOpen(prev => !prev)}
-        disabled={exporting}
-      >
+      <Button size="sm" onClick={() => setOpen((prev) => !prev)} disabled={exporting}>
         {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
         Export
       </Button>

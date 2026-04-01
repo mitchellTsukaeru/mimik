@@ -1,7 +1,7 @@
 import { generateText } from 'ai';
 import { logger } from '@/lib/logger';
-import { createModel } from './provider';
 import { GUIDE_TITLE_PROMPT } from './prompts';
+import { createModel } from './provider';
 
 export async function generateGuideTitle(
   steps: { description: string; url: string }[],

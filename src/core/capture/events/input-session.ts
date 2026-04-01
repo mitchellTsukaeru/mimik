@@ -1,8 +1,8 @@
-import { sendMessage } from '@/lib/messaging';
 import { logger } from '@/lib/logger';
-import { extractElementMeta } from '../dom/element-meta';
+import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
-import { getFieldValue, getFieldLabel } from '../dom/element-utils';
+import { extractElementMeta } from '../dom/element-meta';
+import { getFieldLabel, getFieldValue } from '../dom/element-utils';
 import type { HighlightManager } from './highlight';
 
 export class InputSession {
@@ -17,7 +17,9 @@ export class InputSession {
     this.hl = hl;
   }
 
-  get active() { return this.stepId !== null; }
+  get active() {
+    return this.stepId !== null;
+  }
 
   async start(target: HTMLElement) {
     this.hl.hideInstant();
@@ -41,8 +43,9 @@ export class InputSession {
     if (!this.stepId) return;
     const val = getFieldValue(target);
     const desc = val ? `Type "${val}" in ${getFieldLabel(target)}` : `Clear ${getFieldLabel(target)}`;
-    sendMessage('updateInputStep', { stepId: this.stepId, description: desc })
-      .catch(err => logger.warn('Failed to update input step', err));
+    sendMessage('updateInputStep', { stepId: this.stepId, description: desc }).catch((err) =>
+      logger.warn('Failed to update input step', err),
+    );
   }
 
   async finalize() {

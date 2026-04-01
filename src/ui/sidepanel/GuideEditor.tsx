@@ -1,12 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Maximize2, Layers } from 'lucide-react';
-import { getExtensionURL, queryTabs, updateTab, focusWindow, createTab } from '@/lib/browser-api';
-import { getGuide, updateGuideTitle, updateStepDescription, deleteStep, reorderSteps, updateScreenshotBlob } from '@/core/guides/service';
-import type { Guide, Step, Screenshot } from '@/core/guides/types';
+import { ArrowLeft, Layers, Maximize2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  deleteStep,
+  getGuide,
+  reorderSteps,
+  updateGuideTitle,
+  updateScreenshotBlob,
+  updateStepDescription,
+} from '@/core/guides/service';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
 import { Input } from '@/ui/components/ui/input';
-import StepCard from './StepCard';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
+import StepCard from './StepCard';
 
 interface GuideEditorProps {
   guideId: string;
@@ -40,48 +47,56 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
     setLoading(false);
   }, [guideId]);
 
-  useEffect(() => { loadGuide(); }, [loadGuide]);
+  useEffect(() => {
+    loadGuide();
+  }, [loadGuide]);
 
   const handleTitleBlur = useCallback(async () => {
     if (!data || title === data.guide.title) return;
     await updateGuideTitle(guideId, title);
-    setData(prev => prev ? { ...prev, guide: { ...prev.guide, title } } : prev);
+    setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title } } : prev));
   }, [data, guideId, title]);
 
   const handleDescriptionChange = useCallback(async (stepId: string, description: string) => {
     await updateStepDescription(stepId, description);
-    setData(prev => {
+    setData((prev) => {
       if (!prev) return prev;
-      return { ...prev, steps: prev.steps.map(s => s.id === stepId ? { ...s, description } : s) };
+      return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
     });
   }, []);
 
-  const handleDeleteStep = useCallback(async (stepId: string) => {
-    await deleteStep(guideId, stepId);
-    const result = await getGuide(guideId);
-    if (result) {
-      setData(result);
-      setTitle(result.guide.title);
-    } else {
-      setData(null);
-      setLoading(true);
-      await loadGuide();
-    }
-  }, [guideId, loadGuide]);
+  const handleDeleteStep = useCallback(
+    async (stepId: string) => {
+      await deleteStep(guideId, stepId);
+      const result = await getGuide(guideId);
+      if (result) {
+        setData(result);
+        setTitle(result.guide.title);
+      } else {
+        setData(null);
+        setLoading(true);
+        await loadGuide();
+      }
+    },
+    [guideId, loadGuide],
+  );
 
-  const handleBlurSave = useCallback(async (blob: Blob) => {
-    if (!blurringStepId || !data) return;
-    const blurScreenshot = data.screenshots.get(blurringStepId);
-    if (!blurScreenshot) return;
-    await updateScreenshotBlob(blurScreenshot.id, blob);
-    setData(prev => {
-      if (!prev) return prev;
-      const newScreenshots = new Map(prev.screenshots);
-      newScreenshots.set(blurringStepId, { ...blurScreenshot, blob });
-      return { ...prev, screenshots: newScreenshots };
-    });
-    setBlurringStepId(null);
-  }, [blurringStepId, data]);
+  const handleBlurSave = useCallback(
+    async (blob: Blob) => {
+      if (!blurringStepId || !data) return;
+      const blurScreenshot = data.screenshots.get(blurringStepId);
+      if (!blurScreenshot) return;
+      await updateScreenshotBlob(blurScreenshot.id, blob);
+      setData((prev) => {
+        if (!prev) return prev;
+        const newScreenshots = new Map(prev.screenshots);
+        newScreenshots.set(blurringStepId, { ...blurScreenshot, blob });
+        return { ...prev, screenshots: newScreenshots };
+      });
+      setBlurringStepId(null);
+    },
+    [blurringStepId, data],
+  );
 
   if (loading) return <p className="text-sm text-warm p-4">Loading...</p>;
 
@@ -106,7 +121,11 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
       )}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="shrink-0 p-1 rounded text-warm hover:text-foreground" title="Back to library">
+          <button
+            onClick={onBack}
+            className="shrink-0 p-1 rounded text-warm hover:text-foreground"
+            title="Back to library"
+          >
             <ArrowLeft size={18} />
           </button>
           <Input
@@ -118,7 +137,7 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
           <button
             onClick={() => {
               const url = getExtensionURL(`/fullview.html?guideId=${guideId}`);
-              queryTabs({ url: getExtensionURL('/fullview.html') }).then(tabs => {
+              queryTabs({ url: getExtensionURL('/fullview.html') }).then((tabs) => {
                 if (tabs.length > 0 && tabs[0].id) {
                   updateTab(tabs[0].id, { active: true, url: getExtensionURL(`/fullview.html?guideId=${guideId}`) });
                   if (tabs[0].windowId) focusWindow(tabs[0].windowId);
@@ -157,16 +176,25 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
                 onDelete={handleDeleteStep}
                 onBlur={(stepId) => setBlurringStepId(stepId)}
                 dragHandleProps={{
-                  onDragStart: (e: React.DragEvent) => { setDragIndex(idx); e.dataTransfer.effectAllowed = 'move'; },
-                  onDragOver: (e: React.DragEvent) => { e.preventDefault(); setDragOverIndex(idx); },
+                  onDragStart: (e: React.DragEvent) => {
+                    setDragIndex(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                  },
+                  onDragOver: (e: React.DragEvent) => {
+                    e.preventDefault();
+                    setDragOverIndex(idx);
+                  },
                   onDragEnd: () => {
                     if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
-                      setData(prev => {
+                      setData((prev) => {
                         if (!prev) return prev;
                         const newSteps = [...prev.steps];
                         const [moved] = newSteps.splice(dragIndex, 1);
                         newSteps.splice(dragOverIndex, 0, moved);
-                        reorderSteps(guideId, newSteps.map(s => s.id));
+                        reorderSteps(
+                          guideId,
+                          newSteps.map((s) => s.id),
+                        );
                         return { ...prev, steps: newSteps };
                       });
                     }
