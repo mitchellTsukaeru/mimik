@@ -52,6 +52,16 @@ body {
   animation: gradient-text 3s ease infinite;
 }
 
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes cam-flash {
+  0%, 88%, 100% { opacity: 0; }
+  92% { opacity: 0.7; }
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

@@ -135,7 +135,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
 
-      <div className="min-h-[88px]">
+      <div className={title === 'Untitled Guide' && !typingTitle && data.steps.length > 0 ? 'min-h-[88px]' : ''}>
         {title === 'Untitled Guide' && !typingTitle && data.steps.length > 0 ? (
           <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-amber to-muted-foreground max-w-[480px]">
             Writing a title from your captured steps...
