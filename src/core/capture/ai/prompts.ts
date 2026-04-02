@@ -16,10 +16,12 @@ export const GUIDE_TITLE_PROMPT = `These are the steps of a browser workflow, wi
 
 Write a specific, descriptive title for this workflow. The title should mention the application or website name and the specific task being performed. Be precise — reference specific pages, features, or items that were interacted with.
 
-Examples:
-- "Review Most-Commented claude-code Pull Requests"
-- "Configure Slack Notification Preferences for #engineering"
-- "Submit Expense Report in Workday"
-- "Create New Repository in GitHub Organization"
+IMPORTANT: The title MUST be under 60 characters. Keep it concise.
 
-Just the title, no quotes, no preamble.`;
+Examples:
+- "Review claude-code Pull Requests"
+- "Configure Slack Notification Preferences"
+- "Submit Expense Report in Workday"
+- "Create Repository in GitHub Organization"
+
+Just the title, no quotes, no preamble. Under 60 characters.`;

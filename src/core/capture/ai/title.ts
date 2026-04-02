@@ -19,7 +19,9 @@ export async function generateGuideTitle(
       prompt: GUIDE_TITLE_PROMPT.replace('{{steps}}', formatted),
       maxOutputTokens: 30,
     });
-    return text.trim().replace(/^"|"$/g, '') || null;
+    let title = text.trim().replace(/^"|"$/g, '');
+    if (title.length > 70) title = `${title.slice(0, 67)}...`;
+    return title || null;
   } catch (err) {
     logger.error('Guide title generation failed', err);
     return null;

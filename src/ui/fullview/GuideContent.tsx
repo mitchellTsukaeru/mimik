@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { TypeAnimation } from 'react-type-animation';
 import {
   deleteStep,
   getGuide,
@@ -9,36 +10,9 @@ import {
 } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { getFaviconUrl, getMostCommonDomain } from '@/lib/utils';
-import { useFullviewStore } from '@/stores/fullview';
+import { useFullview } from '@/stores/fullview';
 import BlurCanvas from '@/ui/sidepanel/BlurCanvas';
 import GuideStepList from './components/GuideStepList';
-
-function useTypewriter(text: string, enabled: boolean, speed = 40): { display: string; done: boolean } {
-  const [index, setIndex] = useState(0);
-  const [active, setActive] = useState(false);
-  const prevTextRef = useRef(text);
-
-  useEffect(() => {
-    if (enabled && text !== prevTextRef.current && prevTextRef.current === 'Untitled Guide') {
-      prevTextRef.current = text;
-      setIndex(0);
-      setActive(true);
-    } else {
-      prevTextRef.current = text;
-    }
-  }, [text, enabled]);
-
-  useEffect(() => {
-    if (!active || index >= text.length) {
-      if (index >= text.length) setActive(false);
-      return;
-    }
-    const timer = setTimeout(() => setIndex((i) => i + 1), speed);
-    return () => clearTimeout(timer);
-  }, [active, index, text, speed]);
-
-  return { display: active ? text.slice(0, index) : text, done: !active };
-}
 
 interface GuideContentProps {
   guideId: string;
@@ -51,24 +25,33 @@ interface GuideData {
 }
 
 export default function GuideContent({ guideId }: GuideContentProps) {
-  const setGuideTitle = useFullviewStore((s) => s.setGuideTitle);
-  const setGuideStepCount = useFullviewStore((s) => s.setGuideStepCount);
-  const setGuideExportData = useFullviewStore((s) => s.setGuideExportData);
+  const { setGuideTitle, setGuideStepCount, setGuideExportData } = useFullview((s) => ({
+    setGuideTitle: s.setGuideTitle,
+    setGuideStepCount: s.setGuideStepCount,
+    setGuideExportData: s.setGuideExportData,
+  }));
 
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
+  const [typingTitle, setTypingTitle] = useState<string | null>(null);
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
-  const hasSteps = data ? data.steps.length > 0 : false;
-  const typewriter = useTypewriter(title, hasSteps);
+  const titleRef = useRef('');
 
   const loadGuide = useCallback(async () => {
     const result = await getGuide(guideId);
     if (result) {
       setData(result);
-      setTitle(result.guide.title);
-      document.title = `${result.guide.title} — Mimik`;
-      setGuideTitle(result.guide.title);
+      const newTitle = result.guide.title;
+      const prev = titleRef.current;
+      if (prev === 'Untitled Guide' && newTitle !== 'Untitled Guide' && result.steps.length > 0) {
+        setTypingTitle(newTitle);
+      } else {
+        titleRef.current = newTitle;
+        setTitle(newTitle);
+      }
+      document.title = `${newTitle} — Mimik`;
+      setGuideTitle(newTitle);
       setGuideStepCount(result.steps.length);
       setGuideExportData({ guideId, ...result });
     }
@@ -147,41 +130,59 @@ export default function GuideContent({ guideId }: GuideContentProps) {
   const blurScreenshot = blurringStepId ? data.screenshots.get(blurringStepId) : undefined;
 
   return (
-    <div>
+    <div className="flex flex-col min-h-[calc(100vh-64px)]">
       {blurringStepId && blurScreenshot && (
         <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
 
-      {title === 'Untitled Guide' && data.steps.length > 0 ? (
-        <div className="text-[32px] font-extrabold animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-amber to-muted-foreground">
-          Generating title...
-        </div>
-      ) : !typewriter.done ? (
-        <div className="text-[32px] font-extrabold text-foreground">
-          {typewriter.display}
-          <span className="inline-block w-[3px] h-[30px] bg-amber ml-0.5 align-text-bottom animate-blink" />
-        </div>
-      ) : (
-        <textarea
-          ref={(el) => {
-            if (el) {
+      <div className="min-h-[88px]">
+        {title === 'Untitled Guide' && !typingTitle && data.steps.length > 0 ? (
+          <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-amber to-muted-foreground max-w-[480px]">
+            Writing a title from your captured steps...
+          </div>
+        ) : typingTitle ? (
+          <div className="relative text-[32px] font-extrabold leading-tight">
+            <div className="invisible" aria-hidden="true">
+              {typingTitle}
+            </div>
+            <div className="absolute inset-0 text-foreground">
+              <TypeAnimation
+                sequence={[
+                  typingTitle,
+                  () => {
+                    titleRef.current = typingTitle;
+                    setTitle(typingTitle);
+                    setTypingTitle(null);
+                  },
+                ]}
+                speed={70}
+                cursor={false}
+              />
+              <span className="inline-block w-[3px] h-[30px] bg-amber ml-0.5 align-text-bottom animate-blink" />
+            </div>
+          </div>
+        ) : (
+          <textarea
+            ref={(el) => {
+              if (el) {
+                el.style.height = '0';
+                el.style.height = `${el.scrollHeight}px`;
+              }
+            }}
+            value={title}
+            rows={1}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setGuideTitle(e.target.value);
+              const el = e.target;
               el.style.height = '0';
               el.style.height = `${el.scrollHeight}px`;
-            }
-          }}
-          value={title}
-          rows={1}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            setGuideTitle(e.target.value);
-            const el = e.target;
-            el.style.height = '0';
-            el.style.height = `${el.scrollHeight}px`;
-          }}
-          onBlur={handleTitleBlur}
-          className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 text-foreground resize-none leading-tight overflow-hidden"
-        />
-      )}
+            }}
+            onBlur={handleTitleBlur}
+            className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 text-foreground resize-none leading-tight overflow-hidden"
+          />
+        )}
+      </div>
 
       <div className="flex items-center gap-1.5 mt-2 mb-4 flex-wrap">
         <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-white border border-border px-2.5 py-0.5 rounded-full">
