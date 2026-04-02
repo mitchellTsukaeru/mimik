@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom/client';
 import App from '@/ui/sidepanel/App';
-import '@/ui/sidepanel/index.css';
+import '@/ui/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
