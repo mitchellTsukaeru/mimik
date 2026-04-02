@@ -4,7 +4,7 @@ import { getGuideDomain, getGuides } from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
 import { getFaviconUrl } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
-import { Dialog, DialogOverlay, DialogPortal } from '@/ui/components/ui/dialog';
+import { Dialog, DialogPortal } from '@/ui/components/ui/dialog';
 import { Input } from '@/ui/components/ui/input';
 import KeyboardHints from './components/KeyboardHints';
 import SearchResults from './components/SearchResults';
@@ -46,7 +46,7 @@ export default function SearchModal() {
     }
   }, [open, loadResults]);
 
-  const filtered = query ? results.filter((r) => r.guide.title.toLowerCase().includes(query.toLowerCase())) : results;
+  const filtered = query ? results.filter((r) => r.guide.title.toLowerCase().includes(query.toLowerCase())) : [];
 
   const handleSelect = useCallback(
     (guideId: string) => {
@@ -75,8 +75,10 @@ export default function SearchModal() {
   return (
     <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
       <DialogPortal>
-        <DialogOverlay className="!bg-transparent backdrop-blur-sm" />
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setSearchOpen(false)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => setSearchOpen(false)}
+        >
           <div
             className="w-full max-w-[640px] rounded-xl overflow-hidden bg-card shadow-lg"
             onClick={(e) => e.stopPropagation()}
@@ -100,15 +102,32 @@ export default function SearchModal() {
                 </button>
               )}
             </div>
-            <div className="max-h-[320px] overflow-y-auto py-1">
-              <SearchResults
-                results={filtered}
-                query={query}
-                selected={selected}
-                onSelect={handleSelect}
-                onHover={setSelected}
-              />
-            </div>
+            {filtered.length > 0 ? (
+              <div className="max-h-[320px] overflow-y-auto py-1">
+                <SearchResults
+                  results={filtered}
+                  query={query}
+                  selected={selected}
+                  onSelect={handleSelect}
+                  onHover={setSelected}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-7 gap-2.5">
+                <svg width="56" height="52" viewBox="0 0 56 52" fill="none">
+                  <rect x="8" y="16" width="40" height="24" rx="3" fill="#451a03" />
+                  <path d="M8 16 L8 11 Q8 3, 28 3 Q48 3, 48 11 L48 16 Z" fill="#572508" />
+                  <rect x="8" y="15" width="40" height="1.5" fill="#FDE68A" />
+                  <path d="M17 27 Q20.5 23 24 27" stroke="#FDE68A" strokeWidth="2" fill="none" strokeLinecap="round" />
+                  <path d="M22 36 Q28 40 34 36" stroke="#FDE68A" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                  <circle cx="38" cy="24" r="8" stroke="#F59E0B" strokeWidth="2" fill="none" />
+                  <line x1="44" y1="30" x2="50" y2="36" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="38" cy="24" r="3" fill="#FDE68A" />
+                  <circle cx="39" cy="23.5" r="1" fill="#451a03" />
+                </svg>
+                <span className="text-[13px] font-medium text-muted-foreground/50">Start typing to find a guide</span>
+              </div>
+            )}
             <KeyboardHints />
           </div>
         </div>
