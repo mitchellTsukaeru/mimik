@@ -29,9 +29,27 @@ export function extractDomain(url: string): string {
   }
 }
 
-export function getFaviconUrl(url: string): string {
+export function getMostCommonDomain(steps: { url?: string | null }[]): string {
+  const counts = new Map<string, number>();
+  for (const s of steps) {
+    const d = extractDomain(s.url || '');
+    if (d) counts.set(d, (counts.get(d) || 0) + 1);
+  }
+  let best = '';
+  let max = 0;
+  for (const [d, c] of counts) {
+    if (c > max) {
+      max = c;
+      best = d;
+    }
+  }
+  return best;
+}
+
+export function getFaviconUrl(url: string, size = 64): string {
   try {
-    return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=32`;
+    const full = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    return `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(full)}&size=${size}&drop_404_icon=true`;
   } catch {
     return '';
   }

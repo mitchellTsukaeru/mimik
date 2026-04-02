@@ -10,6 +10,7 @@ import {
 } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
+import { getFaviconUrl, getMostCommonDomain } from '@/lib/utils';
 import { Input } from '@/ui/components/ui/input';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
@@ -155,10 +156,30 @@ export default function GuideEditor({ guideId, onBack }: GuideEditorProps) {
             <ExportMenu guideId={guideId} guide={data.guide} steps={data.steps} screenshots={data.screenshots} />
           </div>
         </div>
-        <p className="text-[11px] flex items-center gap-1 text-muted-foreground" style={{ marginLeft: '34px' }}>
-          <Layers size={11} />
-          {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
-        </p>
+        <div className="text-[11px] flex items-center gap-2 text-muted-foreground" style={{ marginLeft: '34px' }}>
+          <span className="flex items-center gap-1">
+            <Layers size={11} />
+            {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
+          </span>
+          {(() => {
+            const d = getMostCommonDomain(data.steps);
+            if (!d) return null;
+            return (
+              <span className="flex items-center gap-1">
+                <span className="text-border">·</span>
+                <img
+                  src={getFaviconUrl(d, 16)}
+                  alt=""
+                  className="w-3 h-3 rounded-full"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+                {d}
+              </span>
+            );
+          })()}
+        </div>
       </div>
       <div className="px-4 pt-1 pb-4">
         {data.steps.length === 0 ? (
