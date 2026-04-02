@@ -149,9 +149,10 @@ export async function deleteStep(guideId: string, stepId: string): Promise<void>
   }
 }
 
-export async function getFirstStepUrl(guideId: string): Promise<string | null> {
+export async function getGuideDomain(guideId: string): Promise<string> {
+  const { getMostCommonDomain } = await import('@/lib/utils');
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
-  return steps[0]?.url || null;
+  return getMostCommonDomain(steps);
 }
 
 export async function saveScreenshot(screenshot: Screenshot): Promise<void> {

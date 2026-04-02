@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useFullviewStore } from '@/stores/fullview';
+import { useFullview } from '@/stores/fullview';
 import GuideContent from './GuideContent';
 import LibraryContent from './LibraryContent';
 import { useRoute } from './router';
@@ -8,7 +8,7 @@ import TopNav from './TopNav';
 
 export default function FullViewApp() {
   const route = useRoute();
-  const toggleSearch = useFullviewStore((s) => s.toggleSearch);
+  const { toggleSearch } = useFullview((s) => ({ toggleSearch: s.toggleSearch }));
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

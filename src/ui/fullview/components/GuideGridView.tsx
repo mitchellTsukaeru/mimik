@@ -1,5 +1,5 @@
-import type { Guide, Screenshot } from '@/core/guides/types';
 import { formatDate } from '@/lib/utils';
+import { useFullview } from '@/stores/fullview';
 import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
 import { navigate } from '../router';
 
@@ -15,12 +15,12 @@ function MimikEyes() {
   );
 }
 
-interface GuideGridViewProps {
-  guides: Guide[];
-  thumbnails: Map<string, Screenshot>;
-}
+export default function GuideGridView() {
+  const { guides, thumbnails } = useFullview((s) => ({
+    guides: s.guides,
+    thumbnails: s.thumbnails,
+  }));
 
-export default function GuideGridView({ guides, thumbnails }: GuideGridViewProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
       {guides.map((guide) => {

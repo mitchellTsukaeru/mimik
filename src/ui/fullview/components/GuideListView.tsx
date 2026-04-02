@@ -1,10 +1,9 @@
 import { RotateCcw, Star, Trash2 } from 'lucide-react';
-import type { Guide } from '@/core/guides/types';
 import { formatDate } from '@/lib/utils';
+import { useFullview } from '@/stores/fullview';
 import { navigate } from '../router';
 
 interface GuideListViewProps {
-  guides: Guide[];
   category: 'all' | 'starred' | 'trash';
   onStar: (e: React.MouseEvent, id: string) => void;
   onTrash: (e: React.MouseEvent, id: string) => void;
@@ -12,14 +11,9 @@ interface GuideListViewProps {
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export default function GuideListView({
-  guides,
-  category,
-  onStar,
-  onTrash,
-  onRestore,
-  onPermanentDelete,
-}: GuideListViewProps) {
+export default function GuideListView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideListViewProps) {
+  const { guides } = useFullview((s) => ({ guides: s.guides }));
+
   return (
     <div className="rounded-xl overflow-hidden bg-card border border-border">
       {guides.map((guide, idx) => (

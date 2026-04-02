@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { reorderSteps } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
-import { useFullviewStore } from '@/stores/fullview';
+import { useFullview } from '@/stores/fullview';
+import EmptyGuideState from '@/ui/shared/EmptyGuideState';
 import StepCard from '@/ui/sidepanel/StepCard';
 
 interface GuideStepListProps {
@@ -23,8 +24,10 @@ export default function GuideStepList({
   onBlur,
   onReorder,
 }: GuideStepListProps) {
-  const scrollToStepId = useFullviewStore((s) => s.scrollToStepId);
-  const setActiveStepId = useFullviewStore((s) => s.setActiveStepId);
+  const { scrollToStepId, setActiveStepId } = useFullview((s) => ({
+    scrollToStepId: s.scrollToStepId,
+    setActiveStepId: s.setActiveStepId,
+  }));
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -68,7 +71,7 @@ export default function GuideStepList({
   };
 
   if (steps.length === 0) {
-    return <p className="text-sm text-center py-12 text-warm">No steps in this guide.</p>;
+    return <EmptyGuideState />;
   }
 
   return (

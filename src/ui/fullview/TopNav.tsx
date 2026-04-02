@@ -1,5 +1,5 @@
 import { ChevronRight, FileText, Search, Star, Trash2 } from 'lucide-react';
-import { useFullviewStore } from '@/stores/fullview';
+import { useFullview } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
 import ExportMenu from '@/ui/sidepanel/ExportMenu';
 import MascotIcon from './components/MascotIcon';
@@ -17,11 +17,19 @@ const navItems = [
 ];
 
 export default function TopNav({ route }: TopNavProps) {
-  const counts = useFullviewStore((s) => s.counts);
-  const guideTitle = useFullviewStore((s) => s.guideTitle);
-  const guideStepCount = useFullviewStore((s) => s.guideStepCount);
-  const exportData = useFullviewStore((s) => s.guideExportData);
-  const setSearchOpen = useFullviewStore((s) => s.setSearchOpen);
+  const {
+    counts,
+    guideTitle,
+    guideStepCount,
+    guideExportData: exportData,
+    setSearchOpen,
+  } = useFullview((s) => ({
+    counts: s.counts,
+    guideTitle: s.guideTitle,
+    guideStepCount: s.guideStepCount,
+    guideExportData: s.guideExportData,
+    setSearchOpen: s.setSearchOpen,
+  }));
 
   return (
     <header className="flex items-center gap-5 px-7 h-16 shrink-0 bg-gradient-to-br from-amber to-amber-light">
@@ -41,8 +49,14 @@ export default function TopNav({ route }: TopNavProps) {
             <>
               <ChevronRight size={14} className="text-foreground opacity-25" />
               {guideTitle === 'Untitled Guide' && guideStepCount > 0 ? (
-                <span className="text-[13px] font-medium truncate max-w-sm animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-amber to-muted-foreground">
-                  Generating title...
+                <span className="flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-[5px] h-[5px] rounded-full bg-foreground animate-bounce"
+                      style={{ animationDelay: `${i * 150}ms`, animationDuration: '1.2s' }}
+                    />
+                  ))}
                 </span>
               ) : (
                 <span className="text-[13px] font-medium truncate max-w-sm text-foreground">{guideTitle}</span>

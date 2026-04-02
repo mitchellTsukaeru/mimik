@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 
 interface GuideExportData {
@@ -10,6 +11,13 @@ interface GuideExportData {
 
 interface FullviewStore {
   // Library
+  guides: Guide[];
+  setGuides: (guides: Guide[]) => void;
+  updateGuide: (id: string, patch: Partial<Guide>) => void;
+  thumbnails: Map<string, Screenshot>;
+  setThumbnails: (thumbnails: Map<string, Screenshot>) => void;
+  libraryLoading: boolean;
+  setLibraryLoading: (loading: boolean) => void;
   counts: { all: number; starred: number; trash: number };
   setCounts: (counts: { all: number; starred: number; trash: number }) => void;
 
@@ -32,6 +40,13 @@ interface FullviewStore {
 }
 
 export const useFullviewStore = create<FullviewStore>((set) => ({
+  guides: [],
+  setGuides: (guides) => set({ guides }),
+  updateGuide: (id, patch) => set((s) => ({ guides: s.guides.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
+  thumbnails: new Map(),
+  setThumbnails: (thumbnails) => set({ thumbnails }),
+  libraryLoading: true,
+  setLibraryLoading: (libraryLoading) => set({ libraryLoading }),
   counts: { all: 0, starred: 0, trash: 0 },
   setCounts: (counts) => set({ counts }),
 
@@ -53,3 +68,7 @@ export const useFullviewStore = create<FullviewStore>((set) => ({
   activeStepId: null,
   setActiveStepId: (activeStepId) => set({ activeStepId }),
 }));
+
+export function useFullview<T>(selector: (s: FullviewStore) => T): T {
+  return useFullviewStore(useShallow(selector));
+}

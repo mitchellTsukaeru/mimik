@@ -1,9 +1,9 @@
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getFirstStepUrl, getGuides } from '@/core/guides/service';
+import { getGuideDomain, getGuides } from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
 import { getFaviconUrl } from '@/lib/utils';
-import { useFullviewStore } from '@/stores/fullview';
+import { useFullview } from '@/stores/fullview';
 import { Dialog, DialogOverlay, DialogPortal } from '@/ui/components/ui/dialog';
 import { Input } from '@/ui/components/ui/input';
 import KeyboardHints from './components/KeyboardHints';
@@ -16,8 +16,10 @@ interface GuideResult {
 }
 
 export default function SearchModal() {
-  const open = useFullviewStore((s) => s.searchOpen);
-  const setSearchOpen = useFullviewStore((s) => s.setSearchOpen);
+  const { searchOpen: open, setSearchOpen } = useFullview((s) => ({
+    searchOpen: s.searchOpen,
+    setSearchOpen: s.setSearchOpen,
+  }));
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GuideResult[]>([]);
@@ -28,8 +30,8 @@ export default function SearchModal() {
     const guides = await getGuides();
     const withFavicons = await Promise.all(
       guides.map(async (guide) => {
-        const url = await getFirstStepUrl(guide.id);
-        return { guide, favicon: url ? getFaviconUrl(url) : '' };
+        const domain = await getGuideDomain(guide.id);
+        return { guide, favicon: domain ? getFaviconUrl(domain) : '' };
       }),
     );
     setResults(withFavicons);

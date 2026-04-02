@@ -12,8 +12,8 @@ import {
   softDeleteGuide,
   toggleStar,
 } from '@/core/guides/service';
-import type { Guide, Screenshot } from '@/core/guides/types';
-import { useFullviewStore } from '@/stores/fullview';
+import type { Screenshot } from '@/core/guides/types';
+import { useFullview } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
 import GuideGridView from './components/GuideGridView';
 import GuideListView from './components/GuideListView';
@@ -30,11 +30,24 @@ const emptyMessages: Record<string, string> = {
 };
 
 export default function LibraryContent({ category }: LibraryContentProps) {
-  const setCounts = useFullviewStore((s) => s.setCounts);
+  const {
+    guides,
+    setGuides,
+    updateGuide,
+    setThumbnails,
+    libraryLoading: loading,
+    setLibraryLoading: setLoading,
+    setCounts,
+  } = useFullview((s) => ({
+    guides: s.guides,
+    setGuides: s.setGuides,
+    updateGuide: s.updateGuide,
+    setThumbnails: s.setThumbnails,
+    libraryLoading: s.libraryLoading,
+    setLibraryLoading: s.setLibraryLoading,
+    setCounts: s.setCounts,
+  }));
 
-  const [guides, setGuides] = useState<Guide[]>([]);
-  const [thumbnails, setThumbnails] = useState<Map<string, Screenshot>>(new Map());
-  const [loading, setLoading] = useState(true);
   const [display, setDisplay] = useState<'list' | 'grid'>(
     () => (localStorage.getItem('mimik-display') as 'list' | 'grid') || 'list',
   );
@@ -59,7 +72,7 @@ export default function LibraryContent({ category }: LibraryContentProps) {
     }
     setThumbnails(thumbMap);
     setLoading(false);
-  }, [category, setCounts]);
+  }, [category, setCounts, setGuides, setThumbnails, setLoading]);
 
   useEffect(() => {
     loadGuides();
@@ -69,13 +82,13 @@ export default function LibraryContent({ category }: LibraryContentProps) {
     () =>
       onGuidesChanged((event: GuideChangeEvent) => {
         if (event.type === 'starred') {
-          setGuides((prev) => prev.map((g) => (g.id === event.id ? { ...g, starred: event.starred } : g)));
+          updateGuide(event.id, { starred: event.starred });
           refreshCounts();
         } else {
           loadGuides();
         }
       }),
-    [refreshCounts, loadGuides],
+    [refreshCounts, loadGuides, updateGuide],
   );
 
   const toggleDisplay = () => {
@@ -86,7 +99,8 @@ export default function LibraryContent({ category }: LibraryContentProps) {
 
   const handleStar = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setGuides((prev) => prev.map((g) => (g.id === id ? { ...g, starred: !g.starred } : g)));
+    const guide = guides.find((g) => g.id === id);
+    if (guide) updateGuide(id, { starred: !guide.starred });
     await toggleStar(id);
     await refreshCounts();
   };
@@ -130,7 +144,6 @@ export default function LibraryContent({ category }: LibraryContentProps) {
         </div>
       ) : display === 'list' ? (
         <GuideListView
-          guides={guides}
           category={category}
           onStar={handleStar}
           onTrash={handleTrash}
@@ -138,7 +151,7 @@ export default function LibraryContent({ category }: LibraryContentProps) {
           onPermanentDelete={handlePermanentDelete}
         />
       ) : (
-        <GuideGridView guides={guides} thumbnails={thumbnails} />
+        <GuideGridView />
       )}
     </div>
   );
