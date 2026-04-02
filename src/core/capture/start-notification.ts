@@ -1,4 +1,22 @@
-const ANIMATION_DURATION_MS = 3000;
+const ANIMATION_DURATION_MS = 4000;
+
+const MASCOT_FILLED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 50 160 120" width="200" height="150">
+  <rect x="30" y="95" width="140" height="68" rx="5" fill="#451a03"/>
+  <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" fill="#572508"/>
+  <rect x="30" y="93" width="140" height="3" fill="#FDE68A"/>
+  <path d="M68 122 Q76 112 84 122" stroke="#FDE68A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path class="wink-eye" d="M116 122 Q124 112 132 122" stroke="#FDE68A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M84 138 Q100 148 116 138" stroke="#FDE68A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+</svg>`;
+
+const MASCOT_GHOST = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 50 160 120" width="200" height="150">
+  <rect x="30" y="95" width="140" height="68" rx="5" fill="#451a03"/>
+  <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" fill="#572508"/>
+  <rect x="30" y="93" width="140" height="3" fill="#FDE68A"/>
+  <path d="M68 122 Q76 112 84 122" stroke="#FDE68A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M116 122 Q124 112 132 122" stroke="#FDE68A" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M84 138 Q100 148 116 138" stroke="#FDE68A" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+</svg>`;
 
 const STYLES = `
   :host {
@@ -25,43 +43,57 @@ const STYLES = `
     100% { opacity: 0; }
   }
 
-  .txt {
-    font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
-    font-size: clamp(40px, 10vw, 90px);
-    letter-spacing: clamp(2px, 0.8vw, 6px);
-    -webkit-text-stroke: 2px #F59E0B;
-    color: transparent;
+  .mascot-wrap {
     position: relative;
-    text-transform: uppercase;
-    opacity: 0;
-    animation: txtIn 0.01s ease forwards;
+    width: clamp(120px, 20vw, 250px);
+    aspect-ratio: 200 / 150;
+    animation: bounceSquash 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
   }
 
-  @keyframes txtIn {
-    to { opacity: 1; }
+  .mascot-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .ghost {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
   }
 
   .fill {
     position: absolute;
     inset: 0;
-    color: #FBBF24;
-    -webkit-text-stroke: 0;
-    clip-path: inset(0 100% 0 0);
-    animation: fillRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards,
-               fadeOut 0.4s ease 2.4s forwards;
+    clip-path: inset(100% 0 0 0);
+    animation: fillUp 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s forwards;
   }
 
-  @keyframes fillRight {
-    to { clip-path: inset(0 0 0 0); }
+  .fill .wink-eye {
+    transform-origin: 124px 117px;
+    animation: wink 0.45s ease 2.5s;
   }
 
-  @keyframes fadeOut {
-    to { opacity: 0; }
+  @keyframes fillUp {
+    0%   { clip-path: inset(100% 0 0 0); }
+    100% { clip-path: inset(0 0 0 0); }
   }
 
-  .txt {
-    animation: txtIn 0.01s ease forwards,
-               fadeOut 0.4s ease 2.4s forwards;
+  @keyframes bounceSquash {
+    0%   { transform: translateY(-80px) scaleY(1.1) scaleX(0.9); opacity: 0; }
+    25%  { transform: translateY(10px) scaleY(0.85) scaleX(1.12); opacity: 1; }
+    40%  { transform: translateY(-15px) scaleY(1.05) scaleX(0.97); }
+    55%  { transform: translateY(5px) scaleY(0.95) scaleX(1.03); }
+    70%  { transform: translateY(-3px) scaleY(1.02) scaleX(0.99); }
+    100% { transform: translateY(0) scaleY(1) scaleX(1); }
+  }
+
+  @keyframes wink {
+    0%   { transform: scaleY(1); }
+    35%  { transform: scaleY(0.05); }
+    50%  { transform: scaleY(0.05); }
+    75%  { transform: scaleY(1.15); }
+    100% { transform: scaleY(1); }
   }
 `;
 
@@ -78,16 +110,20 @@ export function showStartNotification(): Promise<void> {
     const wrap = document.createElement('div');
     wrap.className = 'wrap';
 
-    const txt = document.createElement('div');
-    txt.className = 'txt';
-    txt.textContent = 'RECORDING';
+    const mascotWrap = document.createElement('div');
+    mascotWrap.className = 'mascot-wrap';
+
+    const ghost = document.createElement('div');
+    ghost.className = 'ghost';
+    ghost.innerHTML = MASCOT_GHOST;
 
     const fill = document.createElement('div');
     fill.className = 'fill';
-    fill.textContent = 'RECORDING';
-    txt.appendChild(fill);
+    fill.innerHTML = MASCOT_FILLED;
 
-    wrap.appendChild(txt);
+    mascotWrap.appendChild(ghost);
+    mascotWrap.appendChild(fill);
+    wrap.appendChild(mascotWrap);
     shadow.appendChild(wrap);
     document.documentElement.appendChild(host);
 
