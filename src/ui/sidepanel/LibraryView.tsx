@@ -107,56 +107,63 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
   }
 
   return (
-    <div className="flex flex-col gap-2 pb-4">
-      {filtered.map((guide) => (
-        <div
-          key={guide.id}
-          className="flex items-center gap-3 px-3.5 py-3 rounded-lg cursor-pointer group transition-all border border-gold hover:border-accent hover:shadow-sm"
-          onClick={() => onOpen(guide.id)}
-        >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden text-xs font-semibold bg-gold border border-amber-light text-brown">
-            {guide.favicon ? (
-              <img
-                src={guide.favicon}
-                alt=""
-                className="w-5 h-5"
-                onError={(e) => {
-                  const el = e.target as HTMLImageElement;
-                  el.style.display = 'none';
-                  el.parentElement!.textContent = guide.title.charAt(0).toUpperCase();
-                }}
-              />
-            ) : (
-              guide.title.charAt(0).toUpperCase()
+    <div className="flex flex-col gap-2 px-1 pb-4">
+      {filtered.map((guide) => {
+        const isEmpty = guide.stepIds.length === 0;
+        return (
+          <div
+            key={guide.id}
+            className="flex items-start gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer group transition-all bg-white border border-[#ede8e0] hover:border-amber hover:shadow-sm"
+            onClick={() => onOpen(guide.id)}
+          >
+            <div className="w-7 h-7 mt-0.5 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+              {guide.favicon ? (
+                <img
+                  src={guide.favicon}
+                  alt=""
+                  className="w-5 h-5"
+                  onError={(e) => {
+                    const el = e.target as HTMLImageElement;
+                    el.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full rounded-full border-[1.5px] border-dashed border-border" />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className={`text-[13px] font-medium truncate ${isEmpty ? 'text-[#b8a48e]' : 'text-foreground'}`}>
+                {guide.title}
+              </p>
+              <p className="text-[10px] mt-0.5 text-[#b8a48e]">{formatRelativeTime(guide.updatedAt)}</p>
+            </div>
+
+            {guide.stepIds.length > 0 && (
+              <span className="text-[9px] font-semibold text-muted-foreground bg-secondary px-2 py-1 rounded-full shrink-0 leading-none mt-0.5">
+                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''}
+              </span>
             )}
-          </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
-            <p className="text-xs mt-0.5 text-warm">
-              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
-              {formatRelativeTime(guide.updatedAt)}
-            </p>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button
+                onClick={(e) => handleStar(e, guide.id)}
+                className={`p-1.5 rounded-lg transition-all hover:text-accent ${guide.starred ? 'opacity-100 text-accent' : 'opacity-0 group-hover:opacity-100 text-border'}`}
+                title={guide.starred ? 'Unstar' : 'Star'}
+              >
+                <Star size={13} fill={guide.starred ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                onClick={(e) => handleDelete(e, guide.id)}
+                className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all text-border hover:text-red-500"
+                title="Move to trash"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
           </div>
-
-          <div className="flex items-center gap-0.5 ml-1 shrink-0">
-            <button
-              onClick={(e) => handleStar(e, guide.id)}
-              className={`p-1.5 rounded-lg transition-all hover:text-accent ${guide.starred ? 'opacity-100 text-accent' : 'opacity-0 group-hover:opacity-100 text-border'}`}
-              title={guide.starred ? 'Unstar' : 'Star'}
-            >
-              <Star size={14} fill={guide.starred ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              onClick={(e) => handleDelete(e, guide.id)}
-              className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all text-border hover:text-red-500"
-              title="Move to trash"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

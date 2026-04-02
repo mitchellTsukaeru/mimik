@@ -137,8 +137,13 @@ export default function App() {
         <div className="absolute -top-12 -right-8 w-44 h-44 rounded-full opacity-15 blur-[40px] bg-gradient-to-br from-gold to-white" />
 
         <div className="relative flex items-center justify-between mb-6">
+          <span className="text-[17px] font-bold tracking-tight text-foreground">Mimik</span>
           <div className="flex items-center gap-2">
-            <span className="text-[17px] font-bold tracking-tight text-foreground">Mimik</span>
+            <span
+              className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${isAlive ? 'text-foreground bg-white/30' : 'text-brown/50 bg-white/15'}`}
+            >
+              {isAlive ? 'Connected' : 'Connecting...'}
+            </span>
             <button
               onClick={() => setView({ name: 'settings' })}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-white/20 transition-colors"
@@ -146,11 +151,6 @@ export default function App() {
               <Settings size={15} />
             </button>
           </div>
-          <span
-            className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${isAlive ? 'text-foreground bg-white/30' : 'text-brown/50 bg-white/15'}`}
-          >
-            {isAlive ? 'Connected' : 'Connecting...'}
-          </span>
         </div>
 
         <div className="relative text-center mb-5">
@@ -180,7 +180,7 @@ export default function App() {
             placeholder="Search guides..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-3"
+            className="w-full pl-10 pr-3 rounded-xl border-[#ede8e0] bg-white !text-[13px]"
           />
         </div>
 
