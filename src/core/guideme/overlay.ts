@@ -126,9 +126,7 @@ export class GuideMeOverlay {
   private targetClickHandler: (() => void) | null = null;
   private targetKeyHandler: ((e: KeyboardEvent) => void) | null = null;
   private currentTarget: HTMLElement | null = null;
-  private currentStep: Step | null = null;
   private currentStepIndex = 0;
-  private currentTotalSteps = 0;
   private screenshotUrl: string | null = null;
   private autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
   private callbacks: GuideMeCallbacks;
@@ -148,9 +146,7 @@ export class GuideMeOverlay {
 
   async show(step: Step, stepIndex: number, totalSteps: number, targetElement: HTMLElement | null): Promise<void> {
     this.cleanup();
-    this.currentStep = step;
     this.currentStepIndex = stepIndex;
-    this.currentTotalSteps = totalSteps;
     this.currentTarget = targetElement;
 
     if (targetElement) {
