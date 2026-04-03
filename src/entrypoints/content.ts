@@ -4,13 +4,14 @@ import { CaptureState } from '@/core/capture/machine';
 import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';
 import { showStartNotification } from '@/core/capture/start-notification';
+import { GuideMeController } from '@/core/guideme/content';
 import { logger } from '@/lib/logger';
 import { sendMessage } from '@/lib/messaging';
 import { TabMessage } from '@/lib/tab-messages';
 
 const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
 
-function createTabMessageHandler(session: CaptureSession) {
+function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeController) {
   return function handleTabMessage(msg: Record<string, unknown>, _sender: unknown, sendResponse: (r: unknown) => void) {
     if (session.isDisabled) return false;
 
@@ -49,6 +50,11 @@ function createTabMessageHandler(session: CaptureSession) {
         });
         return true;
 
+      case TabMessage.GUIDEME_STOP:
+        guideMe.dispose();
+        sendResponse({ stopped: true });
+        return true;
+
       default:
         return false;
     }
@@ -76,10 +82,13 @@ export default defineContentScript({
     document.dispatchEvent(new CustomEvent(CLEANUP_EVENT));
 
     const session = new CaptureSession();
-    const handleTabMessage = createTabMessageHandler(session);
+    const guideMe = new GuideMeController();
+    guideMe.start();
+    const handleTabMessage = createTabMessageHandler(session, guideMe);
 
     document.addEventListener(CLEANUP_EVENT, () => {
       session.dispose();
+      guideMe.dispose();
       browser.runtime.onMessage.removeListener(handleTabMessage);
     });
 

@@ -7,6 +7,7 @@ export const TabMessage = {
   HIDE_OVERLAY: 'HIDE_OVERLAY',
   SHOW_OVERLAY: 'SHOW_OVERLAY',
   SHOW_NOTIFICATION: 'SHOW_NOTIFICATION',
+  GUIDEME_STOP: 'GUIDEME_STOP',
 } as const;
 
 export type TabMessageType = (typeof TabMessage)[keyof typeof TabMessage];
