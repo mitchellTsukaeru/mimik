@@ -94,6 +94,24 @@ export default defineBackground(() => {
     return { success: true, guideId: guideId ?? undefined };
   });
 
+  onMessage('enterBlurMode', async () => {
+    await waitUntilReady();
+    await broadcastStopCapture();
+    await localStorage.set({ mimikBlurMode: true });
+    return { entered: true };
+  });
+
+  onMessage('exitBlurMode', async () => {
+    await waitUntilReady();
+    await localStorage.set({ mimikBlurMode: false });
+    const actor = getActor();
+    const guideId = actor.getSnapshot().context.currentGuideId;
+    if (guideId) {
+      await broadcastStartCapture(guideId);
+    }
+    return { exited: true };
+  });
+
   onMessage('captureStep', async ({ data }) => {
     await waitUntilReady();
     return handleCaptureStep(data);

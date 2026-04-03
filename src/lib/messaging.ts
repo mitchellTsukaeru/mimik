@@ -91,6 +91,14 @@ export interface GuideMe_PrevResponse {
   moved: boolean;
 }
 
+export interface EnterBlurModeResponse {
+  entered: boolean;
+}
+
+export interface ExitBlurModeResponse {
+  exited: boolean;
+}
+
 interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
@@ -103,6 +111,8 @@ interface MimikProtocol {
   guideMeStepCompleted(data: GuideMeStepCompletedData): GuideMeStepCompletedResponse;
   guideMeCancel(): GuideMe_CancelResponse;
   guideMePrev(data: GuideMe_PrevData): GuideMe_PrevResponse;
+  enterBlurMode(): EnterBlurModeResponse;
+  exitBlurMode(): ExitBlurModeResponse;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();
