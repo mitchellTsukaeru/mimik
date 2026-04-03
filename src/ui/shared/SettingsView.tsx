@@ -1,5 +1,6 @@
-import { ArrowLeft, Check, Shield } from 'lucide-react';
+import { ArrowLeft, Check, EyeOff, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
@@ -14,13 +15,24 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
+  const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
+    email: true,
+    phone: true,
+    ssn: false,
+    creditCard: false,
+    ipAddress: false,
+    macAddress: false,
+  });
+  const [blurAiEnabled, setBlurAiEnabled] = useState(false);
 
   useEffect(() => {
-    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']).then((result) => {
+    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'blurPresets', 'blurAiEnabled']).then((result) => {
       const p = (result.aiProvider as AIProviderKey) || 'openai';
       setProvider(p);
       setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
       if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+      if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
+      if (result.blurAiEnabled) setBlurAiEnabled(result.blurAiEnabled as boolean);
     });
   }, []);
 
@@ -30,7 +42,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   };
 
   const handleSave = async () => {
-    await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model });
+    await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model, blurPresets, blurAiEnabled });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -39,7 +51,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   return (
     <div className="bg-card flex flex-col">
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
         {onBack && (
           <button
@@ -52,9 +63,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         <h1 className="text-[15px] font-bold text-foreground">Settings</h1>
       </div>
 
-      {/* Body */}
       <div className="flex-1 px-4 py-5 space-y-5">
-        {/* Provider */}
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1.5">AI Provider</label>
           <select
@@ -70,7 +79,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </select>
         </div>
 
-        {/* Model */}
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1.5">Model</label>
           <select
@@ -86,7 +94,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </select>
         </div>
 
-        {/* API Key */}
         <div>
           <label className="block text-xs font-semibold text-foreground mb-1.5">API Key</label>
           <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
@@ -95,7 +102,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </p>
         </div>
 
-        {/* Save */}
         <Button
           onClick={handleSave}
           disabled={saved}
@@ -106,7 +112,49 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           {saved ? 'Saved' : 'Save Settings'}
         </Button>
 
-        {/* Privacy note */}
+        <div className="border-t border-border pt-5">
+          <div className="flex items-center gap-2 mb-4">
+            <EyeOff size={14} className="text-foreground" />
+            <h2 className="text-xs font-bold text-foreground uppercase tracking-wide">Smart Blur</h2>
+          </div>
+
+          <div className="space-y-3">
+            {(Object.entries(PRESET_LABELS) as [PresetKey, string][]).map(([key, label]) => (
+              <div key={key} className="flex items-center justify-between">
+                <span className="text-[13px] font-medium text-foreground">{label}</span>
+                <button
+                  onClick={() => setBlurPresets((prev) => ({ ...prev, [key]: !prev[key] }))}
+                  className={`w-9 h-5 rounded-full transition-colors relative ${
+                    blurPresets[key] ? 'bg-amber' : 'bg-border'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                      blurPresets[key] ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            ))}
+
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <span className="text-[13px] font-medium text-foreground">AI Detection</span>
+              <button
+                onClick={() => setBlurAiEnabled((prev) => !prev)}
+                className={`w-9 h-5 rounded-full transition-colors relative ${
+                  blurAiEnabled ? 'bg-amber' : 'bg-border'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                    blurAiEnabled ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">
           <Shield size={12} className="shrink-0 mt-0.5 text-amber" />
           <span>
