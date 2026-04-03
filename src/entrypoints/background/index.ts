@@ -1,7 +1,8 @@
 import { defineBackground } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
+import { advanceSession, cancelSession, completeSession, startSession } from '@/core/guideme/session';
 import { createGuide, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
-import { getActiveTab, localStorage, setSidePanelBehavior } from '@/lib/browser-api';
+import { getActiveTab, localStorage, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
 import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
@@ -109,5 +110,71 @@ export default defineBackground(() => {
       timestamp: data.timestamp,
     });
     return { stored: true };
+  });
+
+  onMessage('startGuideMe', async ({ data }) => {
+    const steps = await getStepsForGuide(data.guideId);
+    if (steps.length === 0) return { started: false, error: 'No steps' };
+
+    const firstStep = steps[0];
+    if (!firstStep.elementMeta) return { started: false, error: 'Guide lacks element metadata' };
+
+    await startSession(data.guideId, steps.length, firstStep);
+
+    const activeTab = await getActiveTab();
+    if (activeTab?.id && firstStep.url) {
+      await updateTab(activeTab.id, { url: firstStep.url });
+    }
+
+    return { started: true };
+  });
+
+  onMessage('guideMeStepCompleted', async ({ data }) => {
+    const sessionData = await localStorage.get(['guideMeSession']);
+    const session = sessionData.guideMeSession as { guideId: string } | undefined;
+    if (!session) return { advanced: false };
+
+    const steps = await getStepsForGuide(session.guideId);
+    const nextIndex = data.stepIndex + 1;
+
+    if (nextIndex >= steps.length) {
+      await completeSession();
+      return { advanced: true, completed: true };
+    }
+
+    const nextStep = steps[nextIndex];
+    await advanceSession(nextStep, nextIndex);
+
+    const currentTab = await getActiveTab();
+    if (currentTab?.id && nextStep.url && nextStep.url !== currentTab.url) {
+      await updateTab(currentTab.id, { url: nextStep.url });
+    }
+
+    return { advanced: true };
+  });
+
+  onMessage('guideMeCancel', async () => {
+    await cancelSession();
+    return { cancelled: true };
+  });
+
+  onMessage('guideMePrev', async ({ data }) => {
+    if (data.stepIndex <= 0) return { moved: false };
+
+    const sessionData = await localStorage.get(['guideMeSession']);
+    const session = sessionData.guideMeSession as { guideId: string } | undefined;
+    if (!session) return { moved: false };
+
+    const steps = await getStepsForGuide(session.guideId);
+    const prevIndex = data.stepIndex - 1;
+    const prevStep = steps[prevIndex];
+    await advanceSession(prevStep, prevIndex);
+
+    const currentTab = await getActiveTab();
+    if (currentTab?.id && prevStep.url && prevStep.url !== currentTab.url) {
+      await updateTab(currentTab.id, { url: prevStep.url });
+    }
+
+    return { moved: true };
   });
 });

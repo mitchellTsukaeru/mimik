@@ -61,6 +61,36 @@ export interface RrwebChunkResponse {
   stored: boolean;
 }
 
+export interface StartGuideMeData {
+  guideId: string;
+}
+
+export interface StartGuideMeResponse {
+  started: boolean;
+  error?: string;
+}
+
+export interface GuideMeStepCompletedData {
+  stepIndex: number;
+}
+
+export interface GuideMeStepCompletedResponse {
+  advanced: boolean;
+  completed?: boolean;
+}
+
+export interface GuideMe_CancelResponse {
+  cancelled: boolean;
+}
+
+export interface GuideMe_PrevData {
+  stepIndex: number;
+}
+
+export interface GuideMe_PrevResponse {
+  moved: boolean;
+}
+
 interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
@@ -69,6 +99,10 @@ interface MimikProtocol {
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;
   rrwebChunk(data: RrwebChunkData): RrwebChunkResponse;
+  startGuideMe(data: StartGuideMeData): StartGuideMeResponse;
+  guideMeStepCompleted(data: GuideMeStepCompletedData): GuideMeStepCompletedResponse;
+  guideMeCancel(): GuideMe_CancelResponse;
+  guideMePrev(data: GuideMe_PrevData): GuideMe_PrevResponse;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();
