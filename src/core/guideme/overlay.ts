@@ -429,7 +429,14 @@ export class GuideMeOverlay {
       if (target instanceof HTMLElement && target.getAttribute('contenteditable') !== null) {
         target.textContent = step.inputValue ?? '';
       } else if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-        target.value = step.inputValue ?? '';
+        const proto =
+          target instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+        if (nativeSetter) {
+          nativeSetter.call(target, step.inputValue ?? '');
+        } else {
+          target.value = step.inputValue ?? '';
+        }
       }
 
       target.dispatchEvent(new Event('input', { bubbles: true }));

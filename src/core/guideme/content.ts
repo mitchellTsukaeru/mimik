@@ -16,6 +16,7 @@ export class GuideMeController {
   private active = false;
 
   start() {
+    if (window.self !== window.top) return;
     this.storageListener = (changes) => {
       if (changes[SESSION_KEY] || changes[STEP_KEY]) {
         this.onStorageChange();

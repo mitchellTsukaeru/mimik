@@ -116,8 +116,8 @@ export default defineBackground(() => {
     const steps = await getStepsForGuide(data.guideId);
     if (steps.length === 0) return { started: false, error: 'No steps' };
 
-    const firstStep = steps[0];
-    if (!firstStep.elementMeta) return { started: false, error: 'Guide lacks element metadata' };
+    const firstStep = steps.find((s) => s.elementMeta) ?? steps[0];
+    if (!steps.some((s) => s.elementMeta)) return { started: false, error: 'Guide lacks element metadata' };
 
     await startSession(data.guideId, steps.length, firstStep);
 
@@ -143,6 +143,10 @@ export default defineBackground(() => {
     }
 
     const nextStep = steps[nextIndex];
+    if (!nextStep) {
+      await completeSession();
+      return { advanced: true, completed: true };
+    }
     await advanceSession(nextStep, nextIndex);
 
     const currentTab = await getActiveTab();
@@ -168,6 +172,7 @@ export default defineBackground(() => {
     const steps = await getStepsForGuide(session.guideId);
     const prevIndex = data.stepIndex - 1;
     const prevStep = steps[prevIndex];
+    if (!prevStep) return { moved: false };
     await advanceSession(prevStep, prevIndex);
 
     const currentTab = await getActiveTab();
