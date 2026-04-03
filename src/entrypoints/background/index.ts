@@ -1,6 +1,6 @@
 import { defineBackground } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
-import { advanceSession, cancelSession, completeSession, startSession } from '@/core/guideme/session';
+import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { createGuide, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
 import { getActiveTab, localStorage, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
@@ -46,6 +46,15 @@ export default defineBackground(() => {
       try {
         port.postMessage(getStateUpdate());
       } catch {}
+    });
+
+    port.onDisconnect.addListener(() => {
+      getSession().then((session) => {
+        if (session?.active) {
+          cancelSession();
+          logger.debug('Guide Me cancelled: sidepanel closed');
+        }
+      });
     });
   });
 
