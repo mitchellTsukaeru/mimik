@@ -1,4 +1,3 @@
-const PICKER_TAG = 'mimik-blur-picker';
 const MANUAL_CLASS = 'mimik-manual-blur';
 const BLUR_ATTR = 'data-mimik-blur';
 

@@ -1,8 +1,6 @@
 import type { PresetKey } from './regexes';
 import { PRESET_LABELS } from './regexes';
 
-const PANEL_TAG = 'mimik-blur-panel';
-
 const PRESET_KEYS: PresetKey[] = ['email', 'phone', 'ssn', 'creditCard', 'ipAddress', 'macAddress'];
 
 const STYLES = `
