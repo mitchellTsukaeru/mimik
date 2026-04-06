@@ -228,6 +228,30 @@ const STYLES = `
   }
 
   .btn-done:hover { opacity: 0.9; }
+
+  .ai-status {
+    font-size: 11px;
+    font-weight: 500;
+    color: #92400E;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 2px;
+  }
+
+  .spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #E8E2DA;
+    border-top-color: #F59E0B;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 `;
 
 function icon(name: 'close' | 'blur' | 'cursor'): string {
@@ -254,7 +278,6 @@ export class BlurPanel {
 
   mount() {
     this.host = document.createElement('div');
-    this.host.setAttribute('data-mimik-ignore', '');
     this.host.setAttribute('data-mimik-ignore', '');
 
     const shadow = this.host.attachShadow({ mode: 'closed' });
@@ -385,12 +408,26 @@ export class BlurPanel {
     label.textContent = 'AI Detection';
     row.appendChild(label);
 
+    const status = document.createElement('div');
+    status.className = 'ai-status';
+
     const toggle = this.buildToggle(this.aiEnabled, (checked) => {
       this.aiEnabled = checked;
+      if (checked) {
+        status.innerHTML = '<div class="spinner"></div> Loading model...';
+      } else {
+        status.textContent = '';
+      }
       document.dispatchEvent(new CustomEvent('mimik-blur:toggle-ai', { detail: { enabled: checked } }));
     });
     row.appendChild(toggle);
     section.appendChild(row);
+    section.appendChild(status);
+
+    document.addEventListener('mimik-blur:ai-status', ((e: CustomEvent<{ message: string }>) => {
+      status.innerHTML = '';
+      status.textContent = e.detail.message;
+    }) as EventListener);
 
     return section;
   }

@@ -12,7 +12,7 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "prepare": "husky",
-    "postinstall": "mkdir -p public/transformers && cp node_modules/onnxruntime-web/dist/*.wasm public/transformers/ 2>/dev/null || true"
+    "postinstall": "mkdir -p public/transformers && find node_modules -path '*/onnxruntime-web/dist/*.wasm' -exec cp {} public/transformers/ \\; && find node_modules -path '*/onnxruntime-web/dist/ort-wasm-simd*.mjs' -exec cp {} public/transformers/ \\; || true"
   },
   "keywords": [],
   "author": "",

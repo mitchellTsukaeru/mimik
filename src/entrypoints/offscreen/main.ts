@@ -9,8 +9,10 @@ env.useCustomCache = false;
 
 const wasmPath = chrome.runtime.getURL('transformers/');
 env.backends.onnx.wasm.wasmPaths = wasmPath;
+env.backends.onnx.wasm.numThreads = 1;
 
 let ner: TokenClassificationPipeline | null = null;
+let activePort: chrome.runtime.Port | null = null;
 
 async function initModel(): Promise<{ ok: boolean; error?: string }> {
   if (ner) return { ok: true };
@@ -18,6 +20,15 @@ async function initModel(): Promise<{ ok: boolean; error?: string }> {
     ner = (await pipeline('token-classification', MODEL_ID, {
       dtype: 'fp32',
       device: 'wasm',
+      progress_callback: (progress: any) => {
+        if (activePort && progress.status === 'progress') {
+          activePort.postMessage({
+            type: 'progress',
+            file: progress.file,
+            progress: Math.round(progress.progress),
+          });
+        }
+      },
     })) as TokenClassificationPipeline;
     return { ok: true };
   } catch (err) {
@@ -112,13 +123,17 @@ async function detect(text: string): Promise<{ entities: Entity[] }> {
 
   try {
     const chunks = chunkText(text);
+    console.log('[OFFSCREEN] text length:', text.length, 'chunks:', chunks.length);
     const allEntities: Entity[] = [];
     const seen = new Set<string>();
 
     for (const chunk of chunks) {
       const results = await ner!(chunk, { ignore_labels: ['O'] });
       const tokens = (Array.isArray(results) ? results : [results]) as unknown as TokenResult[];
-      for (const entity of postProcess(tokens, text)) {
+      console.log('[OFFSCREEN] raw tokens:', tokens.length, tokens.slice(0, 5));
+      const processed = postProcess(tokens, text);
+      console.log('[OFFSCREEN] processed entities:', processed.length, processed.slice(0, 5));
+      for (const entity of processed) {
         const key = `${entity.text}:${entity.label}`;
         if (!seen.has(key)) {
           seen.add(key);
@@ -127,22 +142,31 @@ async function detect(text: string): Promise<{ entities: Entity[] }> {
       }
     }
 
+    console.log('[OFFSCREEN] total entities:', allEntities.length, allEntities);
     return { entities: allEntities };
   } catch {
     return { entities: [] };
   }
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+const port = chrome.runtime.connect({ name: 'mimik-offscreen' });
+activePort = port;
+port.onMessage.addListener((msg) => {
   if (msg.type === 'offscreen:ai:init') {
-    initModel().then(sendResponse);
-    return true;
+    initModel().then((res) => port.postMessage({ id: msg.id, ...res }));
   }
   if (msg.type === 'offscreen:ai:detect') {
-    detect(msg.text).then(sendResponse);
-    return true;
+    detect(msg.text)
+      .then((res) => {
+        port.postMessage({
+          type: 'log',
+          message: `detect done: ${res.entities.length} entities, text length: ${(msg.text || '').length}`,
+        });
+        port.postMessage({ id: msg.id, ...res });
+      })
+      .catch((err) => {
+        port.postMessage({ type: 'log', message: `detect error: ${err}` });
+        port.postMessage({ id: msg.id, entities: [] });
+      });
   }
-  return false;
 });
-
-chrome.runtime.sendMessage({ type: 'offscreen:ready' });

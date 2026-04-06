@@ -1,8 +1,9 @@
-import { ArrowLeft, Check, EyeOff, Shield } from 'lucide-react';
+import { ArrowLeft, Check, EyeOff, Loader2, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
 import { localStorage } from '@/lib/browser-api';
+import { sendMessage } from '@/lib/messaging';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 
@@ -24,6 +25,19 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     macAddress: false,
   });
   const [blurAiEnabled, setBlurAiEnabled] = useState(false);
+  const [aiModelStatus, setAiModelStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [aiProgress, setAiProgress] = useState(0);
+
+  useEffect(() => {
+    if (aiModelStatus !== 'loading') return;
+    const handler = (changes: Record<string, chrome.storage.StorageChange>) => {
+      if ('blurAiProgress' in changes) {
+        setAiProgress(changes.blurAiProgress.newValue ?? 0);
+      }
+    };
+    chrome.storage.onChanged.addListener(handler);
+    return () => chrome.storage.onChanged.removeListener(handler);
+  }, [aiModelStatus]);
 
   useEffect(() => {
     localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'blurPresets', 'blurAiEnabled']).then((result) => {
@@ -137,20 +151,51 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               </div>
             ))}
 
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <span className="text-[13px] font-medium text-foreground">AI Detection</span>
-              <button
-                onClick={() => setBlurAiEnabled((prev) => !prev)}
-                className={`w-9 h-5 rounded-full transition-colors relative ${
-                  blurAiEnabled ? 'bg-amber' : 'bg-border'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                    blurAiEnabled ? 'translate-x-4' : 'translate-x-0'
+            <div className="pt-2 border-t border-border space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-medium text-foreground">AI Detection</span>
+                <button
+                  onClick={() => {
+                    const next = !blurAiEnabled;
+                    setBlurAiEnabled(next);
+                    if (next && aiModelStatus !== 'ready') {
+                      setAiModelStatus('loading');
+                      sendMessage('blurAiDetect', { text: '' })
+                        .then(() => setAiModelStatus('ready'))
+                        .catch(() => setAiModelStatus('error'));
+                    }
+                  }}
+                  disabled={aiModelStatus === 'loading'}
+                  className={`w-9 h-5 rounded-full transition-colors relative ${
+                    blurAiEnabled ? 'bg-amber' : 'bg-border'
                   }`}
-                />
-              </button>
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                      blurAiEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+              {aiModelStatus === 'loading' && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Loader2 size={12} className="animate-spin text-amber" />
+                      Downloading AI model...
+                    </div>
+                    <span className="font-medium">{aiProgress}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-border overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-amber transition-all duration-300"
+                      style={{ width: `${aiProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {aiModelStatus === 'ready' && <p className="text-[11px] text-muted-foreground">Model ready</p>}
+              {aiModelStatus === 'error' && <p className="text-[11px] text-red-500">Failed to load model</p>}
             </div>
           </div>
         </div>

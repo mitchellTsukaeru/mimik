@@ -11,15 +11,64 @@ import { registerNavigationListeners } from './navigation';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
 
-async function ensureOffscreen() {
-  const contexts = await chrome.offscreen.getContexts({
-    contextTypes: ['OFFSCREEN_DOCUMENT' as chrome.offscreen.ContextType],
+let offscreenPort: chrome.runtime.Port | null = null;
+
+async function ensureOffscreen(): Promise<chrome.runtime.Port> {
+  if (offscreenPort) return offscreenPort;
+
+  const portReady = new Promise<void>((resolve) => {
+    const listener = (port: chrome.runtime.Port) => {
+      if (port.name === 'mimik-offscreen') {
+        chrome.runtime.onConnect.removeListener(listener);
+        offscreenPort = port;
+        offscreenPort.onMessage.addListener((msg) => {
+          if (msg.type === 'progress') {
+            localStorage.set({ blurAiProgress: msg.progress });
+          }
+          if (msg.type === 'log') {
+            logger.info('[OFFSCREEN]', msg.message);
+          }
+        });
+        offscreenPort.onDisconnect.addListener(() => {
+          offscreenPort = null;
+        });
+        resolve();
+      }
+    };
+    chrome.runtime.onConnect.addListener(listener);
   });
-  if (contexts.length > 0) return;
-  await chrome.offscreen.createDocument({
-    url: 'offscreen/index.html',
-    reasons: ['WORKERS' as chrome.offscreen.Reason],
-    justification: 'AI PII detection via Transformers.js',
+
+  try {
+    await chrome.offscreen.createDocument({
+      url: 'offscreen.html',
+      reasons: ['WORKERS' as chrome.offscreen.Reason],
+      justification: 'AI PII detection via Transformers.js',
+    });
+  } catch {}
+
+  await portReady;
+  return offscreenPort!;
+}
+
+let offscreenMsgId = 0;
+function sendToOffscreen(type: string, data: Record<string, unknown> = {}): Promise<any> {
+  return ensureOffscreen().then((port) => {
+    return new Promise((resolve, reject) => {
+      const id = ++offscreenMsgId;
+      const timeout = setTimeout(() => {
+        port.onMessage.removeListener(handler);
+        reject(new Error('Offscreen timeout'));
+      }, 120000);
+      const handler = (msg: any) => {
+        if (msg.id === id) {
+          clearTimeout(timeout);
+          port.onMessage.removeListener(handler);
+          resolve(msg);
+        }
+      };
+      port.onMessage.addListener(handler);
+      port.postMessage({ type, id, ...data });
+    });
   });
 }
 
@@ -232,14 +281,15 @@ export default defineBackground(() => {
   });
 
   onMessage('blurAiDetect', async ({ data }) => {
+    logger.info('[BLUR-AI] ensuring offscreen');
     await ensureOffscreen();
-    try {
-      const res: any = await chrome.runtime.sendMessage({ type: 'offscreen:ai:detect', text: data.text });
-      if (res?.entities) {
-        const patterns = res.entities.map((e: { text: string }) => e.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-        return { patterns };
-      }
-    } catch {}
+    logger.info('[BLUR-AI] sending detect to offscreen, text length:', data.text?.length);
+    const res = await sendToOffscreen('offscreen:ai:detect', { text: data.text });
+    logger.info('[BLUR-AI] offscreen response:', res);
+    if (res?.entities) {
+      const patterns = res.entities.map((e: { text: string }) => e.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      return { patterns };
+    }
     return { patterns: [] };
   });
 });

@@ -84,16 +84,25 @@ export class BlurManager {
     this.active = false;
   }) as EventListener;
 
+  private dispatchAiStatus(message: string) {
+    document.dispatchEvent(new CustomEvent('mimik-blur:ai-status', { detail: { message } }));
+  }
+
   private onToggleAi = ((e: CustomEvent<{ enabled: boolean }>) => {
     if (e.detail.enabled) {
       sendMessage('blurAiDetect', { text: document.body.innerText })
         .then((res) => {
-          if (res?.patterns) {
+          if (res?.patterns?.length) {
             const regexes = res.patterns.map((p) => new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'));
             this.scanner.setAiPatterns(regexes);
+            this.dispatchAiStatus(`${res.patterns.length} entities found`);
+          } else {
+            this.dispatchAiStatus('No PII detected');
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          this.dispatchAiStatus('Detection failed');
+        });
     } else {
       this.scanner.setAiPatterns([]);
     }
