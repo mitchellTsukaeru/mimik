@@ -43,13 +43,22 @@ export async function exportGuideAsPDF(
   y += badgeH + 8;
 
   const gradX = centerX - gradLineW / 2;
-  const segW = gradLineW / 3;
-  doc.setFillColor(79, 70, 229);
-  doc.rect(gradX, y, segW, 1.5, 'F');
-  doc.setFillColor(199, 210, 254);
-  doc.rect(gradX + segW, y, segW, 1.5, 'F');
-  doc.setFillColor(56, 189, 248);
-  doc.rect(gradX + segW * 2, y, segW, 1.5, 'F');
+  const gradStops = [
+    [79, 70, 229],
+    [99, 91, 237],
+    [129, 120, 244],
+    [164, 161, 249],
+    [199, 210, 254],
+    [155, 210, 254],
+    [96, 200, 251],
+    [56, 189, 248],
+  ] as const;
+  const segW = gradLineW / gradStops.length;
+  for (let i = 0; i < gradStops.length; i++) {
+    const [r, g, b] = gradStops[i];
+    doc.setFillColor(r, g, b);
+    doc.rect(gradX + segW * i, y, segW + 0.2, 1.5, 'F');
+  }
   y += 10;
 
   doc.setFontSize(22);
