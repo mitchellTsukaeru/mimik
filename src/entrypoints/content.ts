@@ -1,13 +1,11 @@
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { browser } from '#imports';
 import { BlurManager } from '@/core/blur/manager';
-import { CaptureState } from '@/core/capture/machine';
 import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';
 import { showStartNotification } from '@/core/capture/start-notification';
 import { GuideMeController } from '@/core/guideme/content';
 import { logger } from '@/lib/logger';
-import { sendMessage } from '@/lib/messaging';
 import { TabMessage } from '@/lib/tab-messages';
 
 const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
@@ -67,17 +65,6 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
   };
 }
 
-function syncWithBackground(session: CaptureSession) {
-  sendMessage('getState', undefined)
-    .then((res) => {
-      if (session.isDisabled) return;
-      if (res.state === CaptureState.RECORDING && res.currentGuideId) {
-        session.start(res.currentGuideId);
-      }
-    })
-    .catch(() => {});
-}
-
 export default defineContentScript({
   matches: ['<all_urls>'],
   allFrames: true,
@@ -90,7 +77,6 @@ export default defineContentScript({
     const session = new CaptureSession();
     const guideMe = new GuideMeController();
     const blurManager = new BlurManager();
-    guideMe.start();
     const handleTabMessage = createTabMessageHandler(session, guideMe, blurManager);
 
     document.addEventListener(CLEANUP_EVENT, () => {
@@ -102,11 +88,6 @@ export default defineContentScript({
 
     window.addEventListener('beforeunload', () => session.stop());
     browser.runtime.onMessage.addListener(handleTabMessage);
-    syncWithBackground(session);
-
-    document.addEventListener('mimik-blur:done', () => {
-      sendMessage('exitBlurMode', undefined).catch(() => {});
-    });
 
     logger.info('Content script loaded →', window.location.href);
   },

@@ -1,9 +1,21 @@
 import { browser } from '#imports';
+import { sendMessage } from '@/lib/messaging';
 import { ElementPicker } from './element-picker';
 import { BlurPanel } from './panel';
 import type { PresetKey } from './regexes';
 import { BlurScanner } from './scanner';
 import { injectBlurStyles, removeBlurStyles } from './styles';
+
+const DEFAULT_PRESETS: Record<PresetKey, boolean> = {
+  email: true,
+  phone: true,
+  ssn: false,
+  creditCard: false,
+  ipAddress: false,
+  macAddress: false,
+};
+
+const EVENTS = ['mimik-blur:update-presets', 'mimik-blur:start-picker', 'mimik-blur:reset', 'mimik-blur:done'] as const;
 
 export class BlurManager {
   private scanner = new BlurScanner();
@@ -14,68 +26,58 @@ export class BlurManager {
   async start() {
     if (this.active) return;
     this.active = true;
+
     injectBlurStyles();
+    const presets = await this.loadPresets();
+    const activeKeys = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, on]) => on).map(([k]) => k);
 
-    let stored: Record<string, unknown> = {};
-    try {
-      stored = await browser.storage.local.get(['blurPresets']);
-    } catch {}
-    const presets = (stored.blurPresets as Record<PresetKey, boolean>) || {
-      email: true,
-      phone: true,
-      ssn: false,
-      creditCard: false,
-      ipAddress: false,
-      macAddress: false,
-    };
-
-    const activePresets = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, v]) => v).map(([k]) => k);
-
-    this.scanner.start(activePresets);
+    this.scanner.start(activeKeys);
     this.panel = new BlurPanel(presets);
     this.panel.mount();
 
-    document.addEventListener('mimik-blur:update-presets', this.onUpdatePresets);
-    document.addEventListener('mimik-blur:start-picker', this.onStartPicker);
-    document.addEventListener('mimik-blur:reset', this.onReset);
-    document.addEventListener('mimik-blur:done', this.onDone);
+    for (const event of EVENTS) document.addEventListener(event, this.handleEvent);
   }
 
   stop() {
     if (!this.active) return;
-    this.active = false;
+    this.teardown();
     this.scanner.stop();
-    this.picker.stop();
-    this.panel?.unmount();
-    this.panel = null;
     removeBlurStyles();
-    document.removeEventListener('mimik-blur:update-presets', this.onUpdatePresets);
-    document.removeEventListener('mimik-blur:start-picker', this.onStartPicker);
-    document.removeEventListener('mimik-blur:reset', this.onReset);
-    document.removeEventListener('mimik-blur:done', this.onDone);
   }
 
-  private onUpdatePresets = ((e: CustomEvent<{ presets: PresetKey[] }>) => {
-    this.scanner.updatePresets(e.detail.presets);
-  }) as EventListener;
-
-  private onStartPicker = (() => {
-    this.picker.start(() => this.picker.stop());
-  }) as EventListener;
-
-  private onReset = (() => {
-    this.scanner.unblurAll();
-  }) as EventListener;
-
-  private onDone = (() => {
+  private teardown() {
+    this.active = false;
     this.panel?.unmount();
     this.panel = null;
     this.scanner.detach();
     this.picker.stop();
-    document.removeEventListener('mimik-blur:update-presets', this.onUpdatePresets);
-    document.removeEventListener('mimik-blur:start-picker', this.onStartPicker);
-    document.removeEventListener('mimik-blur:reset', this.onReset);
-    document.removeEventListener('mimik-blur:done', this.onDone);
-    this.active = false;
-  }) as EventListener;
+    for (const event of EVENTS) document.removeEventListener(event, this.handleEvent);
+  }
+
+  private handleEvent = (e: Event) => {
+    switch (e.type) {
+      case 'mimik-blur:update-presets':
+        this.scanner.updatePresets((e as CustomEvent<{ presets: PresetKey[] }>).detail.presets);
+        break;
+      case 'mimik-blur:start-picker':
+        this.picker.start(() => this.picker.stop());
+        break;
+      case 'mimik-blur:reset':
+        this.scanner.unblurAll();
+        break;
+      case 'mimik-blur:done':
+        this.teardown();
+        sendMessage('exitBlurMode', undefined).catch(() => {});
+        break;
+    }
+  };
+
+  private async loadPresets(): Promise<Record<PresetKey, boolean>> {
+    try {
+      const stored = await browser.storage.local.get(['blurPresets']);
+      return (stored.blurPresets as Record<PresetKey, boolean>) || DEFAULT_PRESETS;
+    } catch {
+      return DEFAULT_PRESETS;
+    }
+  }
 }

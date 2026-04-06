@@ -17,7 +17,7 @@ export class GuideMeController {
   private currentTarget: HTMLElement | null = null;
   private currentStepIndex = -1;
 
-  start() {
+  constructor() {
     if (window.self !== window.top) return;
     this.storageListener = (changes) => {
       if (changes[SESSION_KEY] || changes[STEP_KEY]) {

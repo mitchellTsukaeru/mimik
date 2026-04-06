@@ -1,10 +1,16 @@
 import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
 import { type CaptureHandle, startCapture } from './events/handlers';
+import { CaptureState } from './machine';
 
 export class CaptureSession {
   private capture: CaptureHandle | null = null;
   private activeGuideId: string | null = null;
   private disabled = false;
+
+  constructor() {
+    this.syncWithBackground();
+  }
 
   get isActive(): boolean {
     return this.activeGuideId !== null;
@@ -37,6 +43,17 @@ export class CaptureSession {
     this.capture?.stop();
     this.capture = null;
     this.activeGuideId = null;
+  }
+
+  private syncWithBackground(): void {
+    sendMessage('getState', undefined)
+      .then((res) => {
+        if (this.disabled) return;
+        if (res.state === CaptureState.RECORDING && res.currentGuideId) {
+          this.start(res.currentGuideId);
+        }
+      })
+      .catch(() => {});
   }
 
   dispose(): void {
