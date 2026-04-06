@@ -61,7 +61,7 @@ export async function exportGuideAsHTML(
         domain
           ? `<div style="text-align:left;">
         <div style="font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Source</div>
-        <div style="font-size:14px;font-weight:600;color:#4F46E5;display:flex;align-items:center;gap:6px;">${favicon ? `<img src="${favicon}" width="18" height="18" style="border-radius:4px;" />` : ''}${escapeHtml(domain)}</div>
+        <a href="https://${escapeHtml(domain)}" target="_blank" rel="noopener" style="font-size:14px;font-weight:600;color:#4F46E5;display:flex;align-items:center;gap:6px;text-decoration:none;">${favicon ? `<img src="${favicon}" width="18" height="18" style="border-radius:4px;" />` : ''}${escapeHtml(domain)}</a>
       </div>`
           : ''
       }

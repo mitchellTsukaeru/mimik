@@ -102,7 +102,7 @@ export async function exportGuideAsPDF(
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(79, 70, 229);
-    doc.text(domain, domainTextX, y + 6);
+    doc.textWithLink(domain, domainTextX, y + 6, { url: `https://${domain}` });
   }
 
   const stepIndent = 16;
