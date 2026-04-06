@@ -130,8 +130,8 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
               <ellipse cx="146" cy="64" rx="10" ry="8" fill="#1E1B4B" />
             </svg>
             <div className="text-center">
-              <p className="text-sm font-semibold text-violet">Ready to capture!</p>
-              <p className="text-xs text-border mt-0.5">Click on the page to start</p>
+              <p className="text-sm font-semibold text-foreground">Ready to capture!</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Click on the page to start</p>
             </div>
           </div>
         ) : (
