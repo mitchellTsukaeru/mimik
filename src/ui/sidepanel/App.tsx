@@ -47,9 +47,9 @@ function MascotIcon({ size = 44 }: { size?: number }) {
           transform="rotate(45, 100, 100)"
           opacity="0.15"
         />
-        <rect x="90" y="-80" width="50" height="400" fill="#7C3AED" transform="rotate(45, 100, 100)" opacity="0.12" />
-        <rect x="-30" y="-80" width="50" height="400" fill="#A78BFA" transform="rotate(45, 100, 100)" opacity="0.15" />
-        <rect x="150" y="-80" width="50" height="400" fill="#C4B5FD" transform="rotate(45, 100, 100)" opacity="0.1" />
+        <rect x="90" y="-80" width="50" height="400" fill="#818CF8" transform="rotate(45, 100, 100)" opacity="0.12" />
+        <rect x="-30" y="-80" width="50" height="400" fill="#93C5FD" transform="rotate(45, 100, 100)" opacity="0.15" />
+        <rect x="150" y="-80" width="50" height="400" fill="#A5B4FC" transform="rotate(45, 100, 100)" opacity="0.1" />
       </g>
       <rect x="30" y="95" width="140" height="68" rx="5" className="fill-primary" />
       <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className="fill-violet-mid" />
