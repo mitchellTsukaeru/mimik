@@ -429,9 +429,10 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
           </div>
         </div>
       </div>
-      <div className="w-1/2 bg-deep flex items-center justify-center p-12">
-        <div className="w-64 h-64 border-2 border-dashed border-lavender/30 rounded-2xl flex items-center justify-center">
-          <p className="text-lavender/40 text-sm font-medium text-center px-6">Screenshot placeholder</p>
+      <div className="w-1/2 bg-deep flex items-center justify-center relative overflow-hidden">
+        <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(79,70,229,0.2),transparent_70%)] top-[10%] right-[-10%]" />
+        <div className="animate-[float_4s_ease-in-out_infinite] relative z-10">
+          <img src="/pin-screenshot.png" alt="Pin Mimik extension" className="rounded-xl shadow-2xl max-w-[400px]" />
         </div>
       </div>
     </div>
