@@ -1,7 +1,17 @@
+import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { formatDate } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
 import { navigate } from '../router';
+
+interface GuideGridViewProps {
+  category: 'all' | 'starred' | 'trash';
+  onStar: (e: React.MouseEvent, id: string) => void;
+  onTrash: (e: React.MouseEvent, id: string) => void;
+  onRestore: (e: React.MouseEvent, id: string) => void;
+  onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+}
 
 function MimikEyes() {
   return (
@@ -15,7 +25,115 @@ function MimikEyes() {
   );
 }
 
-export default function GuideGridView() {
+function CardMenu({
+  guideId,
+  starred,
+  category,
+  onStar,
+  onTrash,
+  onRestore,
+  onPermanentDelete,
+}: {
+  guideId: string;
+  starred: boolean;
+  category: string;
+  onStar: (e: React.MouseEvent, id: string) => void;
+  onTrash: (e: React.MouseEvent, id: string) => void;
+  onRestore: (e: React.MouseEvent, id: string) => void;
+  onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const items: {
+    icon: React.ReactNode;
+    label: string;
+    onClick: (e: React.MouseEvent) => void;
+    destructive?: boolean;
+  }[] = [];
+
+  if (category === 'trash') {
+    items.push({
+      icon: <RotateCcw size={13} />,
+      label: 'Restore',
+      onClick: (e) => {
+        onRestore(e, guideId);
+        setOpen(false);
+      },
+    });
+    items.push({
+      icon: <Trash2 size={13} />,
+      label: 'Delete permanently',
+      onClick: (e) => {
+        onPermanentDelete(e, guideId);
+        setOpen(false);
+      },
+      destructive: true,
+    });
+  } else {
+    items.push({
+      icon: starred ? <StarOff size={13} /> : <Star size={13} />,
+      label: starred ? 'Unstar' : 'Star',
+      onClick: (e) => {
+        onStar(e, guideId);
+        setOpen(false);
+      },
+    });
+    items.push({
+      icon: <Trash2 size={13} />,
+      label: 'Move to trash',
+      onClick: (e) => {
+        onTrash(e, guideId);
+        setOpen(false);
+      },
+      destructive: true,
+    });
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+        className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+      >
+        <MoreVertical size={14} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-full ml-1 top-0 bg-card border border-border rounded-lg shadow-lg py-1 z-20 min-w-[160px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {items.map((item) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              className={`flex items-center gap-2 w-full text-left text-xs font-medium px-3 py-2 transition-colors ${
+                item.destructive ? 'text-destructive hover:bg-destructive/10' : 'text-foreground hover:bg-secondary'
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function GuideGridView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideGridViewProps) {
   const { guides, thumbnails } = useFullview((s) => ({
     guides: s.guides,
     thumbnails: s.thumbnails,
@@ -29,21 +147,32 @@ export default function GuideGridView() {
           <div
             key={guide.id}
             onClick={() => navigate({ page: 'guide', guideId: guide.id })}
-            className="rounded-xl bg-card overflow-hidden cursor-pointer hover:shadow-md transition-shadow border border-border"
+            className="group rounded-xl bg-card cursor-pointer hover:shadow-md transition-shadow border border-border relative"
           >
-            <div className="h-36 overflow-hidden">
+            <div className="h-36 overflow-hidden rounded-t-xl">
               {thumb ? (
                 <ZoomScreenshot screenshot={thumb} alt={guide.title} className="!rounded-none !border-0" />
               ) : (
                 <MimikEyes />
               )}
             </div>
-            <div className="p-3">
-              <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
-              <p className="text-xs mt-0.5 text-muted-foreground">
-                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
-                {formatDate(guide.updatedAt)}
-              </p>
+            <div className="p-3 flex items-start justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
+                <p className="text-xs mt-0.5 text-muted-foreground">
+                  {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
+                  {formatDate(guide.updatedAt)}
+                </p>
+              </div>
+              <CardMenu
+                guideId={guide.id}
+                starred={guide.starred}
+                category={category}
+                onStar={onStar}
+                onTrash={onTrash}
+                onRestore={onRestore}
+                onPermanentDelete={onPermanentDelete}
+              />
             </div>
           </div>
         );
