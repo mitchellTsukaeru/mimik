@@ -1,7 +1,7 @@
 import { defineBackground } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
-import { createGuide, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
+import { createGuide, getGuideDomain, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
 import { getActiveTab, localStorage, sendMessageToTab, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
@@ -26,7 +26,11 @@ async function ensureOffscreen() {
 async function generateTitleInBackground(guideId: string) {
   try {
     const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
-    if (!settings.aiApiKey) return;
+    if (!settings.aiApiKey) {
+      const domain = await getGuideDomain(guideId);
+      if (domain) await updateGuideTitle(guideId, `Guide on ${domain}`);
+      return;
+    }
 
     const steps = await getStepsForGuide(guideId);
     const allSteps = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
@@ -42,6 +46,8 @@ async function generateTitleInBackground(guideId: string) {
     }
   } catch (err) {
     logger.error('Guide title generation failed', err);
+    const domain = await getGuideDomain(guideId);
+    if (domain) await updateGuideTitle(guideId, `Guide on ${domain}`);
   }
 }
 
