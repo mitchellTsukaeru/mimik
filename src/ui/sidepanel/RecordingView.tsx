@@ -113,7 +113,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
               <ellipse cx="146" cy="64" rx="10" ry="8" fill="#451a03" />
             </svg>
             <div className="text-center">
-              <p className="text-sm font-semibold text-amber">Ready to capture!</p>
+              <p className="text-sm font-semibold text-violet">Ready to capture!</p>
               <p className="text-xs text-border mt-0.5">Click on the page to start</p>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
                       <p className="text-[13px] font-medium leading-snug text-foreground">
                         {liveStep.step.description}
                       </p>
-                      <span className="text-[10px] text-warm">
+                      <span className="text-[10px] text-purple">
                         {timeAgo(liveStep.step.timestamp)} · {extractDomain(liveStep.step.url || siteUrl)}
                       </span>
                     </div>
@@ -167,7 +167,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
         </Button>
         <button
           onClick={onStop}
-          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-warm hover:border-red-300 hover:text-red-400"
+          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-red-300 hover:text-red-400"
           title="Discard"
         >
           <X size={16} />

@@ -18,7 +18,7 @@ export default function SearchResults({ results, query, selected, onSelect, onHo
   if (results.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-warm">{query ? 'No matching guides' : 'No guides yet'}</p>
+        <p className="text-sm text-purple">{query ? 'No matching guides' : 'No guides yet'}</p>
       </div>
     );
   }

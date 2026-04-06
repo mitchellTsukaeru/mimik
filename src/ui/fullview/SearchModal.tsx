@@ -97,7 +97,7 @@ export default function SearchModal() {
                 className="flex-1 text-[15px] font-medium border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 h-auto text-foreground"
               />
               {query && (
-                <button onClick={() => setQuery('')} className="p-0.5 rounded text-warm">
+                <button onClick={() => setQuery('')} className="p-0.5 rounded text-purple">
                   <X size={14} />
                 </button>
               )}
