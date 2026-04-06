@@ -14,66 +14,76 @@ export async function exportGuideAsPDF(
   const margin = 20;
   const contentWidth = pageWidth - margin * 2;
 
-  let y = pageHeight / 2 - 30;
+  const centerX = pageWidth / 2;
+  const domain = extractDomain(steps);
+  const dateStr = formatDate(guide.createdAt);
 
   const badgeText = `${steps.length} Steps`;
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  const badgeWidth = doc.getTextWidth(badgeText) + 8;
-  const badgeHeight = 7;
-  doc.setFillColor(79, 70, 229);
-  doc.roundedRect(margin, y, badgeWidth, badgeHeight, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.text(badgeText, margin + 4, y + 4.8);
-  y += badgeHeight + 6;
+  const badgeTextWidth = doc.getTextWidth(badgeText);
+  const badgePadH = 5;
+  const badgePadV = 2.5;
+  const badgeW = badgeTextWidth + badgePadH * 2;
+  const badgeH = 7;
 
-  const segmentWidth = contentWidth / 3;
-  doc.setFillColor(139, 92, 246);
-  doc.rect(margin, y, segmentWidth, 1.2, 'F');
-  doc.setFillColor(167, 139, 250);
-  doc.rect(margin + segmentWidth, y, segmentWidth, 1.2, 'F');
-  doc.setFillColor(125, 211, 252);
-  doc.rect(margin + segmentWidth * 2, y, segmentWidth, 1.2, 'F');
-  y += 8;
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  const titleLines = doc.splitTextToSize(guide.title, contentWidth * 0.8);
+  const titleBlockH = titleLines.length * 9;
+
+  const gradLineW = contentWidth * 0.6;
+  const totalBlockH = badgeH + 8 + 1.5 + 10 + titleBlockH + 16 + 12;
+  let y = (pageHeight - totalBlockH) / 2;
+
+  doc.setFillColor(79, 70, 229);
+  doc.roundedRect(centerX - badgeW / 2, y, badgeW, badgeH, 3.5, 3.5, 'F');
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text(badgeText, centerX, y + 5, { align: 'center' });
+  y += badgeH + 8;
+
+  const gradX = centerX - gradLineW / 2;
+  const segW = gradLineW / 3;
+  doc.setFillColor(79, 70, 229);
+  doc.rect(gradX, y, segW, 1.5, 'F');
+  doc.setFillColor(199, 210, 254);
+  doc.rect(gradX + segW, y, segW, 1.5, 'F');
+  doc.setFillColor(56, 189, 248);
+  doc.rect(gradX + segW * 2, y, segW, 1.5, 'F');
+  y += 10;
 
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30, 27, 75);
-  const titleLines = doc.splitTextToSize(guide.title, contentWidth);
-  doc.text(titleLines, margin, y);
-  y += titleLines.length * 9 + 10;
+  doc.text(titleLines, centerX, y, { align: 'center' });
+  y += titleBlockH + 16;
 
-  const cardPadding = 6;
-  const domain = extractDomain(steps);
-  const dateStr = formatDate(guide.createdAt);
-
-  let cardHeight = cardPadding * 2 + 10;
-  if (domain) cardHeight += 14;
-
-  doc.setFillColor(238, 242, 255);
-  doc.roundedRect(margin, y, contentWidth, cardHeight, 3, 3, 'F');
-
-  let cardY = y + cardPadding;
+  const metaColW = 40;
+  const metaGap = 16;
+  const numCols = domain ? 2 : 1;
+  const metaTotalW = numCols * metaColW + (numCols - 1) * metaGap;
+  let metaX = centerX - metaTotalW / 2;
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(107, 114, 128);
-  doc.text('CREATED', margin + cardPadding, cardY + 4);
-  doc.setFontSize(10);
+  doc.text('CREATED', metaX, y);
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(30, 27, 75);
-  doc.text(dateStr, margin + cardPadding, cardY + 10);
+  doc.text(dateStr, metaX, y + 6);
 
   if (domain) {
-    cardY += 14;
+    metaX += metaColW + metaGap;
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(107, 114, 128);
-    doc.text('SOURCE', margin + cardPadding, cardY + 4);
-    doc.setFontSize(10);
+    doc.text('SOURCE', metaX, y);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(79, 70, 229);
-    doc.text(domain, margin + cardPadding, cardY + 10);
+    doc.text(domain, metaX, y + 6);
   }
 
   const stepIndent = 16;

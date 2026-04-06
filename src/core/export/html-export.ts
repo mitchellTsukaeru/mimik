@@ -49,12 +49,23 @@ export async function exportGuideAsHTML(
   </style>
 </head>
 <body>
-  <div style="margin-bottom:48px;">
-    <span style="display:inline-block;background:#4F46E5;color:#fff;font-size:13px;font-weight:600;padding:4px 14px;border-radius:999px;margin-bottom:20px;">${steps.length} step${steps.length === 1 ? '' : 's'}</span>
-    <div style="height:2px;background:linear-gradient(to right,#4F46E5,#C7D2FE,#38BDF8);border-radius:1px;margin-bottom:24px;"></div>
-    <h1 style="font-size:28px;font-weight:700;color:#1E1B4B;line-height:1.3;margin-bottom:20px;">${escapeHtml(guide.title)}</h1>
-    <div style="background:#EEF2FF;border-radius:8px;padding:14px 20px;font-size:14px;color:#4338CA;">
-      Created ${formatDate(guide.createdAt)}${metaSeparator}${domainHtml}
+  <div style="margin-bottom:48px;text-align:center;display:flex;flex-direction:column;align-items:center;">
+    <span style="display:inline-block;background:#4F46E5;color:#fff;font-size:13px;font-weight:600;padding:5px 16px;border-radius:999px;">${steps.length} Step${steps.length === 1 ? '' : 's'}</span>
+    <div style="height:3px;width:60%;background:linear-gradient(to right,#4F46E5,#C7D2FE,#38BDF8);border-radius:3px;margin:20px auto;"></div>
+    <h1 style="font-size:28px;font-weight:800;color:#1E1B4B;line-height:1.2;margin-bottom:24px;max-width:80%;">${escapeHtml(guide.title)}</h1>
+    <div style="display:flex;gap:32px;justify-content:center;">
+      <div style="text-align:left;">
+        <div style="font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Created</div>
+        <div style="font-size:14px;font-weight:600;color:#1E1B4B;">${formatDate(guide.createdAt)}</div>
+      </div>
+      ${
+        domain
+          ? `<div style="text-align:left;">
+        <div style="font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Source</div>
+        <div style="font-size:14px;font-weight:600;color:#4F46E5;">${escapeHtml(domain)}</div>
+      </div>`
+          : ''
+      }
     </div>
   </div>
 
