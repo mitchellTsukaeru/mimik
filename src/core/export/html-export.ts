@@ -19,9 +19,9 @@ export async function exportGuideAsHTML(
     const stepNumber = String(step.index + 1).padStart(2, '0');
 
     stepSections.push(`
-      <div style="border-top:2px solid #E0E7FF;padding-top:24px;margin-bottom:40px;">
+      <div style="border-top:2px solid #C7D2FE;padding-top:24px;margin-bottom:40px;">
         <div style="display:flex;gap:16px;align-items:flex-start;">
-          <span style="font-size:32px;font-weight:700;color:#A5B4FC;line-height:1;flex-shrink:0;min-width:48px;">${stepNumber}</span>
+          <span style="font-size:32px;font-weight:700;color:#818CF8;line-height:1;flex-shrink:0;min-width:48px;">${stepNumber}</span>
           <div style="flex:1;min-width:0;">
             <p style="margin:0;font-size:16px;line-height:1.6;color:#1E1B4B;">${escapeHtml(step.description)}</p>
             ${imgHtml}

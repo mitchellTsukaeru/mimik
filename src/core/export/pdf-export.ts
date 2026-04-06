@@ -142,7 +142,7 @@ export async function exportGuideAsPDF(
       y = margin;
     }
 
-    doc.setDrawColor(224, 231, 255);
+    doc.setDrawColor(199, 210, 254);
     doc.setLineWidth(0.3);
     doc.line(margin, y, margin + contentWidth, y);
     y += 6;
@@ -150,7 +150,7 @@ export async function exportGuideAsPDF(
     const stepNum = String(step.index + 1).padStart(2, '0');
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(165, 180, 252);
+    doc.setTextColor(129, 140, 248);
     doc.text(stepNum, margin, y + 4);
 
     doc.setFontSize(11);
