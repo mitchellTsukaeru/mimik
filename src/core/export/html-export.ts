@@ -31,8 +31,6 @@ export async function exportGuideAsHTML(
   }
 
   const domain = extractDomain(steps);
-  const domainHtml = domain ? `<span style="color:#4338CA;">${escapeHtml(domain)}</span>` : '';
-  const metaSeparator = domain ? ' &middot; ' : '';
 
   return `<!DOCTYPE html>
 <html lang="en">

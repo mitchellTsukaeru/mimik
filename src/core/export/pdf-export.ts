@@ -23,7 +23,6 @@ export async function exportGuideAsPDF(
   doc.setFont('helvetica', 'bold');
   const badgeTextWidth = doc.getTextWidth(badgeText);
   const badgePadH = 5;
-  const badgePadV = 2.5;
   const badgeW = badgeTextWidth + badgePadH * 2;
   const badgeH = 7;
 
