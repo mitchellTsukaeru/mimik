@@ -1,0 +1,559 @@
+import { useEffect, useState } from 'react';
+import { browser } from '#imports';
+import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
+import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { localStorage } from '@/lib/browser-api';
+
+function MascotLarge({ size = 280 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 200 200" width={size} height={size}>
+      <circle cx="40" cy="70" r="4" fill="#818CF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite' }} />
+      <circle cx="165" cy="60" r="3.5" fill="#38BDF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }} />
+      <circle cx="42" cy="155" r="3" fill="#A5B4FC" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.6s' }} />
+      <circle
+        cx="162"
+        cy="150"
+        r="3.5"
+        fill="#818CF8"
+        style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.9s' }}
+      />
+      <circle cx="100" cy="110" r="55" fill="#C7D2FE" />
+      <rect x="55" y="110" width="90" height="44" rx="5" fill="#1E1B4B" />
+      <path d="M55 110 L55 98 Q55 80 100 80 Q145 80 145 98 L145 110Z" fill="#3730A3" />
+      <path d="M55 110 L55 98 Q55 80 100 80 Q145 80 145 98 L145 110Z" fill="#4F46E5" />
+      <rect x="55" y="109" width="90" height="2" fill="#C7D2FE" />
+      <path d="M80 128 Q86 120 92 128" stroke="#C7D2FE" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M108 128 Q114 120 120 128" stroke="#C7D2FE" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M90 140 Q100 148 110 140" stroke="#C7D2FE" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <style>{`@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}`}</style>
+    </svg>
+  );
+}
+
+function ProgressDots({ current }: { current: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className={`h-2 rounded-full transition-all duration-300 ${
+            i === current ? 'w-8 bg-accent' : i < current ? 'w-2 bg-accent/40' : 'w-2 bg-border'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function WelcomeStep({ onNext }: { onNext: () => void }) {
+  return (
+    <div className="flex h-screen">
+      <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
+        <div className="max-w-lg">
+          <span className="inline-flex text-xs font-semibold text-accent bg-secondary px-3.5 py-1.5 rounded-full mb-6">
+            Welcome
+          </span>
+          <h1 className="text-4xl font-extrabold text-foreground leading-tight mb-3 tracking-tight">
+            You've successfully installed Mimik!
+          </h1>
+          <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-md">
+            With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides.
+            No account needed — everything stays in your browser.
+          </p>
+          <button
+            onClick={onNext}
+            className="inline-flex items-center gap-2 px-7 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
+          >
+            Get started
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div className="w-1/2 bg-deep flex items-center justify-center relative overflow-hidden">
+        <div className="absolute w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(79,70,229,0.2),transparent_70%)] top-[10%] right-[-10%]" />
+        <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(56,189,248,0.1),transparent_70%)] bottom-[10%] left-[10%]" />
+        <div className="animate-[float_3s_ease-in-out_infinite]">
+          <MascotLarge size={280} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  const [provider, setProvider] = useState<AIProviderKey>('openai');
+  const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
+  const [apiKey, setApiKey] = useState('');
+
+  const providerConfig = AI_PROVIDERS[provider];
+
+  const handleProviderChange = (newProvider: AIProviderKey) => {
+    setProvider(newProvider);
+    setModel(AI_PROVIDERS[newProvider].defaultModel);
+  };
+
+  const handleContinue = async () => {
+    if (apiKey) {
+      await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model });
+    }
+    onNext();
+  };
+
+  return (
+    <div className="flex h-screen">
+      <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
+        <div className="max-w-md">
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 1 of 3</p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">AI Descriptions</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+            Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in
+            settings.
+          </p>
+
+          <div className="space-y-4 mb-8">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">Provider</label>
+              <select
+                value={provider}
+                onChange={(e) => handleProviderChange(e.target.value as AIProviderKey)}
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
+              >
+                {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
+                  <option key={key} value={key}>
+                    {cfg.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">Model</label>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
+              >
+                {providerConfig.models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">API Key</label>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="sk-..."
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleContinue}
+              className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
+            >
+              Continue
+            </button>
+            <button
+              onClick={onSkip}
+              className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+
+          <div className="mt-6">
+            <ProgressDots current={1} />
+          </div>
+        </div>
+      </div>
+      <div className="w-1/2 bg-secondary flex items-center justify-center relative overflow-hidden">
+        <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(79,70,229,0.06),transparent_70%)] top-[20%] left-[30%]" />
+        <div className="animate-[float_4s_ease-in-out_infinite] relative">
+          <svg
+            className="absolute -top-4 right-6 w-6 h-6 text-violet-light opacity-40"
+            style={{ animation: 'sparkle 2s ease-in-out infinite' }}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
+          </svg>
+          <svg
+            className="absolute bottom-3 -left-3 w-4 h-4 text-violet-light opacity-40"
+            style={{ animation: 'sparkle 2s ease-in-out infinite 0.5s' }}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
+          </svg>
+          <div className="bg-white rounded-2xl p-9 shadow-lg max-w-sm">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
+              AI-generated description
+            </p>
+            <div className="flex gap-3 mb-5">
+              <div className="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
+                3
+              </div>
+              <div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  Click on the{' '}
+                  <span className="bg-accent/10 text-accent font-semibold px-1 rounded">Pull requests</span> tab in the
+                  repository navigation
+                </p>
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-accent bg-secondary px-2 py-0.5 rounded mt-2">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
+                  </svg>
+                  AI generated
+                </span>
+              </div>
+            </div>
+            <div className="border-t border-border my-4" />
+            <div className="flex gap-3">
+              <div className="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
+                4
+              </div>
+              <div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  Click on <span className="bg-accent/10 text-accent font-semibold px-1 rounded">Sort</span> dropdown to
+                  change the ordering
+                </p>
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-accent bg-secondary px-2 py-0.5 rounded mt-2">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
+                  </svg>
+                  AI generated
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
+    email: true,
+    phone: true,
+    ssn: false,
+    creditCard: false,
+    ipAddress: false,
+    macAddress: false,
+  });
+
+  const handleToggle = (key: PresetKey) => {
+    setBlurPresets((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      localStorage.set({ blurPresets: next });
+      return next;
+    });
+  };
+
+  return (
+    <div className="flex h-screen">
+      <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
+        <div className="max-w-md">
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 2 of 3</p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">Smart Blur</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+            Automatically blur sensitive information in screenshots. Choose which patterns to detect.
+          </p>
+
+          <div className="space-y-1 mb-8 border border-border rounded-2xl p-4">
+            {(Object.entries(PRESET_LABELS) as [PresetKey, string][]).map(([key, label], i, arr) => (
+              <div
+                key={key}
+                className={`flex items-center justify-between py-3 ${i < arr.length - 1 ? 'border-b border-secondary' : ''}`}
+              >
+                <span className="text-sm font-medium text-foreground">{label}</span>
+                <button
+                  onClick={() => handleToggle(key)}
+                  className={`w-11 h-6 rounded-full transition-colors relative ${
+                    blurPresets[key] ? 'bg-accent' : 'bg-border'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                      blurPresets[key] ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNext}
+              className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
+            >
+              Continue
+            </button>
+            <button
+              onClick={onSkip}
+              className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+
+          <div className="mt-6">
+            <ProgressDots current={2} />
+          </div>
+        </div>
+      </div>
+      <div className="w-1/2 bg-deep flex items-center justify-center relative overflow-hidden">
+        <div className="absolute w-[350px] h-[350px] bg-[radial-gradient(circle,rgba(79,70,229,0.25),transparent_70%)] bottom-[20%] right-[20%]" />
+        <div className="animate-[float_4s_ease-in-out_infinite] relative z-10">
+          <div className="bg-white rounded-2xl p-7 shadow-lg" style={{ minWidth: 320 }}>
+            <p className="text-xs font-semibold text-foreground mb-4">Screenshot preview</p>
+            {[
+              { icon: '@', label: 'Email', value: 'luis@company.com', blurred: true },
+              { icon: '#', label: 'Phone', value: '(555) 867-5309', blurred: true },
+              { icon: 'ID', label: 'SSN', value: 'Not enabled', blurred: false },
+              { icon: '$', label: 'Card', value: 'Not enabled', blurred: false },
+              { icon: 'IP', label: 'Address', value: 'Not enabled', blurred: false },
+            ].map((row, i, arr) => (
+              <div
+                key={row.label}
+                className={`flex items-center gap-3 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
+              >
+                <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center text-[10px] font-semibold text-accent">
+                  {row.icon}
+                </div>
+                <span className="text-xs text-muted-foreground flex-1">{row.label}</span>
+                <span
+                  className={`text-xs font-semibold ${row.blurred ? 'text-foreground blur-[4px] select-none' : 'text-muted-foreground font-normal'}`}
+                >
+                  {row.value}
+                </span>
+              </div>
+            ))}
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded mt-3">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              2 categories protected
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
+  return (
+    <div className="flex h-screen">
+      <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
+        <div className="max-w-md">
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 3 of 3</p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">Pin Mimik</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+            Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
+          </p>
+
+          <ol className="space-y-4 mb-8">
+            <li className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-accent text-xs font-bold">1</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Click the puzzle icon</p>
+                <p className="text-xs text-muted-foreground">In the top-right of your browser toolbar</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-accent text-xs font-bold">2</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Find Mimik</p>
+                <p className="text-xs text-muted-foreground">In the extensions dropdown</p>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-accent text-xs font-bold">3</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Click the pin icon</p>
+                <p className="text-xs text-muted-foreground">Mimik will appear in your toolbar</p>
+              </div>
+            </li>
+          </ol>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onNext}
+              className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
+            >
+              Continue
+            </button>
+            <button
+              onClick={onSkip}
+              className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+
+          <div className="mt-6">
+            <ProgressDots current={3} />
+          </div>
+        </div>
+      </div>
+      <div className="w-1/2 bg-deep flex items-center justify-center p-12">
+        <div className="w-64 h-64 border-2 border-dashed border-lavender/30 rounded-2xl flex items-center justify-center">
+          <p className="text-lavender/40 text-sm font-medium text-center px-6">Screenshot placeholder</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DoneStep() {
+  const handleOpen = () => {
+    browser.tabs.create({ url: browser.runtime.getURL('/fullview.html') });
+  };
+
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-center max-w-lg">
+        <div className="flex justify-center mb-8 animate-[float_3s_ease-in-out_infinite]">
+          <MascotLarge size={120} />
+        </div>
+        <h1 className="text-4xl font-extrabold text-foreground mb-3 tracking-tight">You're all set!</h1>
+        <p className="text-base text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+          Mimik is ready to capture your workflows. Click "Start Capture" in the extension to record your first guide.
+        </p>
+
+        <div className="flex gap-4 justify-center mb-8">
+          {[
+            {
+              label: 'Auto-capture',
+              icon: (
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+              ),
+            },
+            {
+              label: 'AI descriptions',
+              icon: (
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
+                  <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
+                </svg>
+              ),
+            },
+            {
+              label: 'Smart blur',
+              icon: (
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              ),
+            },
+          ].map((f) => (
+            <div key={f.label} className="bg-secondary rounded-xl p-5 flex-1 max-w-[140px] text-center">
+              <div className="text-accent flex justify-center mb-2">{f.icon}</div>
+              <p className="text-xs font-semibold text-foreground">{f.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleOpen}
+          className="inline-flex items-center gap-2 px-7 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
+        >
+          Open Mimik
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function OnboardingApp() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    localStorage.set({ onboardingCompleted: true });
+  }, []);
+
+  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const skip = () => setStep((s) => Math.min(s + 1, 4));
+
+  return (
+    <div className="min-h-screen bg-card text-foreground">
+      <style>{`@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}`}</style>
+      {step === 0 && <WelcomeStep onNext={next} />}
+      {step === 1 && <AISetupStep onNext={next} onSkip={skip} />}
+      {step === 2 && <SmartBlurStep onNext={next} onSkip={skip} />}
+      {step === 3 && <PinExtensionStep onNext={next} onSkip={skip} />}
+      {step === 4 && <DoneStep />}
+    </div>
+  );
+}

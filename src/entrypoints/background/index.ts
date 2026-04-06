@@ -1,4 +1,4 @@
-import { defineBackground } from '#imports';
+import { browser, defineBackground } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { createGuide, getGuideDomain, getStepsForGuide, updateGuideTitle } from '@/core/guides/service';
@@ -44,6 +44,12 @@ async function generateTitleInBackground(guideId: string) {
 
 export default defineBackground(() => {
   logger.info('Background service worker started');
+
+  browser.runtime.onInstalled.addListener((details) => {
+    if (details.reason === 'install') {
+      browser.tabs.create({ url: browser.runtime.getURL('/onboarding.html') });
+    }
+  });
 
   setSidePanelBehavior(true);
   initActor().catch(initActorFallback);
