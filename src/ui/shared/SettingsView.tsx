@@ -121,7 +121,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             >
               <span className="text-xs font-medium text-foreground">{label}</span>
               <button
-                onClick={() => setBlurPresets((prev) => ({ ...prev, [key]: !prev[key] }))}
+                onClick={() =>
+                  setBlurPresets((prev) => {
+                    const next = { ...prev, [key]: !prev[key] };
+                    localStorage.set({ blurPresets: next });
+                    return next;
+                  })
+                }
                 className={`w-9 h-5 rounded-full transition-colors relative ${
                   blurPresets[key] ? 'bg-accent' : 'bg-border'
                 }`}

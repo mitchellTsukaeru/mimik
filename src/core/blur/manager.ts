@@ -56,9 +56,12 @@ export class BlurManager {
 
   private handleEvent = (e: Event) => {
     switch (e.type) {
-      case 'mimik-blur:update-presets':
-        this.scanner.updatePresets((e as CustomEvent<{ presets: PresetKey[] }>).detail.presets);
+      case 'mimik-blur:update-presets': {
+        const activeKeys = (e as CustomEvent<{ presets: PresetKey[] }>).detail.presets;
+        this.scanner.updatePresets(activeKeys);
+        this.savePresets(activeKeys);
         break;
+      }
       case 'mimik-blur:start-picker':
         this.picker.start(() => this.picker.stop());
         break;
@@ -71,6 +74,19 @@ export class BlurManager {
         break;
     }
   };
+
+  private savePresets(activeKeys: PresetKey[]) {
+    const presets: Record<PresetKey, boolean> = {
+      email: false,
+      phone: false,
+      ssn: false,
+      creditCard: false,
+      ipAddress: false,
+      macAddress: false,
+    };
+    for (const key of activeKeys) presets[key] = true;
+    browser.storage.local.set({ blurPresets: presets });
+  }
 
   private async loadPresets(): Promise<Record<PresetKey, boolean>> {
     try {
