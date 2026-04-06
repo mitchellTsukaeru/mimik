@@ -1,10 +1,8 @@
 import { logger } from '@/lib/logger';
 import { type CaptureHandle, startCapture } from './events/handlers';
-import { startRrwebRecording } from './rrweb-recorder';
 
 export class CaptureSession {
   private capture: CaptureHandle | null = null;
-  private stopReplay: (() => void) | null = null;
   private activeGuideId: string | null = null;
   private disabled = false;
 
@@ -30,9 +28,6 @@ export class CaptureSession {
     this.activeGuideId = guideId;
     const isTopFrame = window.self === window.top;
     this.capture = startCapture(guideId, isTopFrame);
-    if (isTopFrame) {
-      this.stopReplay = startRrwebRecording(guideId);
-    }
   }
 
   stop(): void {
@@ -40,9 +35,7 @@ export class CaptureSession {
 
     logger.info('Capture stopped → guideId:', this.activeGuideId);
     this.capture?.stop();
-    this.stopReplay?.();
     this.capture = null;
-    this.stopReplay = null;
     this.activeGuideId = null;
   }
 

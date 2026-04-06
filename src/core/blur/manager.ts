@@ -1,5 +1,4 @@
 import { browser } from '#imports';
-import { sendMessage } from '@/lib/messaging';
 import { ElementPicker } from './element-picker';
 import { BlurPanel } from './panel';
 import type { PresetKey } from './regexes';
@@ -19,7 +18,7 @@ export class BlurManager {
 
     let stored: Record<string, unknown> = {};
     try {
-      stored = await browser.storage.local.get(['blurPresets', 'blurAiEnabled']);
+      stored = await browser.storage.local.get(['blurPresets']);
     } catch {}
     const presets = (stored.blurPresets as Record<PresetKey, boolean>) || {
       email: true,
@@ -29,19 +28,17 @@ export class BlurManager {
       ipAddress: false,
       macAddress: false,
     };
-    const aiEnabled = (stored.blurAiEnabled as boolean) || false;
 
     const activePresets = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, v]) => v).map(([k]) => k);
 
     this.scanner.start(activePresets);
-    this.panel = new BlurPanel(presets, aiEnabled);
+    this.panel = new BlurPanel(presets);
     this.panel.mount();
 
     document.addEventListener('mimik-blur:update-presets', this.onUpdatePresets);
     document.addEventListener('mimik-blur:start-picker', this.onStartPicker);
     document.addEventListener('mimik-blur:reset', this.onReset);
     document.addEventListener('mimik-blur:done', this.onDone);
-    document.addEventListener('mimik-blur:toggle-ai', this.onToggleAi);
   }
 
   stop() {
@@ -56,7 +53,6 @@ export class BlurManager {
     document.removeEventListener('mimik-blur:start-picker', this.onStartPicker);
     document.removeEventListener('mimik-blur:reset', this.onReset);
     document.removeEventListener('mimik-blur:done', this.onDone);
-    document.removeEventListener('mimik-blur:toggle-ai', this.onToggleAi);
   }
 
   private onUpdatePresets = ((e: CustomEvent<{ presets: PresetKey[] }>) => {
@@ -80,31 +76,6 @@ export class BlurManager {
     document.removeEventListener('mimik-blur:start-picker', this.onStartPicker);
     document.removeEventListener('mimik-blur:reset', this.onReset);
     document.removeEventListener('mimik-blur:done', this.onDone);
-    document.removeEventListener('mimik-blur:toggle-ai', this.onToggleAi);
     this.active = false;
-  }) as EventListener;
-
-  private dispatchAiStatus(message: string) {
-    document.dispatchEvent(new CustomEvent('mimik-blur:ai-status', { detail: { message } }));
-  }
-
-  private onToggleAi = ((e: CustomEvent<{ enabled: boolean }>) => {
-    if (e.detail.enabled) {
-      sendMessage('blurAiDetect', { text: document.body.innerText })
-        .then((res) => {
-          if (res?.patterns?.length) {
-            const regexes = res.patterns.map((p) => new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'));
-            this.scanner.setAiPatterns(regexes);
-            this.dispatchAiStatus(`${res.patterns.length} entities found`);
-          } else {
-            this.dispatchAiStatus('No PII detected');
-          }
-        })
-        .catch(() => {
-          this.dispatchAiStatus('Detection failed');
-        });
-    } else {
-      this.scanner.setAiPatterns([]);
-    }
   }) as EventListener;
 }

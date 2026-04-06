@@ -51,16 +51,6 @@ export interface FinalizeInputStepResponse {
   updated: boolean;
 }
 
-export interface RrwebChunkData {
-  guideId: string;
-  events: unknown[];
-  timestamp: number;
-}
-
-export interface RrwebChunkResponse {
-  stored: boolean;
-}
-
 export interface StartGuideMeData {
   guideId: string;
 }
@@ -99,14 +89,6 @@ export interface ExitBlurModeResponse {
   exited: boolean;
 }
 
-export interface BlurAiDetectData {
-  text: string;
-}
-
-export interface BlurAiDetectResponse {
-  patterns: string[];
-}
-
 interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
@@ -114,14 +96,12 @@ interface MimikProtocol {
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;
-  rrwebChunk(data: RrwebChunkData): RrwebChunkResponse;
   startGuideMe(data: StartGuideMeData): StartGuideMeResponse;
   guideMeStepCompleted(data: GuideMeStepCompletedData): GuideMeStepCompletedResponse;
   guideMeCancel(): GuideMe_CancelResponse;
   guideMePrev(data: GuideMe_PrevData): GuideMe_PrevResponse;
   enterBlurMode(): EnterBlurModeResponse;
   exitBlurMode(): ExitBlurModeResponse;
-  blurAiDetect(data: BlurAiDetectData): BlurAiDetectResponse;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();

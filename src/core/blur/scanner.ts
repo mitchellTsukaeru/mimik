@@ -10,7 +10,6 @@ export class BlurScanner {
   private observer: MutationObserver | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePresets: PresetKey[] = [];
-  private aiPatterns: RegExp[] = [];
 
   start(presets: PresetKey[]) {
     this.activePresets = presets;
@@ -22,11 +21,6 @@ export class BlurScanner {
   updatePresets(presets: PresetKey[]) {
     this.unblurAll();
     this.activePresets = presets;
-    this.scan();
-  }
-
-  setAiPatterns(patterns: RegExp[]) {
-    this.aiPatterns = patterns;
     this.scan();
   }
 
@@ -47,7 +41,7 @@ export class BlurScanner {
       const regex = PRESET_REGEXES[key];
       if (regex) patterns.push(new RegExp(regex.source, regex.flags));
     }
-    return [...patterns, ...this.aiPatterns];
+    return patterns;
   }
 
   private scan() {

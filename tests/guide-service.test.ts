@@ -55,7 +55,6 @@ beforeEach(async () => {
   await db.guides.clear();
   await db.steps.clear();
   await db.screenshots.clear();
-  await db.rrwebEvents.clear();
 });
 
 describe('getGuides', () => {
@@ -98,19 +97,17 @@ describe('getGuide', () => {
 });
 
 describe('deleteGuide', () => {
-  it('removes guide, its steps, screenshots, and rrwebEvents', async () => {
+  it('removes guide, its steps, and screenshots', async () => {
     const guide = await seedGuide({ id: 'g1', stepIds: ['s1'] });
     const step = await seedStep('g1', { id: 's1', index: 0 });
     const screenshot = await seedScreenshot('s1', 'sc1');
     await db.steps.update('s1', { screenshotId: 'sc1' });
-    await db.rrwebEvents.add({ id: 'ev1', guideId: 'g1', events: [], timestamp: Date.now() });
 
     await deleteGuide('g1');
 
     expect(await db.guides.get('g1')).toBeUndefined();
     expect(await db.steps.get('s1')).toBeUndefined();
     expect(await db.screenshots.get('sc1')).toBeUndefined();
-    expect(await db.rrwebEvents.get('ev1')).toBeUndefined();
   });
 });
 

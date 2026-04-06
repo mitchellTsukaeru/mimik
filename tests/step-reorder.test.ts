@@ -34,7 +34,6 @@ beforeEach(async () => {
   await db.guides.clear();
   await db.steps.clear();
   await db.screenshots.clear();
-  await db.rrwebEvents.clear();
 });
 
 describe('reorderSteps', () => {

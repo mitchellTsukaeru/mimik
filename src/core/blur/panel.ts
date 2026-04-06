@@ -20,7 +20,7 @@ const STYLES = `
     width: 280px;
     background: #fff;
     border-radius: 12px;
-    border: 1px solid #E8E2DA;
+    border: 1px solid #C7D2FE;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     pointer-events: auto;
     display: flex;
@@ -42,7 +42,7 @@ const STYLES = `
   .header-title {
     font-size: 14px;
     font-weight: 700;
-    color: #451a03;
+    color: #1E1B4B;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -58,11 +58,11 @@ const STYLES = `
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #451a03;
+    color: #1E1B4B;
     transition: background 0.15s ease;
   }
 
-  .close-btn:hover { background: #FEF3C7; }
+  .close-btn:hover { background: #EEF2FF; }
 
   .body {
     padding: 0 16px 16px;
@@ -86,7 +86,7 @@ const STYLES = `
   .section-label {
     font-size: 12px;
     font-weight: 600;
-    color: #451a03;
+    color: #1E1B4B;
   }
 
   .toggle {
@@ -106,7 +106,7 @@ const STYLES = `
   .toggle-track {
     position: absolute;
     inset: 0;
-    background: #E8E2DA;
+    background: #C7D2FE;
     border-radius: 999px;
     cursor: pointer;
     transition: background 0.2s ease;
@@ -126,7 +126,7 @@ const STYLES = `
   }
 
   .toggle input:checked + .toggle-track {
-    background: #F59E0B;
+    background: #4F46E5;
   }
 
   .toggle input:checked + .toggle-track::after {
@@ -152,13 +152,13 @@ const STYLES = `
   }
 
   .tag[data-on="true"] {
-    background: #451a03;
-    color: #FDE68A;
+    background: #1E1B4B;
+    color: #C7D2FE;
   }
 
   .tag[data-on="false"] {
-    background: #FEF3C7;
-    color: #451a03;
+    background: #EEF2FF;
+    color: #1E1B4B;
   }
 
   .tag:hover { opacity: 0.85; }
@@ -167,9 +167,9 @@ const STYLES = `
     width: 100%;
     padding: 9px 0;
     border-radius: 8px;
-    border: 1.5px solid #E8E2DA;
+    border: 1.5px solid #C7D2FE;
     background: #fff;
-    color: #451a03;
+    color: #1E1B4B;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -182,14 +182,14 @@ const STYLES = `
   }
 
   .btn-picker:hover {
-    border-color: #451a03;
-    background: #FEF3C7;
+    border-color: #1E1B4B;
+    background: #EEF2FF;
   }
 
   .btn-reset {
     background: none;
     border: none;
-    color: #92400E;
+    color: #6B7280;
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
@@ -199,18 +199,18 @@ const STYLES = `
     transition: color 0.15s ease;
   }
 
-  .btn-reset:hover { color: #451a03; }
+  .btn-reset:hover { color: #1E1B4B; }
 
   .divider {
     height: 1px;
-    background: #E8E2DA;
+    background: #C7D2FE;
     margin: 0 -16px;
     width: calc(100% + 32px);
   }
 
   .footer {
     padding: 12px 16px;
-    border-top: 1px solid #E8E2DA;
+    border-top: 1px solid #C7D2FE;
   }
 
   .btn-done {
@@ -218,8 +218,8 @@ const STYLES = `
     padding: 10px 0;
     border-radius: 8px;
     border: none;
-    background: #451a03;
-    color: #FDE68A;
+    background: #1E1B4B;
+    color: #C7D2FE;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
@@ -229,29 +229,6 @@ const STYLES = `
 
   .btn-done:hover { opacity: 0.9; }
 
-  .ai-status {
-    font-size: 11px;
-    font-weight: 500;
-    color: #92400E;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 2px;
-  }
-
-  .spinner {
-    width: 12px;
-    height: 12px;
-    border: 2px solid #E8E2DA;
-    border-top-color: #F59E0B;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
 `;
 
 function icon(name: 'close' | 'blur' | 'cursor'): string {
@@ -269,11 +246,9 @@ export class BlurPanel {
   private host: HTMLElement | null = null;
   private panel: HTMLElement | null = null;
   private presets: Record<PresetKey, boolean>;
-  private aiEnabled: boolean;
 
-  constructor(presets: Record<PresetKey, boolean>, aiEnabled: boolean) {
+  constructor(presets: Record<PresetKey, boolean>) {
     this.presets = { ...presets };
-    this.aiEnabled = aiEnabled;
   }
 
   mount() {
@@ -309,7 +284,6 @@ export class BlurPanel {
     body.className = 'body';
 
     body.appendChild(this.buildManualSection());
-    body.appendChild(this.buildAiSection());
 
     const divider = document.createElement('div');
     divider.className = 'divider';
@@ -393,42 +367,6 @@ export class BlurPanel {
     }
 
     section.appendChild(tags);
-    return section;
-  }
-
-  private buildAiSection(): HTMLElement {
-    const section = document.createElement('div');
-    section.className = 'section';
-
-    const row = document.createElement('div');
-    row.className = 'section-row';
-
-    const label = document.createElement('span');
-    label.className = 'section-label';
-    label.textContent = 'AI Detection';
-    row.appendChild(label);
-
-    const status = document.createElement('div');
-    status.className = 'ai-status';
-
-    const toggle = this.buildToggle(this.aiEnabled, (checked) => {
-      this.aiEnabled = checked;
-      if (checked) {
-        status.innerHTML = '<div class="spinner"></div> Loading model...';
-      } else {
-        status.textContent = '';
-      }
-      document.dispatchEvent(new CustomEvent('mimik-blur:toggle-ai', { detail: { enabled: checked } }));
-    });
-    row.appendChild(toggle);
-    section.appendChild(row);
-    section.appendChild(status);
-
-    document.addEventListener('mimik-blur:ai-status', ((e: CustomEvent<{ message: string }>) => {
-      status.innerHTML = '';
-      status.textContent = e.detail.message;
-    }) as EventListener);
-
     return section;
   }
 

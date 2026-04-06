@@ -60,10 +60,3 @@ export interface ElementMeta {
   rect: { x: number; y: number; width: number; height: number };
   devicePixelRatio: number;
 }
-
-export interface RrwebEventChunk {
-  id: string;
-  guideId: string;
-  events: unknown[];
-  timestamp: number;
-}

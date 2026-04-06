@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { Guide, RrwebEventChunk, Screenshot, Step } from './types';
+import type { Guide, Screenshot, Step } from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
@@ -104,7 +104,6 @@ export async function permanentlyDeleteGuide(id: string): Promise<void> {
   const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
   await db.screenshots.where('id').anyOf(screenshotIds).delete();
   await db.steps.where('guideId').equals(id).delete();
-  await db.rrwebEvents.where('guideId').equals(id).delete();
   await db.guides.delete(id);
   notifyGuidesChanged({ type: 'mutated' });
 }
@@ -177,8 +176,4 @@ export async function getFirstScreenshot(guideId: string): Promise<Screenshot | 
     }
   }
   return null;
-}
-
-export async function saveRrwebChunk(chunk: RrwebEventChunk): Promise<void> {
-  await db.rrwebEvents.add(chunk);
 }

@@ -1,7 +1,7 @@
 import { defineBackground } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
-import { createGuide, getGuideDomain, getStepsForGuide, saveRrwebChunk, updateGuideTitle } from '@/core/guides/service';
+import { createGuide, getGuideDomain, getStepsForGuide, updateGuideTitle } from '@/core/guides/service';
 import { getActiveTab, localStorage, sendMessageToTab, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
@@ -10,67 +10,6 @@ import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady 
 import { registerNavigationListeners } from './navigation';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
-
-let offscreenPort: chrome.runtime.Port | null = null;
-
-async function ensureOffscreen(): Promise<chrome.runtime.Port> {
-  if (offscreenPort) return offscreenPort;
-
-  const portReady = new Promise<void>((resolve) => {
-    const listener = (port: chrome.runtime.Port) => {
-      if (port.name === 'mimik-offscreen') {
-        chrome.runtime.onConnect.removeListener(listener);
-        offscreenPort = port;
-        offscreenPort.onMessage.addListener((msg) => {
-          if (msg.type === 'progress') {
-            localStorage.set({ blurAiProgress: msg.progress });
-          }
-          if (msg.type === 'log') {
-            logger.info('[OFFSCREEN]', msg.message);
-          }
-        });
-        offscreenPort.onDisconnect.addListener(() => {
-          offscreenPort = null;
-        });
-        resolve();
-      }
-    };
-    chrome.runtime.onConnect.addListener(listener);
-  });
-
-  try {
-    await chrome.offscreen.createDocument({
-      url: 'offscreen.html',
-      reasons: ['WORKERS' as chrome.offscreen.Reason],
-      justification: 'AI PII detection via Transformers.js',
-    });
-  } catch {}
-
-  await portReady;
-  return offscreenPort!;
-}
-
-let offscreenMsgId = 0;
-function sendToOffscreen(type: string, data: Record<string, unknown> = {}): Promise<any> {
-  return ensureOffscreen().then((port) => {
-    return new Promise((resolve, reject) => {
-      const id = ++offscreenMsgId;
-      const timeout = setTimeout(() => {
-        port.onMessage.removeListener(handler);
-        reject(new Error('Offscreen timeout'));
-      }, 120000);
-      const handler = (msg: any) => {
-        if (msg.id === id) {
-          clearTimeout(timeout);
-          port.onMessage.removeListener(handler);
-          resolve(msg);
-        }
-      };
-      port.onMessage.addListener(handler);
-      port.postMessage({ type, id, ...data });
-    });
-  });
-}
 
 async function generateTitleInBackground(guideId: string) {
   try {
@@ -199,16 +138,6 @@ export default defineBackground(() => {
     return { updated: true };
   });
 
-  onMessage('rrwebChunk', async ({ data }) => {
-    await saveRrwebChunk({
-      id: crypto.randomUUID(),
-      guideId: data.guideId,
-      events: data.events,
-      timestamp: data.timestamp,
-    });
-    return { stored: true };
-  });
-
   onMessage('startGuideMe', async ({ data }) => {
     const steps = await getStepsForGuide(data.guideId);
     if (steps.length === 0) return { started: false, error: 'No steps' };
@@ -278,18 +207,5 @@ export default defineBackground(() => {
     }
 
     return { moved: true };
-  });
-
-  onMessage('blurAiDetect', async ({ data }) => {
-    logger.info('[BLUR-AI] ensuring offscreen');
-    await ensureOffscreen();
-    logger.info('[BLUR-AI] sending detect to offscreen, text length:', data.text?.length);
-    const res = await sendToOffscreen('offscreen:ai:detect', { text: data.text });
-    logger.info('[BLUR-AI] offscreen response:', res);
-    if (res?.entities) {
-      const patterns = res.entities.map((e: { text: string }) => e.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      return { patterns };
-    }
-    return { patterns: [] };
   });
 });

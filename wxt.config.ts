@@ -26,12 +26,8 @@ export default defineConfig({
       "unlimitedStorage",
       "sidePanel",
       "webNavigation",
-      "offscreen",
     ],
     host_permissions: ["<all_urls>"],
-    content_security_policy: {
-      extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
-    },
     minimum_chrome_version: "118",
     action: {},
     side_panel: {
