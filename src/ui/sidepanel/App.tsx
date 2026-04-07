@@ -1,6 +1,6 @@
 import { Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { browser } from '#imports';
+import { browser, i18n } from '#imports';
 import { CaptureState } from '@/core/capture/machine';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
@@ -204,12 +204,12 @@ export default function App() {
         <div className="absolute -top-12 -right-8 w-44 h-44 rounded-full opacity-15 blur-[40px] bg-gradient-to-br from-lavender to-white" />
 
         <div className="relative flex items-center justify-between mb-6">
-          <span className="text-[17px] font-bold tracking-tight text-foreground">Mimik</span>
+          <span className="text-[17px] font-bold tracking-tight text-foreground">{i18n.t('app.name')}</span>
           <div className="flex items-center gap-2">
             <span
               className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full ${isAlive ? 'text-foreground bg-white/30' : 'text-deep/50 bg-white/15'}`}
             >
-              {isAlive ? 'Connected' : 'Connecting...'}
+              {isAlive ? i18n.t('sidepanel.connected') : i18n.t('sidepanel.connecting')}
             </span>
             <button
               onClick={() => setView({ name: 'settings' })}
@@ -224,8 +224,8 @@ export default function App() {
           <div className="flex justify-center mb-2">
             <MascotIcon size={44} />
           </div>
-          <h3 className="text-base font-medium text-foreground">What would you like to capture?</h3>
-          <p className="text-xs mt-1 text-violet-dark">Record any workflow automatically</p>
+          <h3 className="text-base font-medium text-foreground">{i18n.t('sidepanel.heroTitle')}</h3>
+          <p className="text-xs mt-1 text-violet-dark">{i18n.t('sidepanel.heroSubtitle')}</p>
         </div>
 
         <Button
@@ -234,7 +234,7 @@ export default function App() {
           className="w-full py-3 px-4 h-auto rounded-lg font-semibold text-sm hover:-translate-y-px shadow-lg"
         >
           <Video size={18} />
-          Start Capture
+          {i18n.t('sidepanel.startCapture')}
         </Button>
       </div>
 
@@ -244,14 +244,16 @@ export default function App() {
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple" />
           <Input
             type="text"
-            placeholder="Search guides..."
+            placeholder={i18n.t('sidepanel.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-3 rounded-xl border-border bg-card !text-[13px]"
           />
         </div>
 
-        <p className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 text-muted-foreground">Recent</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 text-muted-foreground">
+          {i18n.t('sidepanel.recentLabel')}
+        </p>
 
         <LibraryView
           onOpen={(guideId) => setView({ name: 'editor', guideId })}

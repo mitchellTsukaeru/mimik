@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import { getGuideDomain, getGuides } from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
 
@@ -88,7 +89,7 @@ export default function SearchModal() {
               <Search size={18} className="text-accent shrink-0" />
               <Input
                 ref={inputRef}
-                placeholder="Search guides..."
+                placeholder={i18n.t('fullview_searchPlaceholder')}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -125,7 +126,7 @@ export default function SearchModal() {
                   <circle cx="38" cy="24" r="3" fill="#C7D2FE" />
                   <circle cx="39" cy="23.5" r="1" fill="#1E1B4B" />
                 </svg>
-                <span className="text-[13px] font-medium text-muted-foreground/50">Start typing to find a guide</span>
+                <span className="text-[13px] font-medium text-muted-foreground/50">{i18n.t('search_startTyping')}</span>
               </div>
             )}
             <KeyboardHints />

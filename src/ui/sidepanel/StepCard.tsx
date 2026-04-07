@@ -1,5 +1,6 @@
 import { Check, Copy, EyeOff, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { i18n } from '#imports';
 import type { Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
 import ZoomScreenshot from './ZoomScreenshot';
@@ -41,7 +42,7 @@ export default function StepCard({
   };
 
   const handleDelete = () => {
-    if (window.confirm('Delete this step?')) onDelete(step.id);
+    if (window.confirm(i18n.t('editor.deleteThisStep'))) onDelete(step.id);
   };
 
   const handleCopy = async () => {
@@ -82,7 +83,7 @@ export default function StepCard({
         />
       ) : (
         <div className="w-full h-32 flex items-center justify-center text-sm bg-secondary text-purple">
-          No screenshot
+          {i18n.t('editor.noScreenshot')}
         </div>
       )}
 
@@ -106,14 +107,14 @@ export default function StepCard({
                 <button
                   onClick={() => onBlur?.(step.id)}
                   className="p-1 rounded-md transition-colors text-border hover:text-accent"
-                  title="Blur sensitive area"
+                  title={i18n.t('editor.blurSensitiveArea')}
                 >
                   <EyeOff size={13} />
                 </button>
                 <button
                   onClick={handleCopy}
                   className={`p-1 rounded-md transition-colors ${copied ? 'text-success' : 'text-border hover:text-success'}`}
-                  title="Copy screenshot"
+                  title={i18n.t('editor.copyScreenshot')}
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />}
                 </button>
@@ -122,7 +123,7 @@ export default function StepCard({
             <button
               onClick={handleDelete}
               className="p-1 rounded-md transition-colors text-border hover:text-destructive"
-              title="Delete step"
+              title={i18n.t('recording.deleteStep')}
             >
               <Trash2 size={13} />
             </button>

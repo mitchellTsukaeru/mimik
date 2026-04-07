@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 import type { ElementMeta } from '@/core/guides/types';
 
 export function buildFallbackDescription(action: string, meta: ElementMeta): string {
@@ -12,32 +13,33 @@ export function buildFallbackDescription(action: string, meta: ElementMeta): str
 
   if (action.startsWith('keydown:')) {
     const key = action.split(':')[1];
-    return `Press ${key} on ${target}`;
+    return i18n.t('steps.pressKey', [key, target]);
   }
 
   switch (action) {
     case 'click':
     case 'auxclick':
-      if (meta.tag === 'input' && meta.inputType === 'checkbox') return `Toggle ${target}`;
-      if (meta.tag === 'input' && meta.inputType === 'radio') return `Select ${target}`;
-      if (meta.role === 'switch' || meta.role === 'checkbox') return `Toggle ${target}`;
-      if (meta.role === 'radio') return `Select ${target}`;
-      if (meta.href) return `Click link "${target}"`;
-      return `Click ${target}`;
+      if (meta.tag === 'input' && meta.inputType === 'checkbox') return i18n.t('steps.toggleCheckbox', [target]);
+      if (meta.tag === 'input' && meta.inputType === 'radio') return i18n.t('steps.selectRadio', [target]);
+      if (meta.role === 'switch') return i18n.t('steps.toggleSwitch', [target]);
+      if (meta.role === 'checkbox') return i18n.t('steps.toggleCheckbox', [target]);
+      if (meta.role === 'radio') return i18n.t('steps.selectRadio', [target]);
+      if (meta.href) return i18n.t('steps.clickLink', [target]);
+      return i18n.t('steps.click', [target]);
     case 'input':
-      if (meta.inputType) return `Type into ${meta.inputType} field ${target}`;
-      return `Type into ${target}`;
+      if (meta.inputType) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
+      return i18n.t('steps.typeInto', [target]);
     case 'copy':
-      return `Copy from ${target}`;
+      return i18n.t('steps.copyFrom', [target]);
     case 'paste':
-      return `Paste into ${target}`;
+      return i18n.t('steps.pasteInto', [target]);
     case 'cut':
-      return `Cut from ${target}`;
+      return i18n.t('steps.cutFrom', [target]);
     case 'drag':
-      return `Drag ${target}`;
+      return i18n.t('steps.drag', [target]);
     case 'navigate':
-      return 'Navigate to page';
+      return i18n.t('steps.navigate');
     default:
-      return `${action} ${target}`;
+      return i18n.t('steps.defaultAction', [action, target]);
   }
 }

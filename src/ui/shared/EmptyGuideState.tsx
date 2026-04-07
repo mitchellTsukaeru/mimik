@@ -1,3 +1,5 @@
+import { i18n } from '#imports';
+
 export default function EmptyGuideState() {
   return (
     <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
@@ -22,8 +24,8 @@ export default function EmptyGuideState() {
           <span className="text-[10px] animate-pulse [animation-delay:800ms]">z</span>
         </div>
       </div>
-      <p className="text-sm font-medium text-foreground mt-5">This guide is empty</p>
-      <p className="text-xs text-muted-foreground mt-1">Wake it up by recording some steps</p>
+      <p className="text-sm font-medium text-foreground mt-5">{i18n.t('emptyGuide.title')}</p>
+      <p className="text-xs text-muted-foreground mt-1">{i18n.t('emptyGuide.subtitle')}</p>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 import type { Guide } from '@/core/guides/types';
 import { formatDateShort } from '@/lib/utils';
 import FaviconImg from '@/ui/shared/FaviconImg';
@@ -19,7 +20,9 @@ export default function SearchResults({ results, query, selected, onSelect, onHo
   if (results.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-purple">{query ? 'No matching guides' : 'No guides yet'}</p>
+        <p className="text-sm text-purple">
+          {query ? i18n.t('search_noMatchingGuides') : i18n.t('search_noGuidesYet')}
+        </p>
       </div>
     );
   }
@@ -67,8 +70,10 @@ export default function SearchResults({ results, query, selected, onSelect, onHo
               className="text-[10px] mt-0.5"
               style={{ color: i === selected ? 'rgba(199,210,254,0.6)' : 'var(--color-muted-foreground)' }}
             >
-              {r.guide.stepIds.length} step{r.guide.stepIds.length !== 1 ? 's' : ''} ·{' '}
-              {formatDateShort(r.guide.updatedAt)}
+              {r.guide.stepIds.length !== 1
+                ? i18n.t('fullview_stepCountPlural', [String(r.guide.stepIds.length)])
+                : i18n.t('fullview_stepCount', [String(r.guide.stepIds.length)])}{' '}
+              · {formatDateShort(r.guide.updatedAt)}
             </p>
           </div>
         </div>

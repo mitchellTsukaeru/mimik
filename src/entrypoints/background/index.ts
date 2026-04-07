@@ -1,4 +1,4 @@
-import { browser, defineBackground } from '#imports';
+import { browser, defineBackground, i18n } from '#imports';
 import { generateGuideTitle } from '@/core/capture/ai/title';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { createGuide, getGuideDomain, getStepsForGuide, updateGuideTitle } from '@/core/guides/service';
@@ -16,7 +16,10 @@ async function generateTitleInBackground(guideId: string) {
     const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
     if (!settings.aiApiKey) {
       const domain = await getGuideDomain(guideId);
-      await updateGuideTitle(guideId, domain ? `Guide on ${domain}` : 'New Guide');
+      await updateGuideTitle(
+        guideId,
+        domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
+      );
       return;
     }
 
@@ -33,12 +36,18 @@ async function generateTitleInBackground(guideId: string) {
       logger.info('Generated guide title:', title);
     } else {
       const domain = await getGuideDomain(guideId);
-      await updateGuideTitle(guideId, domain ? `Guide on ${domain}` : 'New Guide');
+      await updateGuideTitle(
+        guideId,
+        domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
+      );
     }
   } catch (err) {
     logger.error('Guide title generation failed', err);
     const domain = await getGuideDomain(guideId);
-    await updateGuideTitle(guideId, domain ? `Guide on ${domain}` : 'New Guide');
+    await updateGuideTitle(
+      guideId,
+      domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
+    );
   }
 }
 

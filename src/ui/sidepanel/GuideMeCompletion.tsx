@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { i18n } from '#imports';
 import { getStepsForGuide } from '@/core/guides/service';
 import type { Step } from '@/core/guides/types';
 
@@ -43,9 +44,9 @@ export default function GuideMeCompletion({ guideId, onDone, onRunAgain }: Guide
     <div className="min-h-screen bg-card flex flex-col px-7">
       <div className="flex flex-col items-center text-center pt-10 pb-4">
         <CoolMascot />
-        <h1 className="text-[22px] font-[800] text-foreground mb-2">All done, champ!</h1>
+        <h1 className="text-[22px] font-[800] text-foreground mb-2">{i18n.t('guidemeCompletion.title')}</h1>
         <p className="text-[13px] text-muted-foreground">
-          All {steps.length} step{steps.length !== 1 ? 's' : ''} completed.
+          {i18n.t('guidemeCompletion.stepsCompletedPlural', [String(steps.length)])}
         </p>
       </div>
 
@@ -67,13 +68,13 @@ export default function GuideMeCompletion({ guideId, onDone, onRunAgain }: Guide
           onClick={onDone}
           className="flex-1 py-3.5 rounded-lg font-semibold text-sm bg-secondary border border-border text-foreground hover:bg-secondary/80 transition-colors"
         >
-          All Done
+          {i18n.t('guidemeCompletion.allDone')}
         </button>
         <button
           onClick={() => onRunAgain(guideId)}
           className="flex-1 py-3.5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
-          Run Again
+          {i18n.t('guidemeCompletion.runAgain')}
         </button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 import { db } from './db';
 import type { Guide, Screenshot, Step } from './types';
 
@@ -18,7 +19,7 @@ function notifyGuidesChanged(event: GuideChangeEvent) {
 export async function createGuide(guideId: string): Promise<Guide> {
   const guide: Guide = {
     id: guideId,
-    title: 'Untitled Guide',
+    title: i18n.t('fullview.untitledGuide'),
     createdAt: Date.now(),
     updatedAt: Date.now(),
     stepIds: [],

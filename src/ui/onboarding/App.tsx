@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react';
-import { browser } from '#imports';
+import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { localStorage } from '@/lib/browser-api';
+
+const BLUR_PRESET_I18N: Record<PresetKey, string> = {
+  email: 'email',
+  phone: 'phoneNumbers',
+  ssn: 'ssn',
+  creditCard: 'creditCard',
+  ipAddress: 'ipAddress',
+  macAddress: 'macAddress',
+};
 
 function MascotLarge({ size = 280 }: { size?: number }) {
   return (
@@ -51,20 +61,19 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
         <div className="max-w-lg">
           <span className="inline-flex text-xs font-semibold text-accent bg-secondary px-3.5 py-1.5 rounded-full mb-6">
-            Welcome
+            {i18n.t('onboarding.welcomeBadge')}
           </span>
           <h1 className="text-4xl font-extrabold text-foreground leading-tight mb-3 tracking-tight">
-            You've successfully installed Mimik!
+            {i18n.t('onboarding.welcomeTitle')}
           </h1>
           <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-md">
-            With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides.
-            No account needed — everything stays in your browser.
+            {i18n.t('onboarding.welcomeMessage')}
           </p>
           <button
             onClick={onNext}
             className="inline-flex items-center gap-2 px-7 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
           >
-            Get started
+            {i18n.t('onboarding.getStarted')}
             <svg
               width="16"
               height="16"
@@ -94,6 +103,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
 
   const providerConfig = AI_PROVIDERS[provider];
 
@@ -103,9 +113,10 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
   };
 
   const handleContinue = async () => {
-    if (apiKey) {
-      await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model });
-    }
+    await localStorage.set({
+      ...(apiKey ? { aiApiKey: apiKey, aiProvider: provider, aiModel: model } : {}),
+      aiLanguage,
+    });
     onNext();
   };
 
@@ -113,16 +124,17 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
     <div className="flex h-screen">
       <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
         <div className="max-w-md">
-          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 1 of 3</p>
-          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">AI Descriptions</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-            Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in
-            settings.
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">
+            {i18n.t('onboarding.aiStepLabel')}
           </p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">{i18n.t('onboarding.aiTitle')}</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">{i18n.t('onboarding.aiMessage')}</p>
 
           <div className="space-y-4 mb-8">
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Provider</label>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {i18n.t('settings.provider')}
+              </label>
               <select
                 value={provider}
                 onChange={(e) => handleProviderChange(e.target.value as AIProviderKey)}
@@ -137,7 +149,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Model</label>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
@@ -152,7 +164,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">API Key</label>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
               <input
                 type="password"
                 value={apiKey}
@@ -161,6 +173,23 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {i18n.t('settings.aiLanguage')}
+              </label>
+              <select
+                value={aiLanguage}
+                onChange={(e) => setAiLanguage(e.target.value as AILanguageCode)}
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
+              >
+                {AI_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -168,13 +197,13 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
               onClick={handleContinue}
               className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
             >
-              Continue
+              {i18n.t('common.continue')}
             </button>
             <button
               onClick={onSkip}
               className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
             >
-              Skip
+              {i18n.t('common.skip')}
             </button>
           </div>
 
@@ -204,7 +233,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
           </svg>
           <div className="bg-white rounded-2xl p-9 shadow-lg max-w-sm">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
-              AI-generated description
+              {i18n.t('onboarding.aiGeneratedDescription')}
             </p>
             <div className="flex gap-3 mb-5">
               <div className="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
@@ -220,7 +249,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
                   </svg>
-                  AI generated
+                  {i18n.t('onboarding.aiGenerated')}
                 </span>
               </div>
             </div>
@@ -238,7 +267,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L14 10L22 12L14 14L12 22L10 14L2 12L10 10Z" />
                   </svg>
-                  AI generated
+                  {i18n.t('onboarding.aiGenerated')}
                 </span>
               </div>
             </div>
@@ -271,19 +300,23 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
     <div className="flex h-screen">
       <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
         <div className="max-w-md">
-          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 2 of 3</p>
-          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">Smart Blur</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-            Automatically blur sensitive information in screenshots. Choose which patterns to detect.
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">
+            {i18n.t('onboarding.blurStepLabel')}
           </p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">
+            {i18n.t('onboarding.blurTitle')}
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">{i18n.t('onboarding.blurMessage')}</p>
 
           <div className="space-y-1 mb-8 border border-border rounded-2xl p-4">
-            {(Object.entries(PRESET_LABELS) as [PresetKey, string][]).map(([key, label], i, arr) => (
+            {(Object.keys(PRESET_LABELS) as PresetKey[]).map((key, i, arr) => (
               <div
                 key={key}
                 className={`flex items-center justify-between py-3 ${i < arr.length - 1 ? 'border-b border-secondary' : ''}`}
               >
-                <span className="text-sm font-medium text-foreground">{label}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {i18n.t(`blurPresets.${BLUR_PRESET_I18N[key]}`)}
+                </span>
                 <button
                   onClick={() => handleToggle(key)}
                   className={`w-11 h-6 rounded-full transition-colors relative ${
@@ -305,13 +338,13 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
               onClick={onNext}
               className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
             >
-              Continue
+              {i18n.t('common.continue')}
             </button>
             <button
               onClick={onSkip}
               className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
             >
-              Skip
+              {i18n.t('common.skip')}
             </button>
           </div>
 
@@ -324,13 +357,23 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
         <div className="absolute w-[350px] h-[350px] bg-[radial-gradient(circle,rgba(79,70,229,0.25),transparent_70%)] bottom-[20%] right-[20%]" />
         <div className="animate-[float_4s_ease-in-out_infinite] relative z-10">
           <div className="bg-white rounded-2xl p-7 shadow-lg" style={{ minWidth: 320 }}>
-            <p className="text-xs font-semibold text-foreground mb-4">Screenshot preview</p>
+            <p className="text-xs font-semibold text-foreground mb-4">{i18n.t('onboarding.screenshotPreview')}</p>
             {[
-              { icon: '@', label: 'Email', value: 'luis@company.com', blurred: true },
-              { icon: '#', label: 'Phone', value: '(555) 867-5309', blurred: true },
-              { icon: 'ID', label: 'SSN', value: 'Not enabled', blurred: false },
-              { icon: '$', label: 'Card', value: 'Not enabled', blurred: false },
-              { icon: 'IP', label: 'Address', value: 'Not enabled', blurred: false },
+              { icon: '@', label: i18n.t('blurPresets.email'), value: 'luis@company.com', blurred: true },
+              { icon: '#', label: i18n.t('blurPresets.phoneNumbers'), value: '(555) 867-5309', blurred: true },
+              { icon: 'ID', label: i18n.t('blurPresets.ssn'), value: i18n.t('onboarding.notEnabled'), blurred: false },
+              {
+                icon: '$',
+                label: i18n.t('blurPresets.creditCard'),
+                value: i18n.t('onboarding.notEnabled'),
+                blurred: false,
+              },
+              {
+                icon: 'IP',
+                label: i18n.t('blurPresets.ipAddress'),
+                value: i18n.t('onboarding.notEnabled'),
+                blurred: false,
+              },
             ].map((row, i, arr) => (
               <div
                 key={row.label}
@@ -359,7 +402,7 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
               >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              2 categories protected
+              {i18n.t('onboarding.categoriesProtected', ['2'])}
             </div>
           </div>
         </div>
@@ -373,11 +416,13 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
     <div className="flex h-screen">
       <div className="flex-1 flex flex-col justify-center" style={{ padding: '80px 64px' }}>
         <div className="max-w-md">
-          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">Step 3 of 3</p>
-          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">Pin Mimik</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-            Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
+          <p className="text-xs font-semibold text-accent mb-2 tracking-wide uppercase">
+            {i18n.t('onboarding.pinStepLabel')}
           </p>
+          <h1 className="text-3xl font-extrabold text-foreground leading-tight mb-2">
+            {i18n.t('onboarding.pinTitle')}
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">{i18n.t('onboarding.pinMessage')}</p>
 
           <ol className="space-y-4 mb-8">
             <li className="flex items-start gap-3">
@@ -385,8 +430,8 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
                 <span className="text-accent text-xs font-bold">1</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Click the puzzle icon</p>
-                <p className="text-xs text-muted-foreground">In the top-right of your browser toolbar</p>
+                <p className="text-sm font-medium text-foreground">{i18n.t('onboarding.pinStep1Title')}</p>
+                <p className="text-xs text-muted-foreground">{i18n.t('onboarding.pinStep1Sub')}</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
@@ -394,8 +439,8 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
                 <span className="text-accent text-xs font-bold">2</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Find Mimik</p>
-                <p className="text-xs text-muted-foreground">In the extensions dropdown</p>
+                <p className="text-sm font-medium text-foreground">{i18n.t('onboarding.pinStep2Title')}</p>
+                <p className="text-xs text-muted-foreground">{i18n.t('onboarding.pinStep2Sub')}</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
@@ -403,8 +448,8 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
                 <span className="text-accent text-xs font-bold">3</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Click the pin icon</p>
-                <p className="text-xs text-muted-foreground">Mimik will appear in your toolbar</p>
+                <p className="text-sm font-medium text-foreground">{i18n.t('onboarding.pinStep3Title')}</p>
+                <p className="text-xs text-muted-foreground">{i18n.t('onboarding.pinStep3Sub')}</p>
               </div>
             </li>
           </ol>
@@ -414,13 +459,13 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
               onClick={onNext}
               className="px-8 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
             >
-              Continue
+              {i18n.t('common.continue')}
             </button>
             <button
               onClick={onSkip}
               className="px-6 py-3 text-muted-foreground rounded-xl font-semibold text-sm hover:text-foreground transition-colors"
             >
-              Skip
+              {i18n.t('common.skip')}
             </button>
           </div>
 
@@ -432,7 +477,11 @@ function PinExtensionStep({ onNext, onSkip }: { onNext: () => void; onSkip: () =
       <div className="w-1/2 bg-deep flex items-center justify-center relative overflow-hidden">
         <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(79,70,229,0.2),transparent_70%)] top-[10%] right-[-10%]" />
         <div className="animate-[float_4s_ease-in-out_infinite] relative z-10">
-          <img src="/pin-screenshot.png" alt="Pin Mimik extension" className="rounded-xl shadow-2xl max-w-[400px]" />
+          <img
+            src="/pin-screenshot.png"
+            alt={i18n.t('onboarding.pinScreenshotAlt')}
+            className="rounded-xl shadow-2xl max-w-[400px]"
+          />
         </div>
       </div>
     </div>
@@ -450,15 +499,17 @@ function DoneStep() {
         <div className="flex justify-center mb-8 animate-[float_3s_ease-in-out_infinite]">
           <MascotLarge size={120} />
         </div>
-        <h1 className="text-4xl font-extrabold text-foreground mb-3 tracking-tight">You're all set!</h1>
+        <h1 className="text-4xl font-extrabold text-foreground mb-3 tracking-tight">
+          {i18n.t('onboarding.doneTitle')}
+        </h1>
         <p className="text-base text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
-          Mimik is ready to capture your workflows. Click "Start Capture" in the extension to record your first guide.
+          {i18n.t('onboarding.doneMessage')}
         </p>
 
         <div className="flex gap-4 justify-center mb-8">
           {[
             {
-              label: 'Auto-capture',
+              label: i18n.t('onboarding.featureAutoCapture'),
               icon: (
                 <svg
                   width="28"
@@ -475,7 +526,7 @@ function DoneStep() {
               ),
             },
             {
-              label: 'AI descriptions',
+              label: i18n.t('onboarding.featureAIDescriptions'),
               icon: (
                 <svg
                   width="28"
@@ -491,7 +542,7 @@ function DoneStep() {
               ),
             },
             {
-              label: 'Smart blur',
+              label: i18n.t('onboarding.featureSmartBlur'),
               icon: (
                 <svg
                   width="28"
@@ -519,7 +570,7 @@ function DoneStep() {
           onClick={handleOpen}
           className="inline-flex items-center gap-2 px-7 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
         >
-          Open Mimik
+          {i18n.t('onboarding.openMimik')}
           <svg
             width="16"
             height="16"

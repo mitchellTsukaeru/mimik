@@ -1,5 +1,6 @@
 import { Check, EyeOff, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
 import { getActiveTab } from '@/lib/browser-api';
@@ -15,9 +16,9 @@ interface RecordingViewProps {
 
 function timeAgo(createdAt: number): string {
   const diff = Math.floor((Date.now() - createdAt) / 1000);
-  if (diff < 3) return 'Just now';
-  if (diff < 60) return `${diff}s ago`;
-  return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 3) return i18n.t('recording.justNow');
+  if (diff < 60) return i18n.t('recording.secondsAgo', [String(diff)]);
+  return i18n.t('recording.minutesAgo', [String(Math.floor(diff / 60))]);
 }
 
 interface LiveStep {
@@ -104,7 +105,11 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
         <span className={`w-2 h-2 rounded-full ${isBlurring ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
         <span className="text-xs font-semibold text-foreground">
-          {isBlurring ? 'Capture paused' : `Recording · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`}
+          {isBlurring
+            ? i18n.t('recording.capturePaused')
+            : steps.length === 1
+              ? i18n.t('recording.recording', [String(steps.length)])
+              : i18n.t('recording.recordingPlural', [String(steps.length)])}
         </span>
       </div>
 
@@ -130,8 +135,8 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
               <ellipse cx="146" cy="64" rx="10" ry="8" fill="#1E1B4B" />
             </svg>
             <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">Ready to capture!</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Click on the page to start</p>
+              <p className="text-sm font-semibold text-foreground">{i18n.t('recording.readyTitle')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{i18n.t('recording.readySub')}</p>
             </div>
           </div>
         ) : (
@@ -162,7 +167,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
                     <button
                       onClick={() => handleDeleteStep(liveStep.step.id)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-border hover:text-destructive"
-                      title="Delete step"
+                      title={i18n.t('recording.deleteStep')}
                     >
                       <X size={13} />
                     </button>
@@ -180,20 +185,20 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
       <div className="shrink-0 border-t border-border px-4 py-2.5 flex items-center gap-2">
         <Button onClick={onStop} className="flex-1 h-10 rounded-full font-semibold text-[13px]">
           <Check size={16} strokeWidth={3} />
-          Finish Recording
+          {i18n.t('recording.finishRecording')}
         </Button>
         <button
           onClick={handleBlur}
           disabled={isBlurring}
           className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Smart Blur"
+          title={i18n.t('recording.smartBlur')}
         >
           <EyeOff size={16} />
         </button>
         <button
           onClick={onStop}
           className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
-          title="Discard"
+          title={i18n.t('recording.discard')}
         >
           <X size={16} />
         </button>

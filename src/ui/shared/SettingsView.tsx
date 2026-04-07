@@ -1,7 +1,9 @@
-import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Shield, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Globe, Shield, Sparkles, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
@@ -15,6 +17,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
+  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -25,11 +28,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'blurPresets']).then((result) => {
+    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiLanguage', 'blurPresets']).then((result) => {
       const p = (result.aiProvider as AIProviderKey) || 'openai';
       setProvider(p);
       setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
       if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+      if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
       if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
     });
   }, []);
@@ -40,12 +44,21 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   };
 
   const handleSave = async () => {
-    await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model, blurPresets });
+    await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model, aiLanguage, blurPresets });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const providerConfig = AI_PROVIDERS[provider];
+
+  const BLUR_PRESET_I18N: Record<PresetKey, string> = {
+    email: 'blurPresets.email',
+    phone: 'blurPresets.phoneNumbers',
+    ssn: 'blurPresets.ssn',
+    creditCard: 'blurPresets.creditCard',
+    ipAddress: 'blurPresets.ipAddress',
+    macAddress: 'blurPresets.macAddress',
+  };
 
   return (
     <div className="bg-card flex flex-col">
@@ -58,7 +71,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <ArrowLeft size={16} />
           </button>
         )}
-        <h1 className="text-[15px] font-bold text-foreground">Settings</h1>
+        <h1 className="text-[15px] font-bold text-foreground">{i18n.t('settings.title')}</h1>
       </div>
 
       <div className="flex-1 px-3 py-4 space-y-3">
@@ -67,11 +80,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
               <Sparkles size={14} className="text-accent" />
             </div>
-            <span className="text-xs font-bold text-foreground">AI Descriptions</span>
+            <span className="text-xs font-bold text-foreground">{i18n.t('settings.aiDescriptions')}</span>
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">Provider</label>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.provider')}
+            </label>
             <select
               value={provider}
               onChange={(e) => handleProviderChange(e.target.value as AIProviderKey)}
@@ -86,7 +101,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">Model</label>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
@@ -101,8 +116,26 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">API Key</label>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
             <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">
+              <Globe size={11} className="inline mr-1 -mt-px" />
+              {i18n.t('settings.aiLanguage')}
+            </label>
+            <select
+              value={aiLanguage}
+              onChange={(e) => setAiLanguage(e.target.value as AILanguageCode)}
+              className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
+            >
+              {AI_LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -111,15 +144,15 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
               <EyeOff size={14} className="text-accent" />
             </div>
-            <span className="text-xs font-bold text-foreground">Smart Blur</span>
+            <span className="text-xs font-bold text-foreground">{i18n.t('settings.smartBlur')}</span>
           </div>
 
-          {(Object.entries(PRESET_LABELS) as [PresetKey, string][]).map(([key, label], i, arr) => (
+          {(Object.keys(PRESET_LABELS) as PresetKey[]).map((key, i, arr) => (
             <div
               key={key}
               className={`flex items-center justify-between py-2 ${i < arr.length - 1 ? 'border-b border-secondary' : ''}`}
             >
-              <span className="text-xs font-medium text-foreground">{label}</span>
+              <span className="text-xs font-medium text-foreground">{i18n.t(BLUR_PRESET_I18N[key])}</span>
               <button
                 onClick={() =>
                   setBlurPresets((prev) => {
@@ -149,15 +182,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           style={saved ? { backgroundColor: 'var(--color-success)', color: '#fff', opacity: 0.9 } : undefined}
         >
           {saved && <Check size={16} />}
-          {saved ? 'Saved' : 'Save Settings'}
+          {saved ? i18n.t('settings.saved') : i18n.t('settings.saveSettings')}
         </Button>
 
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">
           <Shield size={12} className="shrink-0 mt-0.5 text-accent" />
-          <span>
-            Your API key is stored locally and only sent to the selected AI provider. No data leaves your browser
-            otherwise.
-          </span>
+          <span>{i18n.t('settings.privacyNotice')}</span>
         </div>
 
         <a
@@ -167,7 +197,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-accent transition-colors"
         >
           <Bug size={13} className="shrink-0" />
-          <span>Found a bug? Report it on GitHub</span>
+          <span>{i18n.t('settings.bugReport')}</span>
         </a>
 
         <div className="flex items-center gap-3.5 border border-border rounded-[10px] p-3.5">
@@ -180,9 +210,9 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <path d="M84 138 Q100 148 116 138" stroke="#C7D2FE" strokeWidth="3.5" fill="none" strokeLinecap="round" />
           </svg>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-foreground mb-0.5">Like what you see?</p>
+            <p className="text-xs font-bold text-foreground mb-0.5">{i18n.t('settings.starCtaTitle')}</p>
             <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
-              A GitHub star helps others find Mimik and keeps us motivated!
+              {i18n.t('settings.starCtaMessage')}
             </p>
             <a
               href="https://github.com/westpoint-io/mimik"
@@ -191,7 +221,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-[10px] font-semibold text-accent hover:bg-accent hover:text-white transition-colors"
             >
               <Star size={11} fill="#FBBF24" className="text-[#FBBF24]" />
-              Star on GitHub
+              {i18n.t('settings.starOnGithub')}
               <ChevronRight size={11} />
             </a>
           </div>

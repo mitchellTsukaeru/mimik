@@ -1,6 +1,7 @@
 import { Play } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
+import { i18n } from '#imports';
 import {
   deleteStep,
   getGuide,
@@ -11,7 +12,7 @@ import {
 } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { sendMessage } from '@/lib/messaging';
-import { getMostCommonDomain } from '@/lib/utils';
+import { formatDate, getMostCommonDomain } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import FaviconImg from '@/ui/shared/FaviconImg';
 import BlurCanvas from '@/ui/sidepanel/BlurCanvas';
@@ -47,13 +48,17 @@ export default function GuideContent({ guideId }: GuideContentProps) {
       setData(result);
       const newTitle = result.guide.title;
       const prev = titleRef.current;
-      if (prev === 'Untitled Guide' && newTitle !== 'Untitled Guide' && result.steps.length > 0) {
+      if (
+        prev === i18n.t('fullview_untitledGuide') &&
+        newTitle !== i18n.t('fullview_untitledGuide') &&
+        result.steps.length > 0
+      ) {
         setTypingTitle(newTitle);
       } else {
         titleRef.current = newTitle;
         setTitle(newTitle);
       }
-      document.title = `${newTitle} — Mimik`;
+      document.title = `${newTitle} — ${i18n.t('app_name')}`;
       setGuideTitle(newTitle);
       setGuideStepCount(result.steps.length);
       setGuideExportData({ guideId, ...result });
@@ -70,7 +75,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
     if (!data || title === data.guide.title) return;
     await updateGuideTitle(guideId, title);
     setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title } } : prev));
-    document.title = `${title} — Mimik`;
+    document.title = `${title} — ${i18n.t('app_name')}`;
   }, [data, guideId, title]);
 
   const handleDescriptionChange = useCallback(async (stepId: string, description: string) => {
@@ -127,7 +132,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         </div>
       </div>
     );
-  if (!data) return <p className="text-sm py-12 text-center text-purple">Guide not found.</p>;
+  if (!data) return <p className="text-sm py-12 text-center text-purple">{i18n.t('fullview_guideNotFound')}</p>;
 
   const domain = getMostCommonDomain(data.steps);
   const blurScreenshot = blurringStepId ? data.screenshots.get(blurringStepId) : undefined;
@@ -138,10 +143,14 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
 
-      <div className={title === 'Untitled Guide' && !typingTitle && data.steps.length > 0 ? 'min-h-[88px]' : ''}>
-        {title === 'Untitled Guide' && !typingTitle && data.steps.length > 0 ? (
+      <div
+        className={
+          title === i18n.t('fullview_untitledGuide') && !typingTitle && data.steps.length > 0 ? 'min-h-[88px]' : ''
+        }
+      >
+        {title === i18n.t('fullview_untitledGuide') && !typingTitle && data.steps.length > 0 ? (
           <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground max-w-[480px]">
-            Writing a title from your captured steps...
+            {i18n.t('fullview_writingTitle')}
           </div>
         ) : typingTitle ? (
           <div className="relative text-[32px] font-extrabold leading-tight">
@@ -189,14 +198,12 @@ export default function GuideContent({ guideId }: GuideContentProps) {
 
       <div className="flex items-center gap-1.5 mt-2 mb-4 flex-wrap">
         <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
-          {new Date(data.guide.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
+          {formatDate(data.guide.createdAt)}
         </span>
         <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
-          {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
+          {data.steps.length !== 1
+            ? i18n.t('fullview_stepCountPlural', [String(data.steps.length)])
+            : i18n.t('fullview_stepCount', [String(data.steps.length)])}
         </span>
         {domain && (
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
@@ -214,7 +221,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed ml-auto"
           >
             <Play size={11} />
-            Guide Me
+            {i18n.t('fullview_guideMe')}
           </button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { ArrowLeft, Layers, Maximize2, Play } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { i18n } from '#imports';
 import {
   deleteStep,
   getGuide,
@@ -103,16 +104,16 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
     [blurringStepId, data],
   );
 
-  if (loading) return <p className="text-sm text-purple p-4">Loading...</p>;
+  if (loading) return <p className="text-sm text-purple p-4">{i18n.t('common.loading')}</p>;
 
   if (notFound || !data) {
     return (
       <div className="p-4">
         <button onClick={onBack} className="flex items-center gap-1 text-sm text-purple hover:text-foreground mb-4">
           <ArrowLeft size={18} />
-          Back
+          {i18n.t('common.back')}
         </button>
-        <p className="text-sm text-destructive">Guide not found</p>
+        <p className="text-sm text-destructive">{i18n.t('fullview.guideNotFound')}</p>
       </div>
     );
   }
@@ -129,7 +130,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
           <button
             onClick={onBack}
             className="shrink-0 p-1 rounded text-purple hover:text-foreground"
-            title="Back to library"
+            title={i18n.t('editor.backToLibrary')}
           >
             <ArrowLeft size={18} />
           </button>
@@ -152,7 +153,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
               });
             }}
             className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary"
-            title="Open in full view"
+            title={i18n.t('library.openInFullView')}
           >
             <Maximize2 size={15} />
           </button>
@@ -164,7 +165,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
               }}
               disabled={!data.steps.some((s) => s.elementMeta)}
               className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Guide Me"
+              title={i18n.t('editor.guideMe')}
             >
               <Play size={15} />
             </button>
@@ -176,7 +177,9 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
         <div className="text-[11px] flex items-center gap-2 text-muted-foreground" style={{ marginLeft: '34px' }}>
           <span className="flex items-center gap-1">
             <Layers size={11} />
-            {data.steps.length} step{data.steps.length !== 1 ? 's' : ''}
+            {data.steps.length !== 1
+              ? i18n.t('fullview.stepCountPlural', [String(data.steps.length)])
+              : i18n.t('fullview.stepCount', [String(data.steps.length)])}
           </span>
           {(() => {
             const d = getMostCommonDomain(data.steps);

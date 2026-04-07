@@ -1,3 +1,5 @@
+import { i18n } from '#imports';
+
 const MANUAL_CLASS = 'mimik-manual-blur';
 const BLUR_ATTR = 'data-mimik-blur';
 
@@ -107,12 +109,12 @@ export class ElementPicker {
     bar.innerHTML = `
       <div class="bar-left">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-        Select elements to blur
+        ${i18n.t('blurPanel.selectElements')}
       </div>
     `;
     const doneBtn = document.createElement('button');
     doneBtn.className = 'bar-done';
-    doneBtn.textContent = 'Done';
+    doneBtn.textContent = i18n.t('blurPanel.done');
     doneBtn.addEventListener('click', () => this.onDone?.());
     bar.appendChild(doneBtn);
     shadow.appendChild(bar);

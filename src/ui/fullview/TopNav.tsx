@@ -1,4 +1,5 @@
 import { ChevronRight, FileText, Search, Star, Trash2 } from 'lucide-react';
+import { i18n } from '#imports';
 import { useFullview } from '@/stores/fullview';
 import { Button } from '@/ui/components/ui/button';
 import ExportMenu from '@/ui/sidepanel/ExportMenu';
@@ -11,9 +12,9 @@ interface TopNavProps {
 }
 
 const navItems = [
-  { key: 'all' as const, label: 'All Guides', icon: FileText },
-  { key: 'starred' as const, label: 'Starred', icon: Star },
-  { key: 'trash' as const, label: 'Trash', icon: Trash2 },
+  { key: 'all' as const, labelKey: 'fullview_allGuides' as const, icon: FileText },
+  { key: 'starred' as const, labelKey: 'fullview_starred' as const, icon: Star },
+  { key: 'trash' as const, labelKey: 'fullview_trash' as const, icon: Trash2 },
 ];
 
 export default function TopNav({ route }: TopNavProps) {
@@ -41,14 +42,14 @@ export default function TopNav({ route }: TopNavProps) {
         <div className="mb-1">
           <MascotIcon size={22} />
         </div>
-        <span className="text-[15px] font-bold tracking-tight text-foreground">Mimik</span>
+        <span className="text-[15px] font-bold tracking-tight text-foreground">{i18n.t('app_name')}</span>
       </button>
 
       {route.page === 'guide'
         ? guideTitle && (
             <>
               <ChevronRight size={14} className="text-foreground opacity-25" />
-              {guideTitle === 'Untitled Guide' && guideStepCount > 0 ? (
+              {guideTitle === i18n.t('fullview_untitledGuide') && guideStepCount > 0 ? (
                 <span className="flex items-center gap-1">
                   {[0, 1, 2].map((i) => (
                     <span
@@ -74,7 +75,7 @@ export default function TopNav({ route }: TopNavProps) {
                 ${active ? 'bg-primary text-primary-foreground font-semibold' : 'text-deep font-medium hover:bg-foreground/10'}`}
               >
                 <item.icon size={13.5} />
-                {item.label}
+                {i18n.t(item.labelKey)}
                 {count > 0 && (
                   <span className={`text-[11px] ml-0.5 ${active ? 'text-primary-foreground/70' : 'text-violet-dark'}`}>
                     {count}
@@ -92,7 +93,7 @@ export default function TopNav({ route }: TopNavProps) {
           className="flex items-center gap-2 px-3 h-8 rounded-lg w-52 cursor-pointer bg-white/40 border-0 hover:bg-white/60"
         >
           <Search size={14} className="shrink-0 text-violet-dark" />
-          <span className="text-[12px] flex-1 text-left text-violet-dark">Search guides...</span>
+          <span className="text-[12px] flex-1 text-left text-violet-dark">{i18n.t('fullview_searchPlaceholder')}</span>
           <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-foreground/10 text-violet-dark">⌘K</span>
         </Button>
         {route.page === 'guide' && exportData && (

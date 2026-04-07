@@ -1,5 +1,6 @@
 import { Download, FileCode, FileDown, FileText, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
@@ -61,16 +62,16 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
   }
 
   const items = [
-    { type: 'html' as const, icon: FileCode, label: 'HTML' },
-    { type: 'markdown' as const, icon: FileText, label: 'Markdown' },
-    { type: 'pdf' as const, icon: FileDown, label: 'PDF' },
+    { type: 'html' as const, icon: FileCode, label: i18n.t('exportMenu.html') },
+    { type: 'markdown' as const, icon: FileText, label: i18n.t('exportMenu.markdown') },
+    { type: 'pdf' as const, icon: FileDown, label: i18n.t('exportMenu.pdf') },
   ];
 
   return (
     <div ref={menuRef} className="relative">
       <Button size="sm" onClick={() => setOpen((prev) => !prev)} disabled={exporting}>
         {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-        Export
+        {i18n.t('common.export')}
       </Button>
 
       {open && !exporting && (

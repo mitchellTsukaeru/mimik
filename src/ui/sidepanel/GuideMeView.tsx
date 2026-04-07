@@ -1,6 +1,6 @@
 import { ArrowLeft, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { browser } from '#imports';
+import { browser, i18n } from '#imports';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
 import { getGuide } from '@/core/guides/service';
@@ -41,22 +41,20 @@ function ExitConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onCon
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-card/80 backdrop-blur-[2px]">
       <div className="bg-card rounded-2xl border border-border shadow-lg p-6 w-[280px] text-center flex flex-col items-center">
         <SadMascot />
-        <h3 className="text-[15px] font-bold text-foreground mt-3 mb-1">Heading out?</h3>
-        <p className="text-[12px] text-muted-foreground leading-relaxed mb-5">
-          Your walkthrough will stop and the page overlay will be removed.
-        </p>
+        <h3 className="text-[15px] font-bold text-foreground mt-3 mb-1">{i18n.t('guideme.exitTitle')}</h3>
+        <p className="text-[12px] text-muted-foreground leading-relaxed mb-5">{i18n.t('guideme.exitMessage')}</p>
         <div className="flex gap-2.5 w-full">
           <button
             onClick={onCancel}
             className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
           >
-            Stay
+            {i18n.t('guideme.stay')}
           </button>
           <button
             onClick={onConfirm}
             className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Exit
+            {i18n.t('guideme.exit')}
           </button>
         </div>
       </div>
@@ -155,8 +153,8 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
     };
   }, [viewedStep, viewedScreenshot]);
 
-  if (loading) return <p className="text-sm text-purple p-4">Loading...</p>;
-  if (!data) return <p className="text-sm text-purple p-4">Guide not found</p>;
+  if (loading) return <p className="text-sm text-purple p-4">{i18n.t('common.loading')}</p>;
+  if (!data) return <p className="text-sm text-purple p-4">{i18n.t('guideme.guideNotFound')}</p>;
 
   const totalSteps = data.steps.length;
 
@@ -173,7 +171,7 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
         <span className="flex-1 text-sm font-semibold text-foreground truncate">{data.guide.title}</span>
         <span className="shrink-0 flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
           <span className="w-1.5 h-1.5 rounded-full bg-success" />
-          Live
+          {i18n.t('guideme.live')}
         </span>
       </div>
 
@@ -195,10 +193,10 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
               <span className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[10px] font-bold">
                 {viewedStepIndex + 1}
               </span>
-              Step {viewedStepIndex + 1} of {totalSteps}
+              {i18n.t('guideme.stepOf', [String(viewedStepIndex + 1), String(totalSteps)])}
             </span>
             <p className="text-[15px] font-semibold text-foreground leading-snug">
-              {viewedStep?.description || 'No description'}
+              {viewedStep?.description || i18n.t('guideme.noDescription')}
             </p>
             {viewedStep?.url && (
               <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1.5">
@@ -231,7 +229,7 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
               className="flex items-center gap-1 text-xs font-medium text-purple hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={14} />
-              Prev
+              {i18n.t('guideme.prev')}
             </button>
             <button
               onClick={() => {
@@ -245,7 +243,9 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
               disabled={viewedStepIndex === totalSteps - 1 && viewedStepIndex !== activeStepIndex}
               className="flex items-center gap-1 text-xs font-medium text-purple hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {viewedStepIndex === totalSteps - 1 && viewedStepIndex === activeStepIndex ? 'Finish' : 'Next'}
+              {viewedStepIndex === totalSteps - 1 && viewedStepIndex === activeStepIndex
+                ? i18n.t('guideme.finish')
+                : i18n.t('guideme.next')}
               <ChevronRight size={14} />
             </button>
           </div>

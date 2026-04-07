@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 import type { Step } from '@/core/guides/types';
 
 export function blobToBase64(blob: Blob): Promise<string> {
@@ -31,8 +32,15 @@ export function extractDomain(steps: Step[]): string | null {
   }
 }
 
+const LOCALE_MAP: Record<string, string> = { en: 'en-US', es: 'es', 'pt-BR': 'pt-BR', fr: 'fr' };
+
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  let locale = 'en-US';
+  try {
+    const meta = i18n.t('meta.locale');
+    if (meta && LOCALE_MAP[meta]) locale = LOCALE_MAP[meta];
+  } catch {}
+  return new Date(timestamp).toLocaleDateString(locale, {
     month: 'short',
     day: '2-digit',
     year: 'numeric',

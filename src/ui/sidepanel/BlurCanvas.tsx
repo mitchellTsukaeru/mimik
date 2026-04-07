@@ -1,5 +1,6 @@
 import { Check, EyeOff, Undo, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import type { Screenshot } from '@/core/guides/types';
 
 interface BlurCanvasProps {
@@ -192,10 +193,12 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
             <span className="w-7 h-7 rounded-full bg-primary-foreground/10 flex items-center justify-center">
               <EyeOff size={14} className="text-primary-foreground" />
             </span>
-            <span className="text-xs font-medium text-primary-foreground">Draw rectangles to blur</span>
+            <span className="text-xs font-medium text-primary-foreground">{i18n.t('blurCanvas.drawInstructions')}</span>
             {blurRects.length > 0 && (
               <span className="text-[10px] font-semibold text-primary-foreground bg-primary-foreground/10 px-2 py-0.5 rounded-full">
-                {blurRects.length} region{blurRects.length !== 1 ? 's' : ''}
+                {blurRects.length !== 1
+                  ? i18n.t('blurCanvas.regionCountPlural', [String(blurRects.length)])
+                  : i18n.t('blurCanvas.regionCount', [String(blurRects.length)])}
               </span>
             )}
           </div>
@@ -206,21 +209,21 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
               className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-primary-foreground rounded-lg border border-primary-foreground/10 bg-primary-foreground/[0.06] hover:bg-primary-foreground/15 disabled:opacity-30 transition-colors"
             >
               <Undo size={12} />
-              Undo
+              {i18n.t('common.undo')}
             </button>
             <button
               onClick={onCancel}
               className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-primary-foreground rounded-lg border border-primary-foreground/10 bg-primary-foreground/[0.06] hover:bg-destructive/15 hover:text-destructive transition-colors"
             >
               <X size={12} />
-              Cancel
+              {i18n.t('common.cancel')}
             </button>
             <button
               onClick={handleSave}
               className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary-foreground rounded-lg hover:bg-primary-foreground/90 transition-colors"
             >
               <Check size={12} />
-              Save
+              {i18n.t('common.save')}
             </button>
           </div>
         </div>

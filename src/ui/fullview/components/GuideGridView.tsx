@@ -1,5 +1,6 @@
 import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import { formatDate } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
@@ -64,7 +65,7 @@ function CardMenu({
   if (category === 'trash') {
     items.push({
       icon: <RotateCcw size={13} />,
-      label: 'Restore',
+      label: i18n.t('common_restore'),
       onClick: (e) => {
         onRestore(e, guideId);
         setOpen(false);
@@ -72,7 +73,7 @@ function CardMenu({
     });
     items.push({
       icon: <Trash2 size={13} />,
-      label: 'Delete permanently',
+      label: i18n.t('library_deletePermanently'),
       onClick: (e) => {
         onPermanentDelete(e, guideId);
         setOpen(false);
@@ -82,7 +83,7 @@ function CardMenu({
   } else {
     items.push({
       icon: starred ? <StarOff size={13} /> : <Star size={13} />,
-      label: starred ? 'Unstar' : 'Star',
+      label: starred ? i18n.t('common_unstar') : i18n.t('common_star'),
       onClick: (e) => {
         onStar(e, guideId);
         setOpen(false);
@@ -90,7 +91,7 @@ function CardMenu({
     });
     items.push({
       icon: <Trash2 size={13} />,
-      label: 'Move to trash',
+      label: i18n.t('library_moveToTrash'),
       onClick: (e) => {
         onTrash(e, guideId);
         setOpen(false);
@@ -160,8 +161,10 @@ export default function GuideGridView({ category, onStar, onTrash, onRestore, on
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
                 <p className="text-xs mt-0.5 text-muted-foreground">
-                  {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot;{' '}
-                  {formatDate(guide.updatedAt)}
+                  {guide.stepIds.length !== 1
+                    ? i18n.t('fullview_stepCountPlural', [String(guide.stepIds.length)])
+                    : i18n.t('fullview_stepCount', [String(guide.stepIds.length)])}{' '}
+                  &middot; {formatDate(guide.updatedAt)}
                 </p>
               </div>
               <CardMenu

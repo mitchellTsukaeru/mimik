@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 import type { PresetKey } from './regexes';
 import { PRESET_LABELS } from './regexes';
 
@@ -304,7 +305,7 @@ export class BlurPanel {
 
     const title = document.createElement('div');
     title.className = 'header-title';
-    title.innerHTML = `${icon('blur')} Smart Blur`;
+    title.innerHTML = `${icon('blur')} ${i18n.t('blurPanel.title')}`;
     header.appendChild(title);
 
     const closeBtn = document.createElement('button');
@@ -327,7 +328,7 @@ export class BlurPanel {
 
     const label = document.createElement('span');
     label.className = 'section-label';
-    label.textContent = 'Manual Mode';
+    label.textContent = i18n.t('blurPanel.manualMode');
     row.appendChild(label);
 
     const anyOn = PRESET_KEYS.some((k) => this.presets[k]);
@@ -400,7 +401,7 @@ export class BlurPanel {
   private buildResetButton(): HTMLElement {
     const btn = document.createElement('button');
     btn.className = 'btn-reset';
-    btn.textContent = 'Reset All';
+    btn.textContent = i18n.t('blurPanel.resetAll');
     btn.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('mimik-blur:reset'));
     });
@@ -413,7 +414,7 @@ export class BlurPanel {
 
     const btn = document.createElement('button');
     btn.className = 'btn-done';
-    btn.textContent = 'Done \u00B7 Resume Recording';
+    btn.textContent = i18n.t('blurPanel.doneResume');
     btn.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('mimik-blur:done'));
     });

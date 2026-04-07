@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { i18n } from '#imports';
 import { blobToDataUrl, extractDomain, fetchFaviconBase64, formatDate } from '@/core/export/utils';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
@@ -19,7 +20,7 @@ export async function exportGuideAsPDF(
   const dateStr = formatDate(guide.createdAt);
   const faviconDataUrl = domain ? await fetchFaviconBase64(domain) : null;
 
-  const badgeText = `${steps.length} Steps`;
+  const badgeText = i18n.t('export.stepsCount', [String(steps.length)]);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   const badgeTextWidth = doc.getTextWidth(badgeText);
@@ -77,7 +78,7 @@ export async function exportGuideAsPDF(
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(107, 114, 128);
-  doc.text('CREATED', metaX, y);
+  doc.text(i18n.t('export.created').toUpperCase(), metaX, y);
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(30, 27, 75);
@@ -88,7 +89,7 @@ export async function exportGuideAsPDF(
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(107, 114, 128);
-    doc.text('SOURCE', metaX, y);
+    doc.text(i18n.t('export.source').toUpperCase(), metaX, y);
     const faviconSize = 4;
     let domainTextX = metaX;
     if (faviconDataUrl) {

@@ -1,4 +1,5 @@
 import { RotateCcw, Star, Trash2 } from 'lucide-react';
+import { i18n } from '#imports';
 import { formatDate } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import { navigate } from '../router';
@@ -26,7 +27,10 @@ export default function GuideListView({ category, onStar, onTrash, onRestore, on
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
             <p className="text-xs mt-0.5 text-muted-foreground">
-              {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''} &middot; {formatDate(guide.updatedAt)}
+              {guide.stepIds.length !== 1
+                ? i18n.t('fullview_stepCountPlural', [String(guide.stepIds.length)])
+                : i18n.t('fullview_stepCount', [String(guide.stepIds.length)])}{' '}
+              &middot; {formatDate(guide.updatedAt)}
             </p>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -35,14 +39,14 @@ export default function GuideListView({ category, onStar, onTrash, onRestore, on
                 <button
                   onClick={(e) => onStar(e, guide.id)}
                   className="p-1.5 rounded-lg transition-colors text-purple hover:text-accent"
-                  title={guide.starred ? 'Unstar' : 'Star'}
+                  title={guide.starred ? i18n.t('common_unstar') : i18n.t('common_star')}
                 >
                   <Star size={14} fill={guide.starred ? 'currentColor' : 'none'} />
                 </button>
                 <button
                   onClick={(e) => onTrash(e, guide.id)}
                   className="p-1.5 rounded-lg transition-colors text-purple hover:text-destructive"
-                  title="Move to trash"
+                  title={i18n.t('library_moveToTrash')}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -52,14 +56,14 @@ export default function GuideListView({ category, onStar, onTrash, onRestore, on
                 <button
                   onClick={(e) => onRestore(e, guide.id)}
                   className="p-1.5 rounded-lg transition-colors text-purple hover:text-success"
-                  title="Restore"
+                  title={i18n.t('common_restore')}
                 >
                   <RotateCcw size={14} />
                 </button>
                 <button
                   onClick={(e) => onPermanentDelete(e, guide.id)}
                   className="p-1.5 rounded-lg transition-colors text-purple hover:text-destructive"
-                  title="Delete permanently"
+                  title={i18n.t('library_deletePermanently')}
                 >
                   <Trash2 size={14} />
                 </button>

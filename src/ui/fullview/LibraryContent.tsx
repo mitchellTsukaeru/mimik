@@ -1,5 +1,6 @@
 import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { i18n } from '#imports';
 import {
   type GuideChangeEvent,
   getFirstScreenshot,
@@ -22,10 +23,10 @@ interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
 }
 
-const emptyConfig: Record<string, { title: string; sub: string }> = {
-  all: { title: 'No guides yet', sub: 'Start a capture to create your first guide' },
-  starred: { title: 'No starred guides', sub: 'Star a guide to find it quickly' },
-  trash: { title: 'Trash is empty', sub: 'Squeaky clean!' },
+const emptyConfig: Record<string, { titleKey: string; subKey: string }> = {
+  all: { titleKey: 'library_noGuidesTitle', subKey: 'library_noGuidesSub' },
+  starred: { titleKey: 'library_noStarredTitle', subKey: 'library_noStarredSub' },
+  trash: { titleKey: 'library_trashEmptyTitle', subKey: 'library_trashEmptySub' },
 };
 
 function EmptyMascot({ category }: { category: string }) {
@@ -116,11 +117,11 @@ function TrashMascot() {
 }
 
 type SortKey = 'recent' | 'oldest' | 'alpha' | 'steps';
-const sortLabels: Record<SortKey, string> = {
-  recent: 'Recent first',
-  oldest: 'Oldest first',
-  alpha: 'A — Z',
-  steps: 'Most steps',
+const sortLabelKeys: Record<SortKey, string> = {
+  recent: 'sort_recentFirst',
+  oldest: 'sort_oldestFirst',
+  alpha: 'sort_alphaAZ',
+  steps: 'sort_mostSteps',
 };
 
 const PAGE_SIZE = 9;
@@ -292,12 +293,12 @@ export default function LibraryContent({ category }: LibraryContentProps) {
             className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground px-3 py-1.5 rounded-lg border border-border bg-card hover:border-violet hover:text-purple transition-colors"
           >
             <ArrowDownWideNarrow size={13} />
-            {sortLabels[sort]}
+            {i18n.t(sortLabelKeys[sort] as any)}
             <ChevronDown size={10} className="ml-0.5" />
           </button>
           {sortOpen && (
             <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 z-10 min-w-[140px]">
-              {(Object.keys(sortLabels) as SortKey[]).map((key) => (
+              {(Object.keys(sortLabelKeys) as SortKey[]).map((key) => (
                 <button
                   key={key}
                   onClick={() => handleSort(key)}
@@ -307,7 +308,7 @@ export default function LibraryContent({ category }: LibraryContentProps) {
                       : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
                   }`}
                 >
-                  {sortLabels[key]}
+                  {i18n.t(sortLabelKeys[key] as any)}
                 </button>
               ))}
             </div>
@@ -316,19 +317,19 @@ export default function LibraryContent({ category }: LibraryContentProps) {
         <button
           onClick={toggleDisplay}
           className="flex items-center justify-center w-8 h-8 rounded-lg border border-border bg-card text-muted-foreground hover:border-violet hover:text-purple transition-colors"
-          title={display === 'list' ? 'Grid view' : 'List view'}
+          title={display === 'list' ? i18n.t('sort_gridView') : i18n.t('sort_listView')}
         >
           {display === 'list' ? <LayoutGrid size={15} /> : <LayoutList size={15} />}
         </button>
       </div>
 
       {loading ? (
-        <p className="text-sm py-12 text-center text-purple">Loading...</p>
+        <p className="text-sm py-12 text-center text-purple">{i18n.t('common_loading')}</p>
       ) : allGuidesRef.current.length === 0 ? (
         <div className="text-center py-20 flex flex-col items-center">
           <EmptyMascot category={category} />
-          <p className="text-lg font-medium text-foreground mt-4">{emptyConfig[category].title}</p>
-          <p className="text-sm text-muted-foreground mt-1">{emptyConfig[category].sub}</p>
+          <p className="text-lg font-medium text-foreground mt-4">{i18n.t(emptyConfig[category].titleKey as any)}</p>
+          <p className="text-sm text-muted-foreground mt-1">{i18n.t(emptyConfig[category].subKey as any)}</p>
         </div>
       ) : display === 'list' ? (
         <GuideListView
@@ -358,7 +359,7 @@ export default function LibraryContent({ category }: LibraryContentProps) {
             <ChevronLeft size={15} />
           </button>
           <span className="text-xs font-medium text-muted-foreground">
-            {page + 1} / {totalPages}
+            {i18n.t('fullview_pageOf', [String(page + 1), String(totalPages)])}
           </span>
           <button
             onClick={() => applyPage(page + 1)}

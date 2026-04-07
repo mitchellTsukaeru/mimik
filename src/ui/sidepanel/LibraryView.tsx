@@ -1,5 +1,6 @@
 import { Star, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { i18n } from '#imports';
 import {
   type GuideChangeEvent,
   getGuideDomain,
@@ -82,7 +83,7 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
     : guides;
 
   if (loading) {
-    return <p className="text-sm py-4 text-purple">Loading...</p>;
+    return <p className="text-sm py-4 text-purple">{i18n.t('common.loading')}</p>;
   }
 
   if (guides.length === 0) {
@@ -124,8 +125,8 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
           <path d="M106 126 Q112 118 118 126" stroke="#C7D2FE" strokeWidth="3" fill="none" strokeLinecap="round" />
           <path d="M90 138 Q100 146 110 138" stroke="#C7D2FE" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         </svg>
-        <p className="text-sm font-medium text-foreground mt-3">No guides yet</p>
-        <p className="text-xs mt-1 text-purple">Start a capture to create your first guide</p>
+        <p className="text-sm font-medium text-foreground mt-3">{i18n.t('library.noGuidesTitle')}</p>
+        <p className="text-xs mt-1 text-purple">{i18n.t('library.noGuidesSub')}</p>
       </div>
     );
   }
@@ -133,7 +134,7 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
   if (filtered.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-purple">No matching guides</p>
+        <p className="text-sm text-purple">{i18n.t('library.noMatchingGuides')}</p>
       </div>
     );
   }
@@ -161,7 +162,9 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
 
             {guide.stepIds.length > 0 && (
               <span className="text-[9px] font-semibold text-muted-foreground bg-secondary px-2 py-1 rounded-full shrink-0 leading-none mt-0.5">
-                {guide.stepIds.length} step{guide.stepIds.length !== 1 ? 's' : ''}
+                {guide.stepIds.length !== 1
+                  ? i18n.t('fullview.stepCountPlural', [String(guide.stepIds.length)])
+                  : i18n.t('fullview.stepCount', [String(guide.stepIds.length)])}
               </span>
             )}
 
@@ -169,14 +172,14 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
               <button
                 onClick={(e) => handleStar(e, guide.id)}
                 className={`p-1.5 rounded-lg transition-all hover:text-accent ${guide.starred ? 'text-accent' : 'text-border'}`}
-                title={guide.starred ? 'Unstar' : 'Star'}
+                title={guide.starred ? i18n.t('common.unstar') : i18n.t('common.star')}
               >
                 <Star size={13} fill={guide.starred ? 'currentColor' : 'none'} />
               </button>
               <button
                 onClick={(e) => handleDelete(e, guide.id)}
                 className="p-1.5 rounded-lg transition-all text-border hover:text-destructive"
-                title="Move to trash"
+                title={i18n.t('library.moveToTrash')}
               >
                 <Trash2 size={13} />
               </button>
