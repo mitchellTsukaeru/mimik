@@ -53,6 +53,7 @@ export default defineBackground(() => {
 
   setSidePanelBehavior(true);
   initActor().catch(initActorFallback);
+  cancelSession();
   registerNavigationListeners();
 
   setupPortListener((port) => {

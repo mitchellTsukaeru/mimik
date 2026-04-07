@@ -103,6 +103,17 @@ export default function App() {
         setView({ name: 'guideme', guideId: session.guideId });
       }
     });
+
+    const handler = (changes: Record<string, { newValue?: unknown }>) => {
+      if (!changes[SESSION_KEY]) return;
+      const session = changes[SESSION_KEY].newValue as GuideMeSession | null;
+      if (session?.active) {
+        setView({ name: 'guideme', guideId: session.guideId });
+      }
+    };
+
+    browser.storage.local.onChanged.addListener(handler);
+    return () => browser.storage.local.onChanged.removeListener(handler);
   }, []);
 
   const handleStartRecording = useCallback(async () => {
