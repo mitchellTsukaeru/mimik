@@ -49,6 +49,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@wxt-dev/i18n": "^0.2.5",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.8.4",
     "husky": "^9.1.7",

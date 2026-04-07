@@ -1,0 +1,229 @@
+meta:
+  locale: en
+
+app:
+  name: Mimik
+  description: Auto-capture browser workflows and generate step-by-step guides with annotated screenshots.
+
+common:
+  loading: Loading...
+  cancel: Cancel
+  save: Save
+  delete: Delete
+  back: Back
+  continue: Continue
+  skip: Skip
+  export: Export
+  close: Close
+  undo: Undo
+  star: Star
+  unstar: Unstar
+  restore: Restore
+
+sidepanel:
+  connected: Connected
+  connecting: Connecting...
+  heroTitle: What would you like to capture?
+  heroSubtitle: Record any workflow automatically
+  startCapture: Start Capture
+  searchPlaceholder: Search guides...
+  recentLabel: Recent
+
+library:
+  noGuidesTitle: No guides yet
+  noGuidesSub: Start a capture to create your first guide
+  noStarredTitle: No starred guides
+  noStarredSub: Star a guide to find it quickly
+  trashEmptyTitle: Trash is empty
+  trashEmptySub: Squeaky clean!
+  noMatchingGuides: No matching guides
+  moveToTrash: Move to trash
+  deletePermanently: Delete permanently
+  openInFullView: Open in full view
+
+guideme:
+  live: Live
+  stepOf: "Step $1 of $2"
+  noDescription: No description
+  prev: Prev
+  next: Next
+  finish: Finish
+  exitTitle: Heading out?
+  exitMessage: Your walkthrough will stop and the page overlay will be removed.
+  stay: Stay
+  exit: Exit
+  guideNotFound: Guide not found
+
+guidemeCompletion:
+  title: "All done, champ!"
+  stepsCompleted: "All $1 step completed."
+  stepsCompletedPlural: "All $1 steps completed."
+  allDone: All Done
+  runAgain: Run Again
+
+recording:
+  capturePaused: Capture paused
+  recording: "Recording \xB7 $1 step"
+  recordingPlural: "Recording \xB7 $1 steps"
+  readyTitle: Ready to capture!
+  readySub: Click on the page to start
+  finishRecording: Finish Recording
+  smartBlur: Smart Blur
+  discard: Discard
+  deleteStep: Delete step
+  justNow: Just now
+  secondsAgo: "$1s ago"
+  minutesAgo: "$1m ago"
+
+settings:
+  title: Settings
+  aiDescriptions: AI Descriptions
+  provider: Provider
+  model: Model
+  apiKey: API Key
+  aiLanguage: Description Language
+  saveSettings: Save Settings
+  saved: Saved
+  smartBlur: Smart Blur
+  privacyNotice: Your API key is stored locally and only sent to the selected AI provider. No data leaves your browser otherwise.
+  bugReport: "Found a bug? Report it on GitHub"
+  starCtaTitle: "Like what you see?"
+  starCtaMessage: A GitHub star helps others find Mimik and keeps us motivated!
+  starOnGithub: Star on GitHub
+
+blurPresets:
+  email: Email
+  phoneNumbers: Phone Numbers
+  ssn: SSN
+  creditCard: Credit Card
+  ipAddress: IP Address
+  macAddress: MAC Address
+
+fullview:
+  allGuides: All Guides
+  starred: Starred
+  trash: Trash
+  searchPlaceholder: Search guides...
+  guideMe: Guide Me
+  untitledGuide: Untitled Guide
+  writingTitle: Writing a title from your captured steps...
+  guideNotFound: "Guide not found."
+  stepCount: "$1 step"
+  stepCountPlural: "$1 steps"
+  pageOf: "$1 / $2"
+
+sort:
+  recentFirst: Recent first
+  oldestFirst: Oldest first
+  alphaAZ: "A \u2014 Z"
+  mostSteps: Most steps
+  gridView: Grid view
+  listView: List view
+
+search:
+  startTyping: Start typing to find a guide
+  noMatchingGuides: No matching guides
+  noGuidesYet: No guides yet
+
+keyboard:
+  navigate: navigate
+  open: open
+  close: close
+
+confirmDelete:
+  title: "Delete guide?"
+  message: This will permanently delete this guide. This cannot be undone.
+  confirm: Delete permanently
+
+editor:
+  backToLibrary: Back to library
+  guideMe: Guide Me
+  deleteThisStep: "Delete this step?"
+  blurSensitiveArea: Blur sensitive area
+  copyScreenshot: Copy screenshot
+  noScreenshot: No screenshot
+
+emptyGuide:
+  title: This guide is empty
+  subtitle: Wake it up by recording some steps
+
+blurCanvas:
+  drawInstructions: Draw rectangles to blur
+  regionCount: "$1 region"
+  regionCountPlural: "$1 regions"
+
+blurPanel:
+  title: Smart Blur
+  manualMode: Manual Mode
+  selectElements: Select elements to blur
+  done: Done
+  doneResume: "Done \xB7 Resume Recording"
+  resetAll: Reset All
+
+exportMenu:
+  html: HTML
+  markdown: Markdown
+  pdf: PDF
+
+onboarding:
+  welcomeBadge: Welcome
+  welcomeTitle: "You've successfully installed Mimik!"
+  welcomeMessage: "With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides. No account needed \u2014 everything stays in your browser."
+  getStarted: Get started
+  aiStepLabel: Step 1 of 3
+  aiTitle: AI Descriptions
+  aiMessage: Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in settings.
+  aiGenerated: AI generated
+  aiGeneratedDescription: AI-generated description
+  blurStepLabel: Step 2 of 3
+  blurTitle: Smart Blur
+  blurMessage: Automatically blur sensitive information in screenshots. Choose which patterns to detect.
+  screenshotPreview: Screenshot preview
+  notEnabled: Not enabled
+  categoriesProtected: "$1 categories protected"
+  pinStepLabel: Step 3 of 3
+  pinTitle: Pin Mimik
+  pinMessage: Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
+  pinStep1Title: Click the puzzle icon
+  pinStep1Sub: In the top-right of your browser toolbar
+  pinStep2Title: Find Mimik
+  pinStep2Sub: In the extensions dropdown
+  pinStep3Title: Click the pin icon
+  pinStep3Sub: Mimik will appear in your toolbar
+  pinScreenshotAlt: Pin Mimik extension
+  doneTitle: "You're all set!"
+  doneMessage: "Mimik is ready to capture your workflows. Click \"Start Capture\" in the extension to record your first guide."
+  featureAutoCapture: Auto-capture
+  featureAIDescriptions: AI descriptions
+  featureSmartBlur: Smart blur
+  openMimik: Open Mimik
+
+steps:
+  pressKey: "Press $1 on $2"
+  toggleCheckbox: "Toggle $1"
+  selectRadio: "Select $1"
+  toggleSwitch: "Toggle $1"
+  clickLink: 'Click link "$1"'
+  click: "Click $1"
+  typeIntoField: "Type into $1 field $2"
+  typeInto: "Type into $1"
+  copyFrom: "Copy from $1"
+  pasteInto: "Paste into $1"
+  cutFrom: "Cut from $1"
+  drag: "Drag $1"
+  navigate: Navigate to page
+  defaultAction: "$1 $2"
+
+export:
+  created: Created
+  source: Source
+  step: Step
+  steps: Steps
+  stepLabel: "Step $1"
+  stepsCount: "$1 steps"
+  createdLabel: "Created $1"
+  sourceLabel: "Source: $1"
+
+background:
+  guideOnDomain: "Guide on $1"
+  newGuide: New Guide

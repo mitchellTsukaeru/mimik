@@ -2,7 +2,7 @@ import { defineConfig } from "wxt";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  modules: ["@wxt-dev/module-react"],
+  modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   srcDir: "src",
   imports: false,
   webExt: {
@@ -15,9 +15,9 @@ export default defineConfig({
     plugins: [tailwindcss()],
   }),
   manifest: {
-    name: "Mimik",
-    description:
-      "Auto-capture browser workflows and generate step-by-step guides with annotated screenshots.",
+    name: "__MSG_app_name__",
+    description: "__MSG_app_description__",
+    default_locale: "en",
     permissions: [
       "storage",
       "activeTab",
