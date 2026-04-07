@@ -1,0 +1,120 @@
+// @vitest-environment jsdom
+import { describe, expect, it } from 'vitest';
+import { blobToBase64, blobToDataUrl, escapeHtml, extractDomain, formatDate } from '@/core/export/utils';
+import type { Step } from '@/core/guides/types';
+
+function makeStep(overrides: Partial<Step> = {}): Step {
+  return {
+    id: 'step-1',
+    guideId: 'guide-1',
+    index: 0,
+    description: 'Click button',
+    action: 'click',
+    url: '',
+    timestamp: Date.now(),
+    ...overrides,
+  };
+}
+
+describe('escapeHtml', () => {
+  it('escapes ampersand', () => {
+    expect(escapeHtml('foo & bar')).toBe('foo &amp; bar');
+  });
+
+  it('escapes less-than', () => {
+    expect(escapeHtml('a < b')).toBe('a &lt; b');
+  });
+
+  it('escapes greater-than', () => {
+    expect(escapeHtml('a > b')).toBe('a &gt; b');
+  });
+
+  it('escapes double quotes', () => {
+    expect(escapeHtml('say "hello"')).toBe('say &quot;hello&quot;');
+  });
+
+  it('escapes multiple special characters in one string', () => {
+    expect(escapeHtml('<div class="x">&</div>')).toBe('&lt;div class=&quot;x&quot;&gt;&amp;&lt;/div&gt;');
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(escapeHtml('')).toBe('');
+  });
+
+  it('passes through strings with no special characters', () => {
+    expect(escapeHtml('hello world 123')).toBe('hello world 123');
+  });
+
+  it('neutralizes script injection', () => {
+    expect(escapeHtml('<script>alert(1)</script>')).toBe('&lt;script&gt;alert(1)&lt;/script&gt;');
+  });
+
+  it('neutralizes attribute injection via double quotes', () => {
+    expect(escapeHtml('" onmouseover="alert(1)"')).toBe('&quot; onmouseover=&quot;alert(1)&quot;');
+  });
+
+  it('neutralizes img onerror payload', () => {
+    expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
+  });
+
+  it('neutralizes nested script tags', () => {
+    expect(escapeHtml('<<script>>alert(1)<</script>>')).toBe('&lt;&lt;script&gt;&gt;alert(1)&lt;&lt;/script&gt;&gt;');
+  });
+});
+
+describe('extractDomain', () => {
+  it('returns the domain from the first step with a URL', () => {
+    const steps = [
+      makeStep({ url: 'https://www.example.com/page' }),
+      makeStep({ id: 'step-2', url: 'https://other.com' }),
+    ];
+    expect(extractDomain(steps)).toBe('example.com');
+  });
+
+  it('strips www prefix', () => {
+    const steps = [makeStep({ url: 'https://www.github.com/mimik' })];
+    expect(extractDomain(steps)).toBe('github.com');
+  });
+
+  it('returns null for empty array', () => {
+    expect(extractDomain([])).toBeNull();
+  });
+
+  it('returns null when no steps have URLs', () => {
+    const steps = [makeStep({ url: '' }), makeStep({ id: 'step-2', url: '' })];
+    expect(extractDomain(steps)).toBeNull();
+  });
+
+  it('skips steps without URLs and finds the first with one', () => {
+    const steps = [makeStep({ url: '' }), makeStep({ id: 'step-2', url: 'https://docs.example.org/path' })];
+    expect(extractDomain(steps)).toBe('docs.example.org');
+  });
+});
+
+describe('formatDate', () => {
+  it('returns a formatted date string', () => {
+    const ts = new Date('2025-03-15T12:00:00Z').getTime();
+    const result = formatDate(ts);
+    expect(result).toContain('2025');
+    expect(result).toContain('15');
+  });
+});
+
+describe('blobToBase64', () => {
+  it('resolves with base64 content from a blob', async () => {
+    const blob = new Blob(['test'], { type: 'text/plain' });
+    const result = await blobToBase64(blob);
+    const decoded = atob(result);
+    expect(decoded).toBe('test');
+  });
+});
+
+describe('blobToDataUrl', () => {
+  it('resolves with a data URL from a blob', async () => {
+    const blob = new Blob(['hello'], { type: 'text/plain' });
+    const result = await blobToDataUrl(blob);
+    expect(result).toMatch(/^data:text\/plain;base64,/);
+    const b64Part = result.split(',')[1];
+    expect(atob(b64Part)).toBe('hello');
+  });
+});

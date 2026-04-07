@@ -134,4 +134,4 @@ function findElement(meta: ElementMeta): FindResult {
 }
 
 export type { FindResult };
-export { findElement, THRESHOLD };
+export { compareText, findElement, isVisible, scoreCandidate, THRESHOLD, WEIGHTS };
