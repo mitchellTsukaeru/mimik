@@ -112,7 +112,7 @@ export default function StepCard({
                 </button>
                 <button
                   onClick={handleCopy}
-                  className={`p-1 rounded-md transition-colors ${copied ? 'text-green-600' : 'text-border hover:text-green-600'}`}
+                  className={`p-1 rounded-md transition-colors ${copied ? 'text-success' : 'text-border hover:text-success'}`}
                   title="Copy screenshot"
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -121,7 +121,7 @@ export default function StepCard({
             )}
             <button
               onClick={handleDelete}
-              className="p-1 rounded-md transition-colors text-border hover:text-red-500"
+              className="p-1 rounded-md transition-colors text-border hover:text-destructive"
               title="Delete step"
             >
               <Trash2 size={13} />

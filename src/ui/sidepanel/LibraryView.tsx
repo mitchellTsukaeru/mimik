@@ -98,7 +98,7 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
             cx="160"
             cy="70"
             r="2.5"
-            fill="#38BDF8"
+            fill="#818CF8"
             style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }}
           />
           <circle
@@ -175,7 +175,7 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
               </button>
               <button
                 onClick={(e) => handleDelete(e, guide.id)}
-                className="p-1.5 rounded-lg transition-all text-border hover:text-red-500"
+                className="p-1.5 rounded-lg transition-all text-border hover:text-destructive"
                 title="Move to trash"
               >
                 <Trash2 size={13} />

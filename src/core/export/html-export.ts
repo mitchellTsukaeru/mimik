@@ -50,7 +50,7 @@ export async function exportGuideAsHTML(
 <body>
   <div style="margin-bottom:48px;text-align:center;display:flex;flex-direction:column;align-items:center;">
     <span style="display:inline-block;background:#EEF2FF;color:#4F46E5;font-size:13px;font-weight:600;padding:5px 16px;border-radius:999px;">${steps.length} Step${steps.length === 1 ? '' : 's'}</span>
-    <div style="height:3px;width:60%;background:linear-gradient(to right,#4F46E5,#C7D2FE,#38BDF8);border-radius:3px;margin:20px auto;"></div>
+    <div style="height:3px;width:60%;background:linear-gradient(to right,#4F46E5,#C7D2FE,#818CF8);border-radius:3px;margin:20px auto;"></div>
     <h1 style="font-size:28px;font-weight:800;color:#1E1B4B;line-height:1.2;margin-bottom:24px;max-width:80%;">${escapeHtml(guide.title)}</h1>
     <div style="display:flex;gap:32px;justify-content:center;">
       <div style="text-align:left;">

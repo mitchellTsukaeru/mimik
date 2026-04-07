@@ -18,7 +18,7 @@ export default function App() {
           maxWidth: '28rem',
           background: 'white',
           borderRadius: '16px',
-          border: '1px solid #E8E2DA',
+          border: '1px solid var(--color-border)',
           boxShadow: '0 8px 40px rgba(30,27,75,0.08)',
           overflow: 'hidden',
         }}

@@ -8,7 +8,7 @@ function MascotLarge({ size = 280 }: { size?: number }) {
   return (
     <svg viewBox="0 0 200 200" width={size} height={size}>
       <circle cx="40" cy="70" r="4" fill="#818CF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite' }} />
-      <circle cx="165" cy="60" r="3.5" fill="#38BDF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }} />
+      <circle cx="165" cy="60" r="3.5" fill="#818CF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }} />
       <circle cx="42" cy="155" r="3" fill="#A5B4FC" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.6s' }} />
       <circle
         cx="162"
@@ -334,7 +334,7 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
             ].map((row, i, arr) => (
               <div
                 key={row.label}
-                className={`flex items-center gap-3 py-2.5 ${i < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
+                className={`flex items-center gap-3 py-2.5 ${i < arr.length - 1 ? 'border-b border-border' : ''}`}
               >
                 <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center text-[10px] font-semibold text-accent">
                   {row.icon}
@@ -347,7 +347,7 @@ function SmartBlurStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => v
                 </span>
               </div>
             ))}
-            <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded mt-3">
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-success bg-success/10 px-2.5 py-1 rounded mt-3">
               <svg
                 width="13"
                 height="13"

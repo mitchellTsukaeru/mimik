@@ -171,8 +171,8 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
           <ArrowLeft size={18} />
         </button>
         <span className="flex-1 text-sm font-semibold text-foreground truncate">{data.guide.title}</span>
-        <span className="shrink-0 flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <span className="shrink-0 flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">
+          <span className="w-1.5 h-1.5 rounded-full bg-success" />
           Live
         </span>
       </div>
@@ -182,7 +182,7 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
           <div
             key={step.id}
             className={`flex-1 h-[3px] rounded-[1.5px] ${
-              idx < activeStepIndex ? 'bg-success' : idx === activeStepIndex ? 'bg-violet' : 'bg-border'
+              idx < activeStepIndex ? 'bg-success' : idx === activeStepIndex ? 'bg-accent' : 'bg-border'
             }`}
           />
         ))}
@@ -191,8 +191,8 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
       <div className="px-4 pb-3">
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-4 pb-3">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-secondary text-violet-800 px-2.5 py-1 rounded-full mb-2.5">
-              <span className="w-5 h-5 rounded-full bg-violet text-white flex items-center justify-center text-[10px] font-bold">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-secondary text-accent px-2.5 py-1 rounded-full mb-2.5">
+              <span className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[10px] font-bold">
                 {viewedStepIndex + 1}
               </span>
               Step {viewedStepIndex + 1} of {totalSteps}
@@ -217,7 +217,7 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
               />
               {highlightStyle && (
                 <div
-                  className="absolute border-2 border-violet rounded-sm pointer-events-none"
+                  className="absolute border-2 border-accent rounded-sm pointer-events-none"
                   style={highlightStyle}
                 />
               )}
@@ -269,7 +269,7 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
                   <Check size={12} className="text-white" strokeWidth={3} />
                 </span>
               ) : isActive ? (
-                <span className="shrink-0 w-5 h-5 rounded-full bg-violet flex items-center justify-center text-[10px] font-bold text-white mt-0.5">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-white mt-0.5">
                   {idx + 1}
                 </span>
               ) : (

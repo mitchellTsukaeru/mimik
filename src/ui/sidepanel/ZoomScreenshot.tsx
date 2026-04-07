@@ -188,7 +188,7 @@ export default function ZoomScreenshot({
 
   if (!fullUrl) {
     return (
-      <div className={`rounded-lg bg-[#f2f4fa] p-4 flex flex-col gap-2.5 ${className}`} style={{ aspectRatio: ratio }}>
+      <div className={`rounded-lg bg-secondary p-4 flex flex-col gap-2.5 ${className}`} style={{ aspectRatio: ratio }}>
         <div className="h-7 rounded-md bg-border/60 animate-pulse" />
         <div className="flex-1 flex gap-3">
           <div className="w-[30%] flex flex-col gap-2">
@@ -209,7 +209,7 @@ export default function ZoomScreenshot({
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-lg border border-gray-200 ${className}`}>
+    <div className={`relative overflow-hidden rounded-lg border border-border ${className}`}>
       <img src={croppedUrl || fullUrl} alt={alt} className="w-full block" />
       {croppedUrl && (
         <img

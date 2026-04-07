@@ -45,7 +45,7 @@ export default function SearchResults({ results, query, selected, onSelect, onHo
                 ? {
                     background: 'rgba(199,210,254,0.15)',
                     border: '1px solid rgba(199,210,254,0.2)',
-                    color: 'var(--color-gold)',
+                    color: 'var(--color-lavender)',
                   }
                 : {
                     background: 'var(--color-secondary)',
@@ -59,13 +59,13 @@ export default function SearchResults({ results, query, selected, onSelect, onHo
           <div className="flex-1 min-w-0">
             <p
               className="text-[13px] font-medium truncate"
-              style={{ color: i === selected ? 'var(--color-gold)' : 'var(--color-foreground)' }}
+              style={{ color: i === selected ? 'var(--color-lavender)' : 'var(--color-foreground)' }}
             >
               {r.guide.title}
             </p>
             <p
               className="text-[10px] mt-0.5"
-              style={{ color: i === selected ? 'rgba(199,210,254,0.6)' : 'var(--color-warm)' }}
+              style={{ color: i === selected ? 'rgba(199,210,254,0.6)' : 'var(--color-muted-foreground)' }}
             >
               {r.guide.stepIds.length} step{r.guide.stepIds.length !== 1 ? 's' : ''} ·{' '}
               {formatDateShort(r.guide.updatedAt)}

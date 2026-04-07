@@ -41,7 +41,7 @@ export default function GuideListView({ category, onStar, onTrash, onRestore, on
                 </button>
                 <button
                   onClick={(e) => onTrash(e, guide.id)}
-                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-red-600"
+                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-destructive"
                   title="Move to trash"
                 >
                   <Trash2 size={14} />
@@ -51,14 +51,14 @@ export default function GuideListView({ category, onStar, onTrash, onRestore, on
               <>
                 <button
                   onClick={(e) => onRestore(e, guide.id)}
-                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-green-600"
+                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-success"
                   title="Restore"
                 >
                   <RotateCcw size={14} />
                 </button>
                 <button
                   onClick={(e) => onPermanentDelete(e, guide.id)}
-                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-red-600"
+                  className="p-1.5 rounded-lg transition-colors text-purple hover:text-destructive"
                   title="Delete permanently"
                 >
                   <Trash2 size={14} />

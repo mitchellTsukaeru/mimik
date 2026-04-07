@@ -102,7 +102,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
     <div className="flex flex-col h-screen bg-card relative">
       {/* Floating recording pill */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
-        <span className={`w-2 h-2 rounded-full ${isBlurring ? 'bg-amber-400' : 'bg-red-500 animate-pulse'}`} />
+        <span className={`w-2 h-2 rounded-full ${isBlurring ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
         <span className="text-xs font-semibold text-foreground">
           {isBlurring ? 'Capture paused' : `Recording · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`}
         </span>
@@ -161,7 +161,7 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
                     </div>
                     <button
                       onClick={() => handleDeleteStep(liveStep.step.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-border hover:text-red-500"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-border hover:text-destructive"
                       title="Delete step"
                     >
                       <X size={13} />
@@ -185,14 +185,14 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
         <button
           onClick={handleBlur}
           disabled={isBlurring}
-          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-warm hover:border-purple-300 hover:text-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
           title="Smart Blur"
         >
           <EyeOff size={16} />
         </button>
         <button
           onClick={onStop}
-          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-red-300 hover:text-red-400"
+          className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
           title="Discard"
         >
           <X size={16} />

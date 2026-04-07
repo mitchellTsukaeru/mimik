@@ -108,7 +108,7 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
 
       if (previewRect && previewRect.w !== 0 && previewRect.h !== 0) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
+        ctx.strokeStyle = 'rgba(79, 70, 229, 0.8)';
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
         ctx.strokeRect(previewRect.x, previewRect.y, previewRect.w, previewRect.h);
@@ -210,7 +210,7 @@ export default function BlurCanvas({ screenshot, onSave, onCancel }: BlurCanvasP
             </button>
             <button
               onClick={onCancel}
-              className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-primary-foreground rounded-lg border border-primary-foreground/10 bg-primary-foreground/[0.06] hover:bg-red-500/15 hover:text-red-300 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-primary-foreground rounded-lg border border-primary-foreground/10 bg-primary-foreground/[0.06] hover:bg-destructive/15 hover:text-destructive transition-colors"
             >
               <X size={12} />
               Cancel

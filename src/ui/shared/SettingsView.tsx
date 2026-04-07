@@ -146,7 +146,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           onClick={handleSave}
           disabled={saved}
           className="w-full transition-all duration-300"
-          style={saved ? { backgroundColor: '#059669', color: '#d4edda', opacity: 0.9 } : undefined}
+          style={saved ? { backgroundColor: 'var(--color-success)', color: '#fff', opacity: 0.9 } : undefined}
         >
           {saved && <Check size={16} />}
           {saved ? 'Saved' : 'Save Settings'}

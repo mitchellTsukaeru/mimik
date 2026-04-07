@@ -42,7 +42,7 @@ function NoGuidesMascot() {
         @keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
       `}</style>
       <circle cx="45" cy="80" r="3" fill="#818CF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite' }} />
-      <circle cx="160" cy="70" r="2.5" fill="#38BDF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }} />
+      <circle cx="160" cy="70" r="2.5" fill="#818CF8" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.3s' }} />
       <circle cx="50" cy="140" r="2" fill="#A5B4FC" style={{ animation: 'sparkle 1.5s ease-in-out infinite 0.6s' }} />
       <circle
         cx="155"
@@ -109,7 +109,7 @@ function TrashMascot() {
         <line x1="155" y1="75" x2="155" y2="140" stroke="#A5B4FC" strokeWidth="3" strokeLinecap="round" />
         <path d="M147 140 Q155 135 163 140 L160 155 Q155 158 150 155Z" fill="#818CF8" />
       </g>
-      <circle cx="165" cy="155" r="2" fill="#38BDF8" style={{ animation: 'sparkle 1s ease-in-out infinite' }} />
+      <circle cx="165" cy="155" r="2" fill="#818CF8" style={{ animation: 'sparkle 1s ease-in-out infinite' }} />
       <circle cx="148" cy="160" r="1.5" fill="#818CF8" style={{ animation: 'sparkle 1s ease-in-out infinite 0.3s' }} />
     </svg>
   );
