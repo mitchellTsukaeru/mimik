@@ -1,118 +1,225 @@
-<p align="center">
-  <img src="public/mascot.svg" width="120" height="120" alt="Mimik mascot" />
-</p>
+<div align="center"><a name="readme-top"></a>
 
-<h1 align="center">Mimik</h1>
+<img src="public/mascot.svg" width="140" height="140" alt="Mimik mascot" />
 
-<p align="center">
-  <strong>Auto-capture browser workflows into step-by-step guides — no account needed.</strong>
-</p>
+# Mimik
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-4F46E5?style=flat-square" alt="MIT License" /></a>
-  <img src="https://img.shields.io/badge/chrome-extension-1E1B4B?style=flat-square&logo=googlechrome&logoColor=C7D2FE" alt="Chrome Extension" />
-  <img src="https://img.shields.io/badge/manifest-v3-3730A3?style=flat-square" alt="Manifest V3" />
-  <img src="https://img.shields.io/badge/storage-100%25%20local-1E1B4B?style=flat-square" alt="100% Local" />
-  <img src="https://img.shields.io/badge/sign%20up-not%20required-4F46E5?style=flat-square" alt="No Account Required" />
-</p>
+**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md)
 
----
+**Auto-capture any browser workflow into a step-by-step guide. No account, no cloud, no tracking.**
 
-## Features
+Click record, do the thing, get a polished guide with annotated screenshots. Edit, replay, or export.
 
-- **Auto-capture** — Records clicks, inputs, keyboard shortcuts, clipboard actions, and drag events as you browse
-- **Annotated screenshots** — Every step gets a zoomed, highlighted screenshot focused on the element you interacted with
-- **Smart event merging** — Deduplicates rapid clicks on nearby elements so your guides stay clean
-- **Click interception** — Captures the step before the page navigates away, so nothing gets lost
-- **Side panel** — Quick-access capture controls and guide review without leaving your current tab
-- **Full dashboard** — Manage all your guides in a dedicated full-page view with search, star, and trash
-- **Export** — Copy or download guides for sharing
-- **100% local** — Everything stored in IndexedDB on your device. Zero cloud. Zero sign-up. Zero tracking.
+<!-- SHIELD GROUP -->
 
-## Screenshots
+[![License][license-shield]][license-link]
+[![Manifest V3][mv3-shield]][mv3-link]
+[![100% Local][local-shield]][local-link]
+[![No Account][no-account-shield]][no-account-link]
+<br/>
+[![Stars][star-shield]][star-link]
+[![Contributors][contributors-shield]][contributors-link]
+![Last Commit][last-commit-shield]
+[![Issues][issues-shield]][issues-link]
 
-> Coming soon — side panel and full dashboard screenshots
+</div>
 
-## Tech Stack
+<details>
+<summary><kbd>Table of contents</kbd></summary>
 
-| Layer | Technology |
-|-------|-----------|
-| Build | [WXT](https://wxt.dev) (Web Extension Tools) |
-| UI | React 19 + Tailwind CSS |
-| Storage | [Dexie.js](https://dexie.org) (IndexedDB wrapper) |
-| State | [XState](https://xstate.js.org) (capture lifecycle) |
-| Language | TypeScript |
-| Extension | Chrome Manifest V3 |
+#### TOC
 
-## Getting Started
+- [📺 Demo](#-demo)
+- [👋 Getting Started](#-getting-started)
+- [✨ Features](#-features)
+  - [🎬 Auto-capture](#-auto-capture)
+  - [📸 Annotated screenshots](#-annotated-screenshots)
+  - [🔒 Smart Blur](#-smart-blur)
+  - [🧠 AI descriptions (optional)](#-ai-descriptions-optional)
+  - [▶️ Guide Me replay](#️-guide-me-replay)
+  - [📤 Multi-format export](#-multi-format-export)
+  - [🌍 Multi-language](#-multi-language)
+  - [💾 100% local storage](#-100-local-storage)
+- [🤝 Contributing](#-contributing)
+- [📜 License](#-license)
 
-```bash
-# Clone the repo
-git clone https://github.com/westpoint-io/mimik.git
-cd mimik
+<br/>
 
-# Install dependencies
-npm install
+</details>
 
-# Build the extension
-npx wxt build
+## 📺 Demo
 
-# Load in Chrome
-# 1. Open chrome://extensions
-# 2. Enable "Developer mode"
-# 3. Click "Load unpacked"
-# 4. Select the .output/chrome-mv3 folder
-```
+<div align="center">
+<img src="public/demo.gif" alt="Mimik demo" width="800" />
+</div>
 
-### Firefox
+## 👋 Getting Started
 
-Mimik builds for Firefox from the same codebase.
+Mimik turns any repetitive browser task into a documented, shareable guide in seconds. It runs entirely in your browser. No backend, no account, no telemetry, and nothing ever leaves your device.
 
-```bash
-pnpm dev:firefox           # development
-pnpm build:firefox         # production build
-pnpm zip:firefox           # package for addons.mozilla.org
-pnpm zip:all               # both Chrome and Firefox
-```
+Whether you're documenting internal tools, writing product tutorials, or onboarding a teammate, Mimik captures every click, keystroke, and navigation automatically so you can focus on the work.
 
-Firefox build output lands in `.output/firefox-mv3/`.
+| Browser | Status | Install |
+| ------- | ------ | ------- |
+| Chrome  | [![Coming Soon][chrome-soon-shield]][chrome-soon-link] | Coming soon |
+| Firefox | [![Coming Soon][firefox-soon-shield]][firefox-soon-link] | Coming soon |
 
-## Project Structure
+> \[!IMPORTANT]
+>
+> **⭐️ Star the repo** if Mimik saves you time. It helps other people discover it!
 
-```
-src/
-├── core/                    # Business logic (no UI)
-│   ├── capture/             # Recording pipeline (events, AI, DOM context)
-│   ├── blur/                # Smart blur (regex presets, DOM scanner, panel)
-│   ├── export/              # HTML, PDF, Markdown generators + utils
-│   └── guides/              # Data layer (types, Dexie DB, CRUD)
-├── entrypoints/             # Chrome extension entry points (WXT)
-│   ├── background/          # Service worker
-│   ├── content.ts           # Content script
-│   ├── sidepanel/           # Side panel
-│   ├── fullview/            # Full-page dashboard
-│   ├── onboarding/          # First-install wizard
-│   └── options/             # Settings page
-├── lib/                     # Shared utilities
-├── stores/                  # Zustand state stores
-└── ui/                      # React components
-    ├── fullview/            # Dashboard views
-    ├── sidepanel/           # Side panel views
-    ├── onboarding/          # Onboarding wizard
-    ├── shared/              # Shared components
-    └── components/ui/       # shadcn/ui primitives
-```
+<div align="right">
 
-## Contributing
+[![Back to top][back-to-top]](#readme-top)
 
-Contributions are welcome! Feel free to open an issue or submit a pull request.
+</div>
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feat/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feat/amazing-feature`)
-5. Open a Pull Request
+## ✨ Features
 
-## License
+### 🎬 Auto-capture
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+Click, type, navigate. Mimik watches it all. Every meaningful action becomes a step: clicks on buttons and links, form inputs, keyboard shortcuts, clipboard actions, drag events, and page navigations.
+
+Smart event merging deduplicates rapid clicks on nearby elements, so your guides stay clean. Click interception fires *before* the page navigates away, so nothing gets lost during SPAs or full page loads.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 📸 Annotated screenshots
+
+Every step gets a screenshot with the clicked element highlighted and zoomed in. No manual cropping, no annotation tools to learn. Mimik figures out the important part of the page and frames it for you.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 🔒 Smart Blur
+
+Mimik automatically detects and blurs sensitive data in your screenshots: emails, phone numbers, SSNs, credit cards, IP addresses, MAC addresses. Toggle each category independently.
+
+Need to blur something custom? The manual blur picker lets you select any DOM element and mask it across every screenshot where it appears.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 🧠 AI descriptions (optional)
+
+Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable step descriptions like *"Click the **Submit** button to save changes"* instead of `Click button "Submit"`.
+
+Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French).
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### ▶️ Guide Me replay
+
+Replay any guide live on a real page. Mimik highlights the next element to click, tracks your progress step by step, and advances automatically as you interact. Perfect for onboarding teammates or walking through a process yourself.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 📤 Multi-format export
+
+Share guides in whatever format fits your workflow:
+
+- **HTML**: self-contained, share anywhere, base64-embedded images
+- **PDF**: print-ready, A4 portrait with auto page breaks
+- **Markdown**: paste into Notion, GitHub, internal docs, wikis
+
+All exports are generated client-side. Nothing touches a server.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 🌍 Multi-language
+
+UI available in English, Spanish, Brazilian Portuguese, and French. The AI description language is configurable independently, so you can run Mimik in English but generate guides in Spanish, or any combination.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 💾 100% local storage
+
+Guides, steps, and screenshots live on your device. There's no backend, no account, no telemetry. Your API keys (if you bring one) never leave your browser. They're stored locally and sent directly to the AI provider you chose.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+## 🤝 Contributing
+
+Contributions of all kinds are welcome: bug reports, feature requests, PRs, and translations.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, project layout, and contributor guidelines.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+## 📜 License
+
+MIT © [Westpoint](https://github.com/westpoint-io). See [LICENSE](./LICENSE) for details.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+<!-- LINK GROUP -->
+
+[back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-1E1B4B?style=flat-square
+
+[license-shield]: https://img.shields.io/badge/license-MIT-4F46E5?style=flat-square&labelColor=1E1B4B
+[license-link]: ./LICENSE
+
+[mv3-shield]: https://img.shields.io/badge/manifest-v3-3730A3?style=flat-square&labelColor=1E1B4B
+[mv3-link]: https://developer.chrome.com/docs/extensions/mv3/intro/
+
+[local-shield]: https://img.shields.io/badge/storage-100%25%20local-4F46E5?style=flat-square&labelColor=1E1B4B
+[local-link]: #-100-local-storage
+
+[no-account-shield]: https://img.shields.io/badge/account-not%20required-4F46E5?style=flat-square&labelColor=1E1B4B
+[no-account-link]: #-100-local-storage
+
+[star-shield]: https://img.shields.io/github/stars/westpoint-io/mimik?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
+[star-link]: https://github.com/westpoint-io/mimik/stargazers
+
+[contributors-shield]: https://img.shields.io/github/contributors/westpoint-io/mimik?style=flat-square&labelColor=1E1B4B
+[contributors-link]: https://github.com/westpoint-io/mimik/graphs/contributors
+
+[last-commit-shield]: https://img.shields.io/github/last-commit/westpoint-io/mimik?style=flat-square&label=commit&labelColor=1E1B4B
+
+[issues-shield]: https://img.shields.io/github/issues/westpoint-io/mimik?style=flat-square&labelColor=1E1B4B
+[issues-link]: https://github.com/westpoint-io/mimik/issues
+
+[chrome-soon-shield]: https://img.shields.io/badge/chrome-coming%20soon-1E1B4B?style=flat-square&logo=googlechrome&logoColor=C7D2FE
+[chrome-soon-link]: https://github.com/westpoint-io/mimik/issues
+[firefox-soon-shield]: https://img.shields.io/badge/firefox-coming%20soon-1E1B4B?style=flat-square&logo=firefoxbrowser&logoColor=C7D2FE
+[firefox-soon-link]: https://github.com/westpoint-io/mimik/issues
+</content>
+</invoke>
