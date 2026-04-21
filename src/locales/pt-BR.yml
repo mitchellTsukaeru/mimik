@@ -49,7 +49,7 @@ guideme:
   next: Próximo
   finish: Terminar
   exitTitle: "Vai sair?"
-  exitMessage: O passo a passo vai parar e a sobreposição vai ser removida.
+  exitMessage: O passo a passo vai parar e o destaque vai sumir da página.
   stay: Ficar
   exit: Sair
   guideNotFound: Guia não encontrado
@@ -202,7 +202,7 @@ steps:
   pressKey: "Pressionar $1 em $2"
   toggleCheckbox: "Marcar $1"
   selectRadio: "Selecionar $1"
-  toggleSwitch: "Alternar $1"
+  toggleSwitch: "Ligar/desligar $1"
   clickLink: 'Clicar no link "$1"'
   click: "Clicar em $1"
   typeIntoField: "Digitar no campo $1 $2"
