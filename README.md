@@ -59,14 +59,18 @@ Mimik turns any repetitive browser task into a documented, shareable guide in se
 
 Whether you're documenting internal tools, writing product tutorials, or onboarding a teammate, Mimik captures every click, keystroke, and navigation automatically so you can focus on the work.
 
-| Browser | Status | Install |
-| ------- | ------ | ------- |
-| Chrome  | [![Coming Soon][chrome-soon-shield]][chrome-soon-link] | Coming soon |
-| Firefox | [![Coming Soon][firefox-soon-shield]][firefox-soon-link] | Coming soon |
+| Browser | Version | Install |
+| ------- | ------- | ------- |
+| Chrome  | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
+| Firefox | [![Firefox Version][firefox-version-shield]][firefox-link] | [Firefox Add-ons][firefox-link]  |
 
 > \[!IMPORTANT]
 >
 > **⭐️ Star the repo** if Mimik saves you time. It helps other people discover it!
+
+<a href="https://github.com/westpoint-io/mimik">
+  <img width="100%" alt="Star Mimik on GitHub" src="https://github.com/user-attachments/assets/80d304da-a765-4bde-bf49-b1bdcb4fe804" />
+</a>
 
 <div align="right">
 
@@ -217,9 +221,9 @@ MIT © [Westpoint](https://github.com/westpoint-io). See [LICENSE](./LICENSE) fo
 [issues-shield]: https://img.shields.io/github/issues/westpoint-io/mimik?style=flat-square&labelColor=1E1B4B
 [issues-link]: https://github.com/westpoint-io/mimik/issues
 
-[chrome-soon-shield]: https://img.shields.io/badge/chrome-coming%20soon-1E1B4B?style=flat-square&logo=googlechrome&logoColor=C7D2FE
-[chrome-soon-link]: https://github.com/westpoint-io/mimik/issues
-[firefox-soon-shield]: https://img.shields.io/badge/firefox-coming%20soon-1E1B4B?style=flat-square&logo=firefoxbrowser&logoColor=C7D2FE
-[firefox-soon-link]: https://github.com/westpoint-io/mimik/issues
+[chrome-version-shield]: https://img.shields.io/chrome-web-store/v/jmfohdaflahliammccpiadmkcibohgha?label=Chrome%20Version&style=flat-square&logo=googlechrome&logoColor=C7D2FE&color=4F46E5&labelColor=1E1B4B
+[chrome-link]: https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha
+[firefox-version-shield]: https://img.shields.io/amo/v/mimik?label=Firefox%20Version&style=flat-square&logo=firefoxbrowser&logoColor=C7D2FE&color=4F46E5&labelColor=1E1B4B
+[firefox-link]: https://addons.mozilla.org/en-US/firefox/addon/mimik/
 </content>
 </invoke>
