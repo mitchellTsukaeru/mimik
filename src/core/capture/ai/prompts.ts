@@ -31,6 +31,7 @@ export const AI_LANGUAGES = [
   { code: 'es', label: 'Español' },
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'fr', label: 'Français' },
+  { code: 'ja', label: '日本語' },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];

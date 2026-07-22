@@ -1,8 +1,19 @@
 import { jsPDF } from 'jspdf';
 import { i18n } from '#imports';
+import { renderScreenshotVariants } from '@/core/export/screenshot-renderer';
 import { blobToDataUrl, extractDomain, fetchFaviconBase64, formatDate } from '@/core/export/utils';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
+
+export function fitImageWithin(
+  sourceWidth: number,
+  sourceHeight: number,
+  maxWidth: number,
+  maxHeight: number,
+): { width: number; height: number } {
+  const scale = Math.min(maxWidth / sourceWidth, maxHeight / sourceHeight);
+  return { width: sourceWidth * scale, height: sourceHeight * scale };
+}
 
 export async function exportGuideAsPDF(
   guide: Guide,
@@ -124,13 +135,17 @@ export async function exportGuideAsPDF(
 
     const screenshot = screenshots.get(step.id);
     let imgDataUrl: string | null = null;
-    const imgWidth = contentWidth - stepIndent;
+    const maxImgWidth = contentWidth - stepIndent;
+    let imgWidth = maxImgWidth;
     let imgHeight = 0;
 
     if (screenshot) {
       try {
-        imgDataUrl = await blobToDataUrl(screenshot.blob);
-        imgHeight = Math.min((screenshot.height / screenshot.width) * imgWidth, maxImgHeight);
+        const rendered = await renderScreenshotVariants(screenshot, { type: 'image/jpeg', quality: 0.9 });
+        imgDataUrl = await blobToDataUrl(rendered.fullBlob);
+        const dimensions = fitImageWithin(screenshot.width, screenshot.height, maxImgWidth, maxImgHeight);
+        imgWidth = dimensions.width;
+        imgHeight = dimensions.height;
       } catch (err) {
         logger.warn('PDF: failed to load screenshot for step', step.index, err);
       }
@@ -166,7 +181,8 @@ export async function exportGuideAsPDF(
         y = margin;
       }
 
-      doc.addImage(imgDataUrl, 'JPEG', margin + stepIndent, y, imgWidth, imgHeight);
+      const imgX = margin + stepIndent + (maxImgWidth - imgWidth) / 2;
+      doc.addImage(imgDataUrl, 'JPEG', imgX, y, imgWidth, imgHeight);
       y += imgHeight + stepSpacing;
     } else {
       y += stepSpacing;

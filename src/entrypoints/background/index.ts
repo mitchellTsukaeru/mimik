@@ -1,4 +1,5 @@
 import { browser, defineBackground, i18n } from '#imports';
+import { getDefaultAIModel } from '@/core/capture/ai/models';
 import { generateGuideTitle } from '@/core/capture/ai/title';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { createGuide, getGuideDomain, getStepsForGuide, updateGuideTitle } from '@/core/guides/service';
@@ -8,6 +9,7 @@ import { onMessage } from '@/lib/messaging';
 import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { registerNavigationListeners } from './navigation';
+import { createRecordingControls } from './recording-controls';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
 
@@ -29,7 +31,7 @@ async function generateTitleInBackground(guideId: string) {
     const stepsWithUrl = allSteps.length > 15 ? [...allSteps.slice(0, 10), ...allSteps.slice(-5)] : allSteps;
 
     const provider = (settings.aiProvider as string) || 'openai';
-    const model = (settings.aiModel as string) || 'gpt-4o-mini';
+    const model = (settings.aiModel as string) || getDefaultAIModel(provider);
     const title = await generateGuideTitle(stepsWithUrl, provider, model, settings.aiApiKey as string);
     if (title) {
       await updateGuideTitle(guideId, title);
@@ -50,6 +52,17 @@ async function generateTitleInBackground(guideId: string) {
     );
   }
 }
+
+const recordingControls = createRecordingControls({
+  waitUntilReady,
+  getActor,
+  getActiveTab,
+  createGuide,
+  showNotificationOnTab,
+  broadcastStartCapture,
+  broadcastStopCapture,
+  generateTitle: generateTitleInBackground,
+});
 
 export default defineBackground(() => {
   logger.info('Background service worker started');
@@ -81,6 +94,11 @@ export default defineBackground(() => {
       browser.sidebarAction.toggle();
     });
   }
+  browser.commands.onCommand.addListener((command) => {
+    recordingControls.handleCommand(command).catch((err) => {
+      logger.error('Toggle recording shortcut failed', err);
+    });
+  });
   initActor().catch(initActorFallback);
   cancelSession();
   registerNavigationListeners();
@@ -113,30 +131,13 @@ export default defineBackground(() => {
   });
 
   onMessage('startRecording', async ({ data }) => {
-    await waitUntilReady();
-    const actor = getActor();
-    actor.send({ type: 'START_RECORDING', url: data.url });
-    const guideId = actor.getSnapshot().context.currentGuideId!;
-
-    await createGuide(guideId);
-
-    const activeTab = await getActiveTab();
-    if (activeTab?.id) await showNotificationOnTab(activeTab.id);
-
-    await broadcastStartCapture(guideId);
+    const guideId = await recordingControls.start(data.url);
     return { guideId };
   });
 
   onMessage('stopRecording', async () => {
-    await waitUntilReady();
-    const actor = getActor();
-    const guideId = actor.getSnapshot().context.currentGuideId;
-    await broadcastStopCapture();
-    actor.send({ type: 'STOP_RECORDING' });
-
-    if (guideId) generateTitleInBackground(guideId);
-
-    return { success: true, guideId: guideId ?? undefined };
+    const guideId = await recordingControls.stop();
+    return { success: true, guideId };
   });
 
   onMessage('enterBlurMode', async () => {

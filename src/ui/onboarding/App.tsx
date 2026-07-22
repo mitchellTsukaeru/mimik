@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_ID, isPresetModel } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { localStorage, requestHostPermissions } from '@/lib/browser-api';
 
@@ -106,6 +106,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
 
   const providerConfig = AI_PROVIDERS[provider];
+  const modelSelection = isPresetModel(provider, model) ? model : CUSTOM_MODEL_ID;
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
     setProvider(newProvider);
@@ -151,8 +152,8 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
               <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
+                value={modelSelection}
+                onChange={(e) => setModel(e.target.value === CUSTOM_MODEL_ID ? '' : e.target.value)}
                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
               >
                 {providerConfig.models.map((m) => (
@@ -160,8 +161,23 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
                     {m.label}
                   </option>
                 ))}
+                <option value={CUSTOM_MODEL_ID}>{i18n.t('settings.customModel')}</option>
               </select>
             </div>
+
+            {modelSelection === CUSTOM_MODEL_ID && (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
+                  {i18n.t('settings.customModelId')}
+                </label>
+                <input
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder={i18n.t('settings.customModelPlaceholder')}
+                  className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>

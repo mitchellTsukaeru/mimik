@@ -81,6 +81,9 @@ settings:
   aiDescriptions: Descripciones con IA
   provider: Proveedor
   model: Modelo
+  customModel: ID de modelo personalizado...
+  customModelId: ID de modelo personalizado
+  customModelPlaceholder: Introduce el ID de modelo del proveedor
   apiKey: Clave API
   aiLanguage: Idioma de descripciones
   saveSettings: Guardar ajustes

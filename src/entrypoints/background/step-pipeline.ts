@@ -1,4 +1,5 @@
 import { getAIDescription } from '@/core/capture/ai/description';
+import { getDefaultAIModel } from '@/core/capture/ai/models';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
@@ -39,7 +40,7 @@ async function tryAIDescription(stepId: string, domContext: DOMContext) {
   if (!settings.aiApiKey) return;
 
   const provider = (settings.aiProvider as string) || 'openai';
-  const model = (settings.aiModel as string) || 'gpt-4o-mini';
+  const model = (settings.aiModel as string) || getDefaultAIModel(provider);
   const description = await getAIDescription(domContext, provider, model, settings.aiApiKey as string);
   if (description) await updateStepDescription(stepId, description);
 }

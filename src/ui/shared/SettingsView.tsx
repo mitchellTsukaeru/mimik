@@ -2,7 +2,7 @@ import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Globe, Shield, Sparkles, S
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_ID, isPresetModel } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
@@ -50,6 +50,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   };
 
   const providerConfig = AI_PROVIDERS[provider];
+  const modelSelection = isPresetModel(provider, model) ? model : CUSTOM_MODEL_ID;
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
     email: 'blurPresets.email',
@@ -84,10 +85,11 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
+            <label htmlFor="ai-provider" className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
             </label>
             <select
+              id="ai-provider"
               value={provider}
               onChange={(e) => handleProviderChange(e.target.value as AIProviderKey)}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
@@ -101,10 +103,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
+            <label htmlFor="ai-model" className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.model')}
+            </label>
             <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
+              id="ai-model"
+              value={modelSelection}
+              onChange={(e) => setModel(e.target.value === CUSTOM_MODEL_ID ? '' : e.target.value)}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
             >
               {providerConfig.models.map((m) => (
@@ -112,20 +117,44 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                   {m.label}
                 </option>
               ))}
+              <option value={CUSTOM_MODEL_ID}>{i18n.t('settings.customModel')}</option>
             </select>
           </div>
 
+          {modelSelection === CUSTOM_MODEL_ID && (
+            <div>
+              <label htmlFor="ai-custom-model" className="block text-[11px] font-semibold text-foreground mb-1">
+                {i18n.t('settings.customModelId')}
+              </label>
+              <Input
+                id="ai-custom-model"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder={i18n.t('settings.customModelPlaceholder')}
+              />
+            </div>
+          )}
+
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
-            <Input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-..." />
+            <label htmlFor="ai-api-key" className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.apiKey')}
+            </label>
+            <Input
+              id="ai-api-key"
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+            />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
+            <label htmlFor="ai-language" className="block text-[11px] font-semibold text-foreground mb-1">
               <Globe size={11} className="inline mr-1 -mt-px" />
               {i18n.t('settings.aiLanguage')}
             </label>
             <select
+              id="ai-language"
               value={aiLanguage}
               onChange={(e) => setAiLanguage(e.target.value as AILanguageCode)}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
