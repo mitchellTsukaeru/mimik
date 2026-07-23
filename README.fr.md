@@ -2,13 +2,15 @@
 
 <img src="public/mascot.svg" width="140" height="140" alt="Mascotte de Mimik" />
 
-# Mimik
+# Mimik for Tsukaeru
 
 [English](./README.md) · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · **Français**
 
 **Capture n'importe quel flux dans ton navigateur et transforme-le en guide étape par étape. Pas de compte, pas de cloud, pas de tracking.**
 
 Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soigné avec des captures annotées. Modifie, rejoue ou exporte.
+
+Ce dépôt est le fork Tsukaeru de [Mimik de Westpoint](https://github.com/westpoint-io/mimik). Il conserve son approche locale et open source tout en ajoutant les sorties IA en japonais, des modèles actuels, les identifiants de modèle personnalisés et des améliorations de fiabilité.
 
 <!-- SHIELD GROUP -->
 
@@ -50,25 +52,29 @@ Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soign
 ## 📺 Démo
 
 <div align="center">
-<img src="public/demo.gif" alt="Démo de Mimik" width="800" />
+<img src="https://github.com/user-attachments/assets/d4c64cb8-ad26-4de1-af02-a04a64e2836e" alt="Démo de Mimik" width="800" />
 </div>
 
 ## 👋 Pour commencer
 
-Mimik transforme n'importe quelle tâche répétitive dans le navigateur en un guide documenté et partageable en quelques secondes. Tout tourne dans ton navigateur. Pas de backend, pas de compte, pas de télémétrie, et rien ne quitte ton appareil.
+Mimik transforme n'importe quelle tâche répétitive dans le navigateur en un guide documenté et partageable en quelques secondes. Tout tourne dans ton navigateur, sans backend, compte ou télémétrie. Les données du flux restent sur ton appareil, sauf si tu actives l'IA optionnelle, qui envoie uniquement un contexte textuel léger directement au fournisseur choisi.
 
 Que tu documentes des outils internes, que tu rédiges des tutoriels, ou que tu formes un collègue, Mimik capture chaque clic, frappe et navigation pour que tu puisses te concentrer sur le reste.
 
-| Navigateur | Version | Installation |
-| ---------- | ------- | ------------ |
+| Navigateur | Version upstream | Installation upstream |
+| ---------- | ---------------- | --------------------- |
 | Chrome     | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
 | Firefox    | [![Firefox Version][firefox-version-shield]][firefox-link] | [Firefox Add-ons][firefox-link]  |
+
+> [!NOTE]
+>
+> Les versions publiées dans les stores sont maintenues par le projet upstream et peuvent ne pas encore inclure les fonctionnalités propres à ce fork. Pour exécuter la version actuelle de ce dépôt, suis les instructions de développement ou de compilation dans [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 > \[!IMPORTANT]
 >
 > **⭐️ Mets une étoile au repo** si Mimik te fait gagner du temps. Ça aide les autres à le découvrir.
 
-<a href="https://github.com/westpoint-io/mimik">
+<a href="https://github.com/mitchellTsukaeru/mimik">
   <img width="100%" alt="Mets une étoile à Mimik sur GitHub" src="https://github.com/user-attachments/assets/80d304da-a765-4bde-bf49-b1bdcb4fe804" />
 </a>
 
@@ -85,6 +91,8 @@ Que tu documentes des outils internes, que tu rédiges des tutoriels, ou que tu 
 Tu cliques, tu tapes, tu navigues. Mimik voit tout. Chaque action utile devient une étape : clics sur boutons et liens, champs de formulaire, raccourcis clavier, presse-papiers, drag & drop, et navigations.
 
 La fusion intelligente des événements écarte les clics rapprochés sur des éléments proches, pour garder tes guides propres. L'interception du clic se fait *avant* que la page ne change, donc rien ne se perd dans les SPA ou les rechargements complets.
+
+Démarre ou arrête l'enregistrement depuis n'importe où avec <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, ou <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> sous macOS.
 
 <div align="right">
 
@@ -116,9 +124,9 @@ Besoin de cacher quelque chose de précis ? Le sélecteur manuel te laisse chois
 
 ### 🧠 Descriptions par IA (optionnel)
 
-Apporte ta propre clé API (OpenAI ou Anthropic) et Mimik génère des descriptions naturelles comme *« Clique sur le bouton **Envoyer** pour sauvegarder »* au lieu de `Click button "Submit"`.
+Apporte ta propre clé API (OpenAI ou Anthropic) et Mimik génère des descriptions naturelles comme *« Clique sur le bouton **Envoyer** pour sauvegarder »* au lieu de `Click button "Submit"`. Les modèles inclus sont GPT-5.6 Luna, Terra et Sol, ainsi que Claude Haiku 4.5, Sonnet 5, Opus 4.8 et Fable 5. Tu peux aussi saisir tout identifiant de modèle pris en charge par le fournisseur sélectionné.
 
-Les descriptions sont générées à partir d'un contexte léger du DOM (~50-100 tokens), pas des captures. Environ 15-30x moins cher que les modèles vision. Choisis la langue des descriptions (anglais, espagnol, portugais, français).
+Les descriptions et les titres sont générés à partir d'un contexte textuel léger, pas des captures. Cela coûte nettement moins cher que d'envoyer chaque capture à un modèle vision. Les sorties peuvent être générées en anglais, espagnol, portugais brésilien, français ou japonais.
 
 <div align="right">
 
@@ -141,7 +149,7 @@ Rejoue n'importe quel guide en direct sur une vraie page. Mimik met en évidence
 Partage tes guides dans le format qui colle à ton flux :
 
 - **HTML** : autonome, à partager partout, images intégrées en base64
-- **PDF** : prêt à imprimer, A4 portrait avec sauts de page auto
+- **PDF** : prêt à imprimer, A4 portrait avec sauts de page auto et captures annotées
 - **Markdown** : à coller dans Notion, GitHub, docs internes, wikis
 
 Tous les exports sont générés côté client. Rien ne passe par un serveur.
@@ -154,7 +162,7 @@ Tous les exports sont générés côté client. Rien ne passe par un serveur.
 
 ### 🌍 Multilingue
 
-Interface disponible en anglais, espagnol, portugais brésilien et français. La langue des descriptions IA se configure séparément, donc tu peux lancer Mimik en anglais et générer les guides en français, ou n'importe quelle combinaison.
+L'interface est disponible en anglais, espagnol, portugais brésilien et français. La langue des sorties IA se configure séparément et prend aussi en charge le japonais, ce qui permet d'utiliser Mimik en anglais tout en générant des guides en japonais.
 
 <div align="right">
 
@@ -164,7 +172,7 @@ Interface disponible en anglais, espagnol, portugais brésilien et français. La
 
 ### 💾 Stockage 100% local
 
-Tes guides, étapes et captures restent sur ton appareil. Pas de backend, pas de compte, pas de télémétrie. Tes clés API (si tu en utilises) ne quittent jamais le navigateur. Elles sont stockées localement et envoyées directement au fournisseur d'IA que tu as choisi.
+Tes guides, étapes et captures restent sur ton appareil. Pas de backend, de compte ou de télémétrie. Ta clé API est stockée localement et envoyée uniquement au fournisseur d'IA choisi ; Mimik n'a aucun serveur qui la reçoit.
 
 <div align="right">
 
@@ -186,7 +194,7 @@ Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour le setup dev, la structure du pro
 
 ## 📜 Licence
 
-MIT © [Westpoint](https://github.com/westpoint-io). Voir [LICENSE](./LICENSE) pour les détails.
+Basé sur Mimik, MIT © [Westpoint](https://github.com/westpoint-io), avec des modifications maintenues par Tsukaeru. Voir [LICENSE](./LICENSE) pour les détails.
 
 <div align="right">
 
@@ -210,16 +218,16 @@ MIT © [Westpoint](https://github.com/westpoint-io). Voir [LICENSE](./LICENSE) p
 [no-account-shield]: https://img.shields.io/badge/account-not%20required-4F46E5?style=flat-square&labelColor=1E1B4B
 [no-account-link]: #-stockage-100-local
 
-[star-shield]: https://img.shields.io/github/stars/westpoint-io/mimik?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
-[star-link]: https://github.com/westpoint-io/mimik/stargazers
+[star-shield]: https://img.shields.io/github/stars/mitchellTsukaeru/mimik?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
+[star-link]: https://github.com/mitchellTsukaeru/mimik/stargazers
 
-[contributors-shield]: https://img.shields.io/github/contributors/westpoint-io/mimik?style=flat-square&labelColor=1E1B4B
-[contributors-link]: https://github.com/westpoint-io/mimik/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
+[contributors-link]: https://github.com/mitchellTsukaeru/mimik/graphs/contributors
 
-[last-commit-shield]: https://img.shields.io/github/last-commit/westpoint-io/mimik?style=flat-square&label=commit&labelColor=1E1B4B
+[last-commit-shield]: https://img.shields.io/github/last-commit/mitchellTsukaeru/mimik?style=flat-square&label=commit&labelColor=1E1B4B
 
-[issues-shield]: https://img.shields.io/github/issues/westpoint-io/mimik?style=flat-square&labelColor=1E1B4B
-[issues-link]: https://github.com/westpoint-io/mimik/issues
+[issues-shield]: https://img.shields.io/github/issues/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
+[issues-link]: https://github.com/mitchellTsukaeru/mimik/issues
 
 [chrome-version-shield]: https://img.shields.io/chrome-web-store/v/jmfohdaflahliammccpiadmkcibohgha?label=Chrome%20Version&style=flat-square&logo=googlechrome&logoColor=C7D2FE&color=4F46E5&labelColor=1E1B4B
 [chrome-link]: https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha
