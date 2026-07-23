@@ -1,6 +1,7 @@
 import { Download, FileCode, FileDown, FileText, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
+import { downloadBlob, downloadText } from '@/core/export/download';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
@@ -12,16 +13,6 @@ interface ExportMenuProps {
   guide: Guide;
   steps: Step[];
   screenshots: Map<string, Screenshot>;
-}
-
-function downloadFile(content: string, filename: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProps) {
@@ -43,18 +34,13 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
     try {
       if (type === 'html') {
         const html = await exportGuideAsHTML(guide, steps, screenshots);
-        downloadFile(html, `${guide.title}.html`, 'text/html');
+        downloadText(html, `${guide.title}.html`, 'text/html');
       } else if (type === 'markdown') {
         const md = await exportGuideAsMarkdown(guide, steps, screenshots);
-        downloadFile(md, `${guide.title}.md`, 'text/markdown');
+        downloadText(md, `${guide.title}.md`, 'text/markdown');
       } else {
         const blob = await exportGuideAsPDF(guide, steps, screenshots);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${guide.title}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, `${guide.title}.pdf`);
       }
     } finally {
       setExporting(false);

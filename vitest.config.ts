@@ -1,9 +1,8 @@
-import react from "@vitejs/plugin-react";
 import { configDefaults, defineConfig } from "vitest/config";
 import { WxtVitest } from "wxt/testing";
 
 export default defineConfig({
-  plugins: [WxtVitest() as any, react()],
+  plugins: [WxtVitest() as any],
   test: {
     exclude: [...configDefaults.exclude, "**/.claude/**", "**/.worktrees/**", "tests/**"],
     environment: "node",

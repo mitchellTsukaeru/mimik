@@ -22,6 +22,10 @@ describe('getLanguageSuffix', () => {
     expect(getLanguageSuffix('pt-BR')).toContain('Brazilian Portuguese');
   });
 
+  it('returns Japanese suffix for ja', () => {
+    expect(getLanguageSuffix('ja')).toContain('Japanese');
+  });
+
   it('returns the locale code for unknown languages', () => {
     expect(getLanguageSuffix('sv')).toContain('sv');
   });
@@ -34,12 +38,16 @@ describe('getLanguageSuffix', () => {
 });
 
 describe('AI_LANGUAGES', () => {
-  it('has 4 supported languages', () => {
-    expect(AI_LANGUAGES).toHaveLength(4);
+  it('has 5 supported languages', () => {
+    expect(AI_LANGUAGES).toHaveLength(5);
   });
 
   it('includes English as first entry', () => {
     expect(AI_LANGUAGES[0]).toEqual({ code: 'en', label: 'English' });
+  });
+
+  it('includes Japanese', () => {
+    expect(AI_LANGUAGES).toContainEqual({ code: 'ja', label: '日本語' });
   });
 
   it('each entry has code and label', () => {

@@ -80,6 +80,7 @@ export default function StepCard({
           screenshot={screenshot}
           alt={`Step ${step.index + 1} screenshot`}
           className="!rounded-none !border-0"
+          crop
         />
       ) : (
         <div className="w-full h-32 flex items-center justify-center text-sm bg-secondary text-purple">

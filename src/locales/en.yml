@@ -81,6 +81,9 @@ settings:
   aiDescriptions: AI Descriptions
   provider: Provider
   model: Model
+  customModel: Custom model ID...
+  customModelId: Custom model ID
+  customModelPlaceholder: Enter the provider model ID
   apiKey: API Key
   aiLanguage: Description Language
   saveSettings: Save Settings

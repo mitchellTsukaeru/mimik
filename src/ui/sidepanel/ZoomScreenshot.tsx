@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { renderScreenshotVariants } from '@/core/export/screenshot-renderer';
 import type { Screenshot } from '@/core/guides/types';
 
 interface ZoomScreenshotProps {
@@ -9,108 +10,14 @@ interface ZoomScreenshotProps {
   crop?: boolean;
 }
 
-function clamp(val: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, val));
-}
-
-function drawRoundedRect(
-  ctx: OffscreenCanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-  ctx.stroke();
-}
-
 async function renderScreenshot(
   screenshot: Screenshot,
 ): Promise<{ fullUrl: string; croppedUrl: string } | { fullUrl: string; croppedUrl: null }> {
-  const img = await createImageBitmap(screenshot.blob);
-  const imgW = img.width;
-  const imgH = img.height;
-  const bounds = screenshot.bounds;
-  const dpr = screenshot.pixelRatio || 1;
-
-  const fullCanvas = new OffscreenCanvas(imgW, imgH);
-  const fullCtx = fullCanvas.getContext('2d')!;
-  fullCtx.drawImage(img, 0, 0, imgW, imgH);
-
-  if (!bounds) {
-    img.close();
-    const fullBlob = await fullCanvas.convertToBlob({ type: 'image/webp', quality: 0.8 });
-    return { fullUrl: URL.createObjectURL(fullBlob), croppedUrl: null };
-  }
-
-  const bx = bounds.x * dpr;
-  const by = bounds.y * dpr;
-  const bw = bounds.width * dpr;
-  const bh = bounds.height * dpr;
-
-  fullCtx.strokeStyle = '#4F46E5';
-  fullCtx.lineWidth = 3.5;
-  fullCtx.setLineDash([8, 5]);
-  drawRoundedRect(fullCtx, bx, by, bw, bh, 12);
-  fullCtx.setLineDash([]);
-
-  const fullBlob = await fullCanvas.convertToBlob({ type: 'image/webp', quality: 0.8 });
-  const fullUrl = URL.createObjectURL(fullBlob);
-
-  const PAD_RATIO = 0.3;
-  const padH = PAD_RATIO * imgW;
-  const padV = PAD_RATIO * imgH;
-  const imgAspect = imgW / imgH;
-  const elAspect = bw / bh;
-
-  const cx = bx + bw / 2;
-  const cy = by + bh / 2;
-
-  let visW = bw + padH;
-  let visH = bh + padV;
-
-  if (elAspect > 1) {
-    visW = bw + padH;
-    visH = visW / imgAspect;
-  } else if (elAspect < 1) {
-    visH = bh + padV;
-    visW = visH * imgAspect;
-  }
-
-  visW = Math.min(visW, imgW);
-  visH = Math.min(visH, imgH);
-
-  const cropX = clamp(cx - visW / 2, 0, imgW - visW);
-  const cropY = clamp(cy - visH / 2, 0, imgH - visH);
-
-  const cropCanvas = new OffscreenCanvas(imgW, imgH);
-  const cropCtx = cropCanvas.getContext('2d')!;
-  cropCtx.drawImage(img, cropX, cropY, visW, visH, 0, 0, imgW, imgH);
-
-  const scaleX = imgW / visW;
-  const scaleY = imgH / visH;
-  cropCtx.strokeStyle = '#4F46E5';
-  cropCtx.lineWidth = 3.5;
-  cropCtx.setLineDash([8, 5]);
-  drawRoundedRect(cropCtx, (bx - cropX) * scaleX, (by - cropY) * scaleY, bw * scaleX, bh * scaleY, 12);
-  cropCtx.setLineDash([]);
-
-  img.close();
-  const croppedBlob = await cropCanvas.convertToBlob({ type: 'image/webp', quality: 0.8 });
-  const croppedUrl = URL.createObjectURL(croppedBlob);
-
-  return { fullUrl, croppedUrl };
+  const { fullBlob, croppedBlob } = await renderScreenshotVariants(screenshot);
+  return {
+    fullUrl: URL.createObjectURL(fullBlob),
+    croppedUrl: croppedBlob ? URL.createObjectURL(croppedBlob) : null,
+  };
 }
 
 export default function ZoomScreenshot({
