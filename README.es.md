@@ -4,7 +4,7 @@
 
 # Mimik for Tsukaeru
 
-[English](./README.md) · **Español** · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md)
+[English](./README.md) · **Español** · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [日本語](./README.ja.md)
 
 **Captura cualquier flujo del navegador y conviértelo en una guía paso a paso. Sin cuenta, sin nube, sin rastreo.**
 
