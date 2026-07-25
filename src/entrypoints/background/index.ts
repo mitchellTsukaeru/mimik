@@ -15,7 +15,7 @@ import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } fr
 
 async function generateTitleInBackground(guideId: string) {
   try {
-    const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
+    const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
     if (!settings.aiApiKey) {
       const domain = await getGuideDomain(guideId);
       await updateGuideTitle(
@@ -32,7 +32,13 @@ async function generateTitleInBackground(guideId: string) {
 
     const provider = (settings.aiProvider as string) || 'openai';
     const model = (settings.aiModel as string) || getDefaultAIModel(provider);
-    const title = await generateGuideTitle(stepsWithUrl, provider, model, settings.aiApiKey as string);
+    const title = await generateGuideTitle(
+      stepsWithUrl,
+      provider,
+      model,
+      settings.aiApiKey as string,
+      settings.aiBaseUrl as string | undefined,
+    );
     if (title) {
       await updateGuideTitle(guideId, title);
       logger.info('Generated guide title:', title);

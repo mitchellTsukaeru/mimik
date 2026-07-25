@@ -85,11 +85,13 @@ settings:
   customModelId: ID de modelo personalizado
   customModelPlaceholder: Introduce el ID de modelo del proveedor
   apiKey: Clave API
+  baseUrl: URL de API compatible (opcional)
+  baseUrlHelp: Déjalo vacío para usar el proveedor oficial. Las URL personalizadas reciben tu clave API y el contexto de texto de IA.
   aiLanguage: Idioma de descripciones
   saveSettings: Guardar ajustes
   saved: Guardado
   smartBlur: Desenfoque inteligente
-  privacyNotice: Tu clave API se guarda en tu navegador y solo se envía al proveedor de IA que elijas. Nada más sale de aquí.
+  privacyNotice: Tu clave API y la URL compatible se guardan localmente. La clave y el contexto de texto de IA solo se envían al endpoint configurado.
   bugReport: "¿Encontraste un bug? Repórtalo en GitHub"
   starCtaTitle: "¿Te gusta Mimik?"
   starCtaMessage: "Una estrella en GitHub nos ayuda un montón y hace que más gente descubra Mimik."
@@ -176,7 +178,7 @@ onboarding:
   getStarted: Empezar
   aiStepLabel: Paso 1 de 3
   aiTitle: Descripciones con IA
-  aiMessage: Conecta tu clave API para que la IA escriba las descripciones de cada paso. Es opcional y lo puedes cambiar después en Ajustes.
+  aiMessage: Conecta tu clave API y, si quieres, un endpoint compatible para generar descripciones con IA. Puedes cambiarlo después en Ajustes.
   aiGenerated: Generado por IA
   aiGeneratedDescription: "Descripción generada por IA"
   blurStepLabel: Paso 2 de 3

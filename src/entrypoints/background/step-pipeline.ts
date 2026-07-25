@@ -36,12 +36,18 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
 }
 
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
-  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
+  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
   if (!settings.aiApiKey) return;
 
   const provider = (settings.aiProvider as string) || 'openai';
   const model = (settings.aiModel as string) || getDefaultAIModel(provider);
-  const description = await getAIDescription(domContext, provider, model, settings.aiApiKey as string);
+  const description = await getAIDescription(
+    domContext,
+    provider,
+    model,
+    settings.aiApiKey as string,
+    settings.aiBaseUrl as string | undefined,
+  );
   if (description) await updateStepDescription(stepId, description);
 }
 

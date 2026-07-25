@@ -126,6 +126,8 @@ Need to blur something custom? The manual blur picker lets you select any DOM el
 
 Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable step descriptions like *"Click the **Submit** button to save changes"* instead of `Click button "Submit"`. Presets include GPT-5.6 Luna, Terra, and Sol, plus Claude Haiku 4.5, Sonnet 5, Opus 4.8, and Fable 5. You can also enter any model ID supported by your selected provider.
 
+For lower-cost gateways, hosted alternatives, or local inference, enter an optional compatible API base URL and the exact model ID exposed by that endpoint. OpenAI-compatible endpoints use Chat Completions; Anthropic-compatible endpoints use the Messages API. Leave the URL blank to use the official provider.
+
 Descriptions and guide titles are generated from lightweight text context, not screenshots. This is substantially cheaper than sending every screenshot to a vision model. Output can be generated in English, Spanish, Brazilian Portuguese, French, or Japanese.
 
 <div align="right">
@@ -172,7 +174,7 @@ The interface is available in English, Spanish, Brazilian Portuguese, and French
 
 ### 💾 100% local storage
 
-Guides, steps, and screenshots live on your device. There's no backend, no account, no telemetry. Your API key is stored locally and sent only to the AI provider you chose; Mimik has no server that receives it.
+Guides, steps, screenshots, API keys, and compatible API URLs live on your device. There's no backend, no account, no telemetry. When AI is enabled, Mimik sends the key and lightweight text context only to the official provider or compatible endpoint you configured; Mimik has no server that receives them.
 
 <div align="right">
 

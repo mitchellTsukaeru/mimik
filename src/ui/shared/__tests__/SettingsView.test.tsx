@@ -36,6 +36,7 @@ describe('SettingsView AI configuration', () => {
       aiApiKey: 'local-test-key',
       aiProvider: 'openai',
       aiModel: 'ft:gpt-5.6-luna:example:guide-writer',
+      aiBaseUrl: 'https://api.example.test/v1',
       aiLanguage: 'ja',
     });
 
@@ -47,6 +48,9 @@ describe('SettingsView AI configuration', () => {
     const customModel = screen.getByLabelText('settings.customModelId') as HTMLInputElement;
     expect(customModel.value).toBe('ft:gpt-5.6-luna:example:guide-writer');
     fireEvent.change(customModel, { target: { value: 'gpt-5.6-custom-team-model' } });
+    const baseUrl = screen.getByLabelText('settings.baseUrl') as HTMLInputElement;
+    expect(baseUrl.value).toBe('https://api.example.test/v1');
+    fireEvent.change(baseUrl, { target: { value: ' https://gateway.example.test/v1 ' } });
     fireEvent.click(screen.getByRole('button', { name: 'settings.saveSettings' }));
 
     await waitFor(() => {
@@ -55,6 +59,7 @@ describe('SettingsView AI configuration', () => {
           aiApiKey: 'local-test-key',
           aiProvider: 'openai',
           aiModel: 'gpt-5.6-custom-team-model',
+          aiBaseUrl: 'https://gateway.example.test/v1',
           aiLanguage: 'ja',
         }),
       );

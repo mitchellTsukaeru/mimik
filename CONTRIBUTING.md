@@ -94,7 +94,7 @@ src/
 | Messaging | [webext-core](https://webext-core.aklinker1.io) |
 | Session recording | [rrweb](https://www.rrweb.io) |
 | Export | [jsPDF](https://github.com/parallax/jsPDF) + HTML/Markdown |
-| AI (optional) | [Vercel AI SDK](https://sdk.vercel.ai) (OpenAI, Anthropic) |
+| AI (optional) | [Vercel AI SDK](https://sdk.vercel.ai) (OpenAI, Anthropic, and compatible endpoints) |
 | i18n | [@wxt-dev/i18n](https://wxt.dev) + YAML locales |
 | Testing | [Vitest](https://vitest.dev) + Testing Library |
 

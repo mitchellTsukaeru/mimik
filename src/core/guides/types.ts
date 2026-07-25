@@ -43,6 +43,7 @@ export interface Settings {
   aiApiKey: string;
   aiProvider: 'openai' | 'anthropic';
   aiModel: string;
+  aiBaseUrl?: string;
 }
 
 export interface ElementMeta {
