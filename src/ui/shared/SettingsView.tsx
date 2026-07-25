@@ -16,6 +16,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
@@ -28,11 +29,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiLanguage', 'blurPresets']).then((result) => {
+    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage', 'blurPresets']).then((result) => {
       const p = (result.aiProvider as AIProviderKey) || 'openai';
       setProvider(p);
       setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
       if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+      if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
       if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
       if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
     });
@@ -44,7 +46,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   };
 
   const handleSave = async () => {
-    await localStorage.set({ aiApiKey: apiKey, aiProvider: provider, aiModel: model, aiLanguage, blurPresets });
+    await localStorage.set({
+      aiApiKey: apiKey,
+      aiProvider: provider,
+      aiModel: model,
+      aiBaseUrl: baseUrl.trim(),
+      aiLanguage,
+      blurPresets,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -146,6 +155,20 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-..."
             />
+          </div>
+
+          <div>
+            <label htmlFor="ai-base-url" className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.baseUrl')}
+            </label>
+            <Input
+              id="ai-base-url"
+              type="url"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="https://api.example.com/v1"
+            />
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">{i18n.t('settings.baseUrlHelp')}</p>
           </div>
 
           <div>

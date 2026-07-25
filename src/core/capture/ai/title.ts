@@ -9,6 +9,7 @@ export async function generateGuideTitle(
   provider: string,
   model: string,
   apiKey: string,
+  baseURL?: string,
 ): Promise<string | null> {
   if (steps.length === 0) return null;
 
@@ -18,7 +19,7 @@ export async function generateGuideTitle(
     const settings = await localStorage.get(['aiLanguage']);
     const locale = (settings.aiLanguage as string) || 'en';
     const { text } = await generateText({
-      model: createModel(provider, model, apiKey),
+      model: createModel(provider, model, apiKey, baseURL),
       prompt: GUIDE_TITLE_PROMPT.replace('{{steps}}', formatted) + getLanguageSuffix(locale),
       maxOutputTokens: 30,
     });

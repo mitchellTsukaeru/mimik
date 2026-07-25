@@ -85,11 +85,13 @@ settings:
   customModelId: Custom model ID
   customModelPlaceholder: Enter the provider model ID
   apiKey: API Key
+  baseUrl: Compatible API URL (optional)
+  baseUrlHelp: Leave blank to use the official provider. Custom URLs receive your API key and AI text context.
   aiLanguage: Description Language
   saveSettings: Save Settings
   saved: Saved
   smartBlur: Smart Blur
-  privacyNotice: Your API key is stored locally and only sent to the selected AI provider. No data leaves your browser otherwise.
+  privacyNotice: Your API key and compatible API URL are stored locally. The key and AI text context are sent only to the configured endpoint.
   bugReport: "Found a bug? Report it on GitHub"
   starCtaTitle: "Like what you see?"
   starCtaMessage: A GitHub star helps others find Mimik and keeps us motivated!
@@ -176,7 +178,7 @@ onboarding:
   getStarted: Get started
   aiStepLabel: Step 1 of 3
   aiTitle: AI Descriptions
-  aiMessage: Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in settings.
+  aiMessage: Connect your own API key and optionally a compatible endpoint for AI-generated step descriptions. You can change this later in settings.
   aiGenerated: AI generated
   aiGeneratedDescription: AI-generated description
   blurStepLabel: Step 2 of 3

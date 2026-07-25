@@ -126,6 +126,8 @@ Mimik detecta y difumina datos sensibles automáticamente en tus capturas: corre
 
 Trae tu propia API key (OpenAI o Anthropic) y Mimik genera descripciones naturales como *"Haz clic en el botón **Enviar** para guardar los cambios"* en lugar de `Click button "Submit"`. Los modelos incluidos son GPT-5.6 Luna, Terra y Sol, además de Claude Haiku 4.5, Sonnet 5, Opus 4.8 y Fable 5. También puedes introducir cualquier ID de modelo compatible con el proveedor seleccionado.
 
+Para gateways más económicos, alternativas alojadas o inferencia local, introduce una URL base de API compatible opcional y el ID exacto del modelo expuesto por ese endpoint. Los endpoints compatibles con OpenAI usan Chat Completions; los compatibles con Anthropic usan la API Messages. Deja la URL vacía para usar el proveedor oficial.
+
 Las descripciones y los títulos se generan a partir de contexto de texto ligero, no de capturas. Esto cuesta mucho menos que enviar cada captura a un modelo con visión. La salida puede generarse en inglés, español, portugués brasileño, francés o japonés.
 
 <div align="right">
@@ -172,7 +174,7 @@ La interfaz está disponible en inglés, español, portugués brasileño y franc
 
 ### 💾 Almacenamiento 100% local
 
-Tus guías, pasos y capturas viven en tu dispositivo. No hay backend, cuenta ni telemetría. Tu API key se guarda localmente y solo se envía al proveedor de IA que elegiste; Mimik no tiene un servidor que la reciba.
+Tus guías, pasos, capturas, claves API y URL de API compatibles viven en tu dispositivo. No hay backend, cuenta ni telemetría. Cuando activas la IA, Mimik solo envía la clave y el contexto de texto ligero al proveedor oficial o al endpoint compatible que configuraste; Mimik no tiene ningún servidor que los reciba.
 
 <div align="right">
 

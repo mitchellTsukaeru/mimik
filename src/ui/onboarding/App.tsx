@@ -103,6 +103,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
 
   const providerConfig = AI_PROVIDERS[provider];
@@ -115,7 +116,7 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
 
   const handleContinue = async () => {
     await localStorage.set({
-      ...(apiKey ? { aiApiKey: apiKey, aiProvider: provider, aiModel: model } : {}),
+      ...(apiKey ? { aiApiKey: apiKey, aiProvider: provider, aiModel: model, aiBaseUrl: baseUrl.trim() } : {}),
       aiLanguage,
     });
     onNext();
@@ -188,6 +189,20 @@ function AISetupStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
                 placeholder="sk-..."
                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.baseUrl')}</label>
+              <input
+                type="url"
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder="https://api.example.com/v1"
+                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+              />
+              <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+                {i18n.t('settings.baseUrlHelp')}
+              </p>
             </div>
 
             <div>
