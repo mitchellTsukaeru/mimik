@@ -88,6 +88,12 @@ settings:
   baseUrl: Compatible API URL (optional)
   baseUrlHelp: Leave blank to use the official provider. Custom URLs receive your API key and AI text context.
   aiLanguage: Description Language
+  captureTiming: Screenshot timing
+  screenshotDelay: Delay before screenshot
+  captureTimingFast: Fast (150 ms)
+  captureTimingNormal: Normal (500 ms)
+  captureTimingSlow: Slow (1 second)
+  captureTimingHelp: Wait briefly after each action so menus and dialogs can appear before the screenshot is taken.
   saveSettings: Save Settings
   saved: Saved
   smartBlur: Smart Blur
@@ -211,6 +217,7 @@ steps:
   toggleSwitch: "Toggle $1"
   clickLink: 'Click link "$1"'
   click: "Click $1"
+  openContextMenu: "Open context menu for $1"
   typeIntoField: "Type into $1 field $2"
   typeInto: "Type into $1"
   copyFrom: "Copy from $1"

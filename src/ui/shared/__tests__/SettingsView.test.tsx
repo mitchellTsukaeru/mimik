@@ -65,4 +65,18 @@ describe('SettingsView AI configuration', () => {
       );
     });
   });
+
+  it('defaults to Normal screenshot timing and saves the selected timing', async () => {
+    render(<SettingsView />);
+
+    const timing = (await screen.findByLabelText('settings.screenshotDelay')) as HTMLSelectElement;
+    expect(timing.value).toBe('normal');
+
+    fireEvent.change(timing, { target: { value: 'slow' } });
+    fireEvent.click(screen.getByRole('button', { name: 'settings.saveSettings' }));
+
+    await waitFor(() => {
+      expect(storageSet).toHaveBeenCalledWith(expect.objectContaining({ screenshotTiming: 'slow' }));
+    });
+  });
 });
