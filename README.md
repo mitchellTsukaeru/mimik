@@ -104,6 +104,8 @@ Start or stop recording from anywhere with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd
 
 Every step gets a screenshot with the clicked element highlighted and zoomed in. No manual cropping, no annotation tools to learn. Mimik figures out the important part of the page and frames it for you.
 
+Choose the screenshot delay in Settings to match the application you are documenting: **Fast** captures after 150 ms, **Normal** (the default) after 500 ms, and **Slow** after one second. Mimik records the target immediately when you act, so delayed menus and dialogs can appear without moving the highlight to a replacement element.
+
 <div align="right">
 
 [![Back to top][back-to-top]](#readme-top)

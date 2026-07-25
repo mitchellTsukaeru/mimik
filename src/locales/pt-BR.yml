@@ -88,6 +88,12 @@ settings:
   baseUrl: URL de API compatível (opcional)
   baseUrlHelp: Deixa em branco para usar o provedor oficial. URLs personalizadas recebem tua chave API e o contexto de texto da IA.
   aiLanguage: "Idioma das descrições"
+  captureTiming: Tempo da captura
+  screenshotDelay: Atraso antes da captura
+  captureTimingFast: Rápido (150 ms)
+  captureTimingNormal: Normal (500 ms)
+  captureTimingSlow: Lento (1 segundo)
+  captureTimingHelp: Aguarda um pouco depois de cada ação para que menus e diálogos apareçam antes da captura.
   saveSettings: Salvar ajustes
   saved: Salvo
   smartBlur: Desfoque inteligente
@@ -211,6 +217,7 @@ steps:
   toggleSwitch: "Ligar/desligar $1"
   clickLink: 'Clicar no link "$1"'
   click: "Clicar em $1"
+  openContextMenu: "Abrir menu de contexto de $1"
   typeIntoField: "Digitar no campo $1 $2"
   typeInto: "Digitar em $1"
   copyFrom: "Copiar de $1"

@@ -1,9 +1,10 @@
-import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Globe, Shield, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Globe, Shield, Sparkles, Star, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_ID, isPresetModel } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
+import { DEFAULT_SCREENSHOT_TIMING, SCREENSHOT_TIMINGS, type ScreenshotTiming } from '@/core/capture/screenshot-timing';
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
@@ -19,6 +20,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
+  const [screenshotTiming, setScreenshotTiming] = useState<ScreenshotTiming>(DEFAULT_SCREENSHOT_TIMING);
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -29,15 +31,20 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage', 'blurPresets']).then((result) => {
-      const p = (result.aiProvider as AIProviderKey) || 'openai';
-      setProvider(p);
-      setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
-      if (result.aiApiKey) setApiKey(result.aiApiKey as string);
-      if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
-      if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
-      if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
-    });
+    localStorage
+      .get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage', 'blurPresets', 'screenshotTiming'])
+      .then((result) => {
+        const p = (result.aiProvider as AIProviderKey) || 'openai';
+        setProvider(p);
+        setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
+        if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+        if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
+        if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
+        if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
+        if (result.screenshotTiming && result.screenshotTiming in SCREENSHOT_TIMINGS) {
+          setScreenshotTiming(result.screenshotTiming as ScreenshotTiming);
+        }
+      });
   }, []);
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
@@ -53,6 +60,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       aiBaseUrl: baseUrl.trim(),
       aiLanguage,
       blurPresets,
+      screenshotTiming,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -188,6 +196,34 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        <div className="border border-border rounded-[10px] p-3.5 space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+              <Timer size={14} className="text-accent" />
+            </div>
+            <span className="text-xs font-bold text-foreground">{i18n.t('settings.captureTiming')}</span>
+          </div>
+
+          <div>
+            <label htmlFor="screenshot-timing" className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.screenshotDelay')}
+            </label>
+            <select
+              id="screenshot-timing"
+              value={screenshotTiming}
+              onChange={(e) => setScreenshotTiming(e.target.value as ScreenshotTiming)}
+              className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
+            >
+              <option value="fast">{i18n.t('settings.captureTimingFast')}</option>
+              <option value="normal">{i18n.t('settings.captureTimingNormal')}</option>
+              <option value="slow">{i18n.t('settings.captureTimingSlow')}</option>
+            </select>
+            <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+              {i18n.t('settings.captureTimingHelp')}
+            </p>
           </div>
         </div>
 

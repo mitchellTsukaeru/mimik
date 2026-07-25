@@ -1,24 +1,19 @@
 import PQueue from 'p-queue';
+import { localStorage } from '@/lib/browser-api';
 import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
 import { extractElementMeta } from '../dom/element-meta';
 import { findFocusableAncestor, isMimikElement, isNavigatingClick, isTextField } from '../dom/element-utils';
+import { getScreenshotDelayMs } from '../screenshot-timing';
 import { InputSession } from './input-session';
 
 const DEDUP_MS = 300;
 const DRAG_MIN_PX = 30;
 const INTERCEPT_DELAY_MS = 100;
-const PAINT_FRAMES = 3;
-
-function waitForPaint(): Promise<void> {
-  return new Promise((resolve) => {
-    let remaining = PAINT_FRAMES;
-    const tick = () => {
-      if (--remaining <= 0) resolve();
-      else requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  });
+async function waitForScreenshotDelay(): Promise<void> {
+  const { screenshotTiming } = await localStorage.get(['screenshotTiming']);
+  const delayMs = getScreenshotDelayMs(screenshotTiming);
+  await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
 }
 
 let lastClickTarget: Element | null = null;
@@ -26,6 +21,20 @@ let lastClickTime = 0;
 
 export interface CaptureHandle {
   stop: () => void;
+}
+
+export interface CaptureActionSnapshot {
+  action: string;
+  elementMeta: ReturnType<typeof extractElementMeta>;
+  domContext: ReturnType<typeof extractDOMContext>;
+}
+
+export function snapshotCaptureAction(action: string, target: HTMLElement): CaptureActionSnapshot {
+  return {
+    action,
+    elementMeta: extractElementMeta(target),
+    domContext: extractDOMContext(target, action),
+  };
 }
 
 const PASSIVE_CAPTURE = { capture: true, passive: true } as const;
@@ -47,6 +56,7 @@ class CaptureController {
     this.listeners = [
       ['click', this.onClick.bind(this), ACTIVE_CAPTURE],
       ['auxclick', this.onAuxClick.bind(this), ACTIVE_CAPTURE],
+      ['contextmenu', this.onContextMenu.bind(this), ACTIVE_CAPTURE],
       ['keydown', this.onKeydown.bind(this), ACTIVE_CAPTURE],
       ['input', this.onInput.bind(this), PASSIVE_CAPTURE],
       ['focusout', this.onFocusOut.bind(this), PASSIVE_CAPTURE],
@@ -66,14 +76,19 @@ class CaptureController {
     }
   }
 
-  private async captureAction(action: string, target: HTMLElement) {
-    await waitForPaint();
+  private async captureAction(snapshot: CaptureActionSnapshot) {
+    await waitForScreenshotDelay();
     await sendMessage('captureStep', {
       guideId: this.guideId,
-      action,
-      elementMeta: extractElementMeta(target),
-      domContext: extractDOMContext(target, action),
+      ...snapshot,
     });
+  }
+
+  private enqueueCaptureAction(action: string, target: HTMLElement) {
+    // Capture coordinates and context during the event. A click can synchronously
+    // open a modal and detach the target before the delayed screenshot is taken.
+    const snapshot = snapshotCaptureAction(action, target);
+    this.queue.add(() => this.captureAction(snapshot));
   }
 
   private onClick(e: Event) {
@@ -99,7 +114,7 @@ class CaptureController {
     if (isNavigatingClick(target)) {
       me.preventDefault();
       me.stopImmediatePropagation();
-      this.queue.add(() => this.captureAction('click', target));
+      this.enqueueCaptureAction('click', target);
       const anchor = target.closest('a[href]') as HTMLAnchorElement;
       if (anchor) {
         const href = anchor.href;
@@ -112,15 +127,27 @@ class CaptureController {
       return;
     }
 
-    this.queue.add(() => this.captureAction('click', target));
+    this.enqueueCaptureAction('click', target);
   }
 
   private onAuxClick(e: Event) {
+    const me = e as MouseEvent;
+    // Right-clicks are captured by contextmenu so web-app menus have a chance
+    // to render before the delayed screenshot. Keep auxclick for middle-clicks.
+    if (me.button === 2) return;
+    const raw = me.target;
+    if (!raw || !(raw instanceof Element)) return;
+    const target = findFocusableAncestor(raw);
+    if (isMimikElement(target)) return;
+    this.enqueueCaptureAction('auxclick', target);
+  }
+
+  private onContextMenu(e: Event) {
     const raw = (e as MouseEvent).target;
     if (!raw || !(raw instanceof Element)) return;
     const target = findFocusableAncestor(raw);
     if (isMimikElement(target)) return;
-    this.queue.add(() => this.captureAction('auxclick', target));
+    this.enqueueCaptureAction('contextmenu', target);
   }
 
   private onKeydown(e: Event) {
@@ -134,7 +161,7 @@ class CaptureController {
     }
 
     if (isTextField(target)) return;
-    this.queue.add(() => this.captureAction(`keydown:${ke.key}`, target));
+    this.enqueueCaptureAction(`keydown:${ke.key}`, target);
   }
 
   private onInput(e: Event) {
@@ -151,7 +178,7 @@ class CaptureController {
       return;
 
     if (target instanceof HTMLSelectElement) {
-      this.queue.add(() => this.captureAction('input', target));
+      this.enqueueCaptureAction('input', target);
       return;
     }
 
@@ -181,7 +208,7 @@ class CaptureController {
         ? ((e as ClipboardEvent).target as HTMLElement)
         : document.activeElement;
     if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
-    this.queue.add(() => this.captureAction(e.type, target));
+    this.enqueueCaptureAction(e.type, target);
   }
 
   private onPointerDown(e: Event) {
@@ -204,7 +231,7 @@ class CaptureController {
 
     if (dx >= DRAG_MIN_PX || dy >= DRAG_MIN_PX) {
       const target = findFocusableAncestor(this.dragStartElement);
-      if (!isMimikElement(target)) this.queue.add(() => this.captureAction('drag', target));
+      if (!isMimikElement(target)) this.enqueueCaptureAction('drag', target);
     }
 
     this.dragStartX = this.dragStartY = null;
@@ -213,7 +240,7 @@ class CaptureController {
 
   private onDragEnd(e: Event) {
     if (!e.target || !(e.target instanceof Element) || isMimikElement(e.target)) return;
-    this.queue.add(() => this.captureAction('drag', findFocusableAncestor(e.target as Element)));
+    this.enqueueCaptureAction('drag', findFocusableAncestor(e.target as Element));
   }
 
   stop() {

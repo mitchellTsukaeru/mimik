@@ -77,6 +77,11 @@ describe('buildFallbackDescription', () => {
     expect(result).toBe('steps.copyFrom[Code block]');
   });
 
+  it('generates a context-menu description', () => {
+    const result = buildFallbackDescription('contextmenu', makeMeta({ textContent: 'Test' }));
+    expect(result).toBe('steps.openContextMenu[Test]');
+  });
+
   it('generates paste description', () => {
     const result = buildFallbackDescription('paste', makeMeta({ ariaLabel: 'Input field' }));
     expect(result).toBe('steps.pasteInto[Input field]');
