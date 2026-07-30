@@ -27,9 +27,19 @@ export interface CaptureStepData {
   action: string;
   elementMeta: ElementMeta;
   domContext?: DOMContext;
+  captureId?: string;
+  eventId?: string;
 }
 
 export type CaptureStepResponse = { stepId: string } | { ignored: true } | { error: string };
+
+export interface PrepareCaptureData {
+  captureId: string;
+}
+
+export interface PrepareCaptureResponse {
+  prepared: boolean;
+}
 
 export interface UpdateInputStepData {
   stepId: string;
@@ -93,6 +103,7 @@ interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
+  prepareCapture(data: PrepareCaptureData): PrepareCaptureResponse;
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;

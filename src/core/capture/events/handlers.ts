@@ -10,6 +10,7 @@ import { InputSession } from './input-session';
 const DEDUP_MS = 300;
 const DRAG_MIN_PX = 30;
 const INTERCEPT_DELAY_MS = 100;
+
 async function waitForScreenshotDelay(): Promise<void> {
   const { screenshotTiming } = await localStorage.get(['screenshotTiming']);
   const delayMs = getScreenshotDelayMs(screenshotTiming);
@@ -18,6 +19,18 @@ async function waitForScreenshotDelay(): Promise<void> {
 
 let lastClickTarget: Element | null = null;
 let lastClickTime = 0;
+
+interface PendingClickCapture {
+  captureId: string;
+  target: HTMLElement;
+  ready: Promise<unknown>;
+}
+
+interface CaptureDeliveryOptions {
+  captureId?: string;
+  eventId?: string;
+  ready?: Promise<unknown>;
+}
 
 export interface CaptureHandle {
   stop: () => void;
@@ -47,6 +60,7 @@ class CaptureController {
   private dragStartX: number | null = null;
   private dragStartY: number | null = null;
   private dragStartElement: Element | null = null;
+  private pendingClickCapture: PendingClickCapture | null = null;
 
   constructor(
     private guideId: string,
@@ -60,13 +74,13 @@ class CaptureController {
       ['keydown', this.onKeydown.bind(this), ACTIVE_CAPTURE],
       ['input', this.onInput.bind(this), PASSIVE_CAPTURE],
       ['focusout', this.onFocusOut.bind(this), PASSIVE_CAPTURE],
+      ['pointerdown', this.onPointerDown.bind(this), PASSIVE_CAPTURE],
     ];
     if (isTopFrame) {
       this.listeners.push(
         ['copy', this.onClipboard.bind(this), PASSIVE_CAPTURE],
         ['paste', this.onClipboard.bind(this), PASSIVE_CAPTURE],
         ['cut', this.onClipboard.bind(this), PASSIVE_CAPTURE],
-        ['pointerdown', this.onPointerDown.bind(this), PASSIVE_CAPTURE],
         ['pointerup', this.onPointerUp.bind(this), PASSIVE_CAPTURE],
         ['dragend', this.onDragEnd.bind(this), PASSIVE_CAPTURE],
       );
@@ -76,19 +90,22 @@ class CaptureController {
     }
   }
 
-  private async captureAction(snapshot: CaptureActionSnapshot) {
-    await waitForScreenshotDelay();
+  private async captureAction(snapshot: CaptureActionSnapshot, options: CaptureDeliveryOptions = {}) {
+    await options.ready?.catch(() => {});
+    if (!options.captureId) await waitForScreenshotDelay();
     await sendMessage('captureStep', {
       guideId: this.guideId,
       ...snapshot,
+      captureId: options.captureId,
+      eventId: options.eventId,
     });
   }
 
-  private enqueueCaptureAction(action: string, target: HTMLElement) {
+  private enqueueCaptureAction(action: string, target: HTMLElement, options: CaptureDeliveryOptions = {}) {
     // Capture coordinates and context during the event. A click can synchronously
     // open a modal and detach the target before the delayed screenshot is taken.
     const snapshot = snapshotCaptureAction(action, target);
-    this.queue.add(() => this.captureAction(snapshot));
+    this.queue.add(() => this.captureAction(snapshot, options));
   }
 
   private onClick(e: Event) {
@@ -103,6 +120,9 @@ class CaptureController {
     lastClickTarget = target;
     lastClickTime = now;
 
+    const pending = this.pendingClickCapture?.target === target ? this.pendingClickCapture : null;
+    this.pendingClickCapture = null;
+
     if (isTextField(target)) {
       this.queue.add(async () => {
         if (this.input.active && this.input.target !== target) await this.input.finalize();
@@ -111,10 +131,16 @@ class CaptureController {
       return;
     }
 
+    const captureOptions = {
+      captureId: pending?.captureId,
+      eventId: `${this.guideId}:click:${me.timeStamp}:${me.button}`,
+      ready: pending?.ready,
+    };
+
     if (isNavigatingClick(target)) {
       me.preventDefault();
       me.stopImmediatePropagation();
-      this.enqueueCaptureAction('click', target);
+      this.enqueueCaptureAction('click', target, captureOptions);
       const anchor = target.closest('a[href]') as HTMLAnchorElement;
       if (anchor) {
         const href = anchor.href;
@@ -127,7 +153,7 @@ class CaptureController {
       return;
     }
 
-    this.enqueueCaptureAction('click', target);
+    this.enqueueCaptureAction('click', target, captureOptions);
   }
 
   private onAuxClick(e: Event) {
@@ -213,6 +239,19 @@ class CaptureController {
 
   private onPointerDown(e: Event) {
     const pe = e as PointerEvent;
+    const raw = pe.target;
+    if (pe.button === 0 && raw instanceof Element) {
+      const target = findFocusableAncestor(raw);
+      if (!isMimikElement(target) && !isTextField(target)) {
+        const captureId = `${this.guideId}:pointer:${performance.timeOrigin}:${pe.timeStamp}:${pe.pointerId}`;
+        this.pendingClickCapture = {
+          captureId,
+          target,
+          ready: sendMessage('prepareCapture', { captureId }),
+        };
+      }
+    }
+
     this.dragStartX = pe.pageX;
     this.dragStartY = pe.pageY;
     this.dragStartElement = pe.target instanceof Element ? pe.target : null;

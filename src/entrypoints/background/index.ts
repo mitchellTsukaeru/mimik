@@ -10,7 +10,7 @@ import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { registerNavigationListeners } from './navigation';
 import { createRecordingControls } from './recording-controls';
-import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
+import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep, prepareCapture } from './step-pipeline';
 import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
 
 async function generateTitleInBackground(guideId: string) {
@@ -170,6 +170,11 @@ export default defineBackground(() => {
   onMessage('captureStep', async ({ data }) => {
     await waitUntilReady();
     return handleCaptureStep(data);
+  });
+
+  onMessage('prepareCapture', async ({ data }) => {
+    await waitUntilReady();
+    return { prepared: await prepareCapture(data.captureId) };
   });
 
   onMessage('updateInputStep', async ({ data }) => {
