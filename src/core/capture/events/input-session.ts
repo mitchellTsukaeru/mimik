@@ -9,34 +9,68 @@ export class InputSession {
   target: HTMLElement | null = null;
 
   private guideId: string;
+  private startPromise: Promise<void> | null = null;
+  private pendingUpdate: { description: string; inputValue?: string } | null = null;
 
   constructor(guideId: string) {
     this.guideId = guideId;
   }
 
   get active() {
-    return this.stepId !== null;
+    return this.target !== null;
   }
 
-  async start(target: HTMLElement) {
-    const res = await sendMessage('captureStep', {
-      guideId: this.guideId,
-      action: 'input',
-      elementMeta: extractElementMeta(target),
-      domContext: extractDOMContext(target, 'input'),
+  start(target: HTMLElement): Promise<void> {
+    if (this.target === target) {
+      if (this.startPromise) return this.startPromise;
+      if (this.stepId) return Promise.resolve();
+    }
+
+    this.target = target;
+    const promise = this.createStep(target).finally(() => {
+      if (this.startPromise === promise) this.startPromise = null;
     });
-    if ('stepId' in res) {
-      this.stepId = res.stepId;
-      this.target = target;
+    this.startPromise = promise;
+    return promise;
+  }
+
+  private async createStep(target: HTMLElement): Promise<void> {
+    try {
+      const res = await sendMessage('captureStep', {
+        guideId: this.guideId,
+        action: 'input',
+        elementMeta: extractElementMeta(target),
+        domContext: extractDOMContext(target, 'input'),
+      });
+      if ('stepId' in res) {
+        this.stepId = res.stepId;
+        const pending = this.pendingUpdate;
+        this.pendingUpdate = null;
+        if (pending) this.sendUpdate(pending.description, pending.inputValue);
+      }
+    } finally {
+      if (!this.stepId && this.target === target) {
+        this.target = null;
+        this.pendingUpdate = null;
+      }
     }
   }
 
   update(target: HTMLElement) {
-    if (!this.stepId) return;
+    if (this.target !== target) return;
     const val = getFieldValue(target);
     const desc = val ? `Type "${val}" in ${getFieldLabel(target)}` : `Clear ${getFieldLabel(target)}`;
-    sendMessage('updateInputStep', { stepId: this.stepId, description: desc, inputValue: val || undefined }).catch(
-      (err) => logger.warn('Failed to update input step', err),
+    if (!this.stepId) {
+      this.pendingUpdate = { description: desc, inputValue: val || undefined };
+      return;
+    }
+    this.sendUpdate(desc, val || undefined);
+  }
+
+  private sendUpdate(description: string, inputValue?: string) {
+    if (!this.stepId) return;
+    sendMessage('updateInputStep', { stepId: this.stepId, description, inputValue }).catch((err) =>
+      logger.warn('Failed to update input step', err),
     );
   }
 
@@ -46,6 +80,7 @@ export class InputSession {
     const stepId = this.stepId;
     this.stepId = null;
     this.target = null;
+    this.pendingUpdate = null;
     await sendMessage('finalizeInputStep', {
       stepId,
       elementMeta: extractElementMeta(target),

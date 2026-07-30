@@ -1,0 +1,84 @@
+// @vitest-environment happy-dom
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { InputSession } from '../input-session';
+
+const mocks = vi.hoisted(() => ({
+  sendMessage: vi.fn(),
+}));
+
+vi.mock('@/lib/messaging', () => ({
+  sendMessage: mocks.sendMessage,
+}));
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+}
+
+function createInput() {
+  const input = document.createElement('input');
+  input.placeholder = 'e.g., Sales, Marketing';
+  document.body.appendChild(input);
+  return input;
+}
+
+describe('InputSession', () => {
+  beforeEach(() => {
+    document.body.replaceChildren();
+    vi.clearAllMocks();
+  });
+
+  it('creates one step when start is requested repeatedly for the same field', async () => {
+    const capture = deferred<{ stepId: string }>();
+    mocks.sendMessage.mockImplementation((message: string) => {
+      if (message === 'captureStep') return capture.promise;
+      return Promise.resolve({ updated: true });
+    });
+    const input = createInput();
+    const session = new InputSession('guide-1');
+
+    const first = session.start(input);
+    const duplicate = session.start(input);
+
+    expect(session.active).toBe(true);
+    expect(duplicate).toBe(first);
+    expect(mocks.sendMessage).toHaveBeenCalledTimes(1);
+
+    capture.resolve({ stepId: 'step-1' });
+    await Promise.all([first, duplicate]);
+    await session.start(input);
+
+    expect(mocks.sendMessage).toHaveBeenCalledTimes(1);
+    expect(session.stepId).toBe('step-1');
+  });
+
+  it('applies the latest typed value after the pending step is created', async () => {
+    const capture = deferred<{ stepId: string }>();
+    mocks.sendMessage.mockImplementation((message: string) => {
+      if (message === 'captureStep') return capture.promise;
+      return Promise.resolve({ updated: true });
+    });
+    const input = createInput();
+    const session = new InputSession('guide-1');
+
+    const starting = session.start(input);
+    input.value = 'Test';
+    session.update(input);
+    input.value = 'Test Group';
+    session.update(input);
+
+    capture.resolve({ stepId: 'step-1' });
+    await starting;
+
+    expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
+    expect(mocks.sendMessage).toHaveBeenLastCalledWith('updateInputStep', {
+      stepId: 'step-1',
+      description: 'Type "Test Group" in e.g., Sales, Marketing',
+      inputValue: 'Test Group',
+    });
+  });
+});
