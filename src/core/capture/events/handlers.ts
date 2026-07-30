@@ -210,15 +210,16 @@ class CaptureController {
 
     if (target instanceof HTMLInputElement && (target.type === 'checkbox' || target.type === 'radio')) return;
 
-    if (this.input.active && this.input.target !== target) {
-      this.queue.add(() => this.input.finalize());
+    if (this.input.active && this.input.target === target) {
+      this.input.update(target);
+      return;
     }
 
-    if (!this.input.active) {
-      this.queue.add(() => this.input.start(target));
-    } else {
+    this.queue.add(async () => {
+      if (this.input.active && this.input.target !== target) await this.input.finalize();
+      await this.input.start(target);
       this.input.update(target);
-    }
+    });
   }
 
   private onFocusOut(e: Event) {
