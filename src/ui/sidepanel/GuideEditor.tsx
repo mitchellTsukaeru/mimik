@@ -1,13 +1,16 @@
-import { ArrowLeft, Layers, Maximize2, Play } from 'lucide-react';
+import type { JSONContent } from '@tiptap/core';
+import { ArrowLeft, Layers, Maximize2, Play, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import {
   deleteStep,
   getGuide,
+  insertManualStep,
   reorderSteps,
   updateGuideTitle,
   updateScreenshotBlob,
   updateStepDescription,
+  updateStepRichDescription,
 } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
@@ -16,6 +19,8 @@ import { getMostCommonDomain } from '@/lib/utils';
 import { Input } from '@/ui/components/ui/input';
 import EmptyGuideState from '@/ui/shared/EmptyGuideState';
 import FaviconImg from '@/ui/shared/FaviconImg';
+import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
+import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
 import StepCard from './StepCard';
@@ -40,6 +45,8 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
+  const [addingAt, setAddingAt] = useState<number | null>(null);
+  const [improving, setImproving] = useState(false);
 
   const loadGuide = useCallback(async () => {
     const result = await getGuide(guideId);
@@ -69,6 +76,20 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
       if (!prev) return prev;
       return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
     });
+  }, []);
+
+  const handleRichDescriptionChange = useCallback(async (stepId: string, content: JSONContent, plainText: string) => {
+    await updateStepRichDescription(stepId, content);
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            steps: prev.steps.map((step) =>
+              step.id === stepId ? { ...step, description: plainText, richDescription: content } : step,
+            ),
+          }
+        : prev,
+    );
   }, []);
 
   const handleDeleteStep = useCallback(
@@ -125,6 +146,17 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
       {blurringStepId && blurScreenshot && (
         <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
+      {addingAt !== null && (
+        <ManualStepDialog
+          onCancel={() => setAddingAt(null)}
+          onAdd={async (content, screenshot) => {
+            await insertManualStep(guideId, addingAt, content, screenshot);
+            setAddingAt(null);
+            await loadGuide();
+          }}
+        />
+      )}
+      {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <button
@@ -159,12 +191,20 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
           </button>
           {data.steps.length > 0 && (
             <button
+              onClick={() => setImproving(true)}
+              className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary"
+              title="Improve guide"
+            >
+              <Sparkles size={15} />
+            </button>
+          )}
+          {data.steps.length > 0 && (
+            <button
               onClick={async () => {
                 await sendMessage('startGuideMe', { guideId });
                 onGuideMe?.(guideId);
               }}
-              disabled={!data.steps.some((s) => s.elementMeta)}
-              className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+              className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary"
               title={i18n.t('editor.guideMe')}
             >
               <Play size={15} />
@@ -196,7 +236,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
       </div>
       <div className="px-4 pt-1 pb-4 flex-1 flex flex-col">
         {data.steps.length === 0 ? (
-          <EmptyGuideState />
+          <EmptyGuideState onAdd={() => setAddingAt(0)} />
         ) : (
           data.steps.map((step, idx) => (
             <div key={step.id}>
@@ -207,6 +247,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
                 step={step}
                 screenshot={data.screenshots.get(step.id)}
                 onDescriptionChange={handleDescriptionChange}
+                onRichDescriptionChange={handleRichDescriptionChange}
                 onDelete={handleDeleteStep}
                 onBlur={(stepId) => setBlurringStepId(stepId)}
                 dragHandleProps={{
@@ -237,6 +278,18 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
                   },
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setAddingAt(idx + 1)}
+                className="group/add mx-auto mt-2 mb-3 flex items-center gap-1 text-muted-foreground hover:text-accent"
+              >
+                <span className="h-px w-8 bg-border group-hover/add:bg-accent/50" />
+                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card group-hover/add:border-accent group-hover/add:bg-secondary">
+                  <Plus size={10} />
+                </span>
+                <span className="h-px w-8 bg-border group-hover/add:bg-accent/50" />
+                <span className="sr-only">Add step after step {idx + 1}</span>
+              </button>
             </div>
           ))
         )}

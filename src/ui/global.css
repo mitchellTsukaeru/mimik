@@ -43,6 +43,14 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
+.mimik-rich-text { min-height: 1.5rem; outline: none; font-size: 13px; line-height: 1.45; color: var(--color-foreground); }
+.mimik-rich-text p { margin: 0.15rem 0; }
+.mimik-rich-text ul { list-style: disc; padding-left: 1.25rem; }
+.mimik-rich-text ol { list-style: decimal; padding-left: 1.25rem; }
+.mimik-rich-text code { border-radius: 0.25rem; background: var(--color-secondary); padding: 0.05rem 0.25rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+.mimik-rich-text a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.mimik-rich-text-compact { min-height: 1.2rem; }
+
 @keyframes gradient-text {
   0% { background-position: 100% 50%; }
   100% { background-position: -100% 50%; }

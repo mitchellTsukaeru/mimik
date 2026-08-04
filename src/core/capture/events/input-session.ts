@@ -12,7 +12,10 @@ export class InputSession {
   private startPromise: Promise<void> | null = null;
   private pendingUpdate: { description: string; inputValue?: string } | null = null;
 
-  constructor(guideId: string) {
+  constructor(
+    guideId: string,
+    private captureToken = '',
+  ) {
     this.guideId = guideId;
   }
 
@@ -38,6 +41,8 @@ export class InputSession {
     try {
       const res = await sendMessage('captureStep', {
         guideId: this.guideId,
+        captureToken: this.captureToken,
+        pageUrl: window.location.href,
         action: 'input',
         elementMeta: extractElementMeta(target),
         domContext: extractDOMContext(target, 'input'),
@@ -69,9 +74,13 @@ export class InputSession {
 
   private sendUpdate(description: string, inputValue?: string) {
     if (!this.stepId) return;
-    sendMessage('updateInputStep', { stepId: this.stepId, description, inputValue }).catch((err) =>
-      logger.warn('Failed to update input step', err),
-    );
+    sendMessage('updateInputStep', {
+      guideId: this.guideId,
+      captureToken: this.captureToken,
+      stepId: this.stepId,
+      description,
+      inputValue,
+    }).catch((err) => logger.warn('Failed to update input step', err));
   }
 
   async finalize() {
@@ -82,6 +91,8 @@ export class InputSession {
     this.target = null;
     this.pendingUpdate = null;
     await sendMessage('finalizeInputStep', {
+      guideId: this.guideId,
+      captureToken: this.captureToken,
       stepId,
       elementMeta: extractElementMeta(target),
       domContext: extractDOMContext(target, 'input'),

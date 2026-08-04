@@ -65,6 +65,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Captura em pausa
+  pause: Pausar gravação
+  resume: Retomar gravação
+  unsupportedPage: Abra um site normal antes de retomar
   recording: "Gravando \xB7 $1 passo"
   recordingPlural: "Gravando \xB7 $1 passos"
   readyTitle: "Pronto pra gravar!"
@@ -188,13 +191,13 @@ onboarding:
   aiMessage: Conecta tua chave API e, se quiser, um endpoint compatível para gerar descrições com IA. Dá pra mudar depois nos ajustes.
   aiGenerated: Gerado por IA
   aiGeneratedDescription: Descrição gerada por IA
-  blurStepLabel: Passo 2 de 3
+  blurStepLabel: Passo 1 de 2
   blurTitle: Desfoque inteligente
   blurMessage: Desfoca automaticamente dados sensíveis nas capturas. Escolha quais padrões ativar.
   screenshotPreview: Pré-visualização
   notEnabled: Não ativado
   categoriesProtected: "$1 categorias protegidas"
-  pinStepLabel: Passo 3 de 3
+  pinStepLabel: Passo 2 de 2
   pinTitle: Fixa o Mimik
   pinMessage: Fixa a extensão na barra pra ter acesso rápido. Clica no ícone de quebra-cabeça no Chrome e fixa o Mimik.
   pinStep1Title: Clica no ícone de quebra-cabeça
@@ -240,4 +243,5 @@ export:
 
 background:
   guideOnDomain: "Guia em $1"
+  multiSiteGuide: Guia multissite
   newGuide: Novo guia

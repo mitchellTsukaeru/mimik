@@ -76,6 +76,8 @@ describe('InputSession', () => {
 
     expect(mocks.sendMessage).toHaveBeenCalledTimes(2);
     expect(mocks.sendMessage).toHaveBeenLastCalledWith('updateInputStep', {
+      guideId: 'guide-1',
+      captureToken: '',
       stepId: 'step-1',
       description: 'Type "Test Group" in e.g., Sales, Marketing',
       inputValue: 'Test Group',

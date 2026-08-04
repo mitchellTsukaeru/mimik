@@ -33,7 +33,7 @@ interface CaptureDeliveryOptions {
 }
 
 export interface CaptureHandle {
-  stop: () => void;
+  stop: () => Promise<void>;
 }
 
 export interface CaptureActionSnapshot {
@@ -64,9 +64,10 @@ class CaptureController {
 
   constructor(
     private guideId: string,
+    private captureToken: string,
     isTopFrame: boolean,
   ) {
-    this.input = new InputSession(guideId);
+    this.input = new InputSession(guideId, captureToken);
     this.listeners = [
       ['click', this.onClick.bind(this), ACTIVE_CAPTURE],
       ['auxclick', this.onAuxClick.bind(this), ACTIVE_CAPTURE],
@@ -95,6 +96,8 @@ class CaptureController {
     if (!options.captureId) await waitForScreenshotDelay();
     await sendMessage('captureStep', {
       guideId: this.guideId,
+      captureToken: this.captureToken,
+      pageUrl: window.location.href,
       ...snapshot,
       captureId: options.captureId,
       eventId: options.eventId,
@@ -283,16 +286,17 @@ class CaptureController {
     this.enqueueCaptureAction('drag', findFocusableAncestor(e.target as Element));
   }
 
-  stop() {
+  async stop(): Promise<void> {
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }
-    this.queue.add(() => this.input.finalize());
+    await this.queue.add(() => this.input.finalize());
+    await this.queue.onIdle();
   }
 }
 
-export function startCapture(guideId: string, isTopFrame = true): CaptureHandle {
-  const controller = new CaptureController(guideId, isTopFrame);
+export function startCapture(guideId: string, captureToken: string, isTopFrame = true): CaptureHandle {
+  const controller = new CaptureController(guideId, captureToken, isTopFrame);
   return {
     stop: () => controller.stop(),
   };

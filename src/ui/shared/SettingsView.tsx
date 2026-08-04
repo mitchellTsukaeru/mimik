@@ -20,6 +20,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
+  const [aiIncludeScreenshots, setAiIncludeScreenshots] = useState(false);
   const [screenshotTiming, setScreenshotTiming] = useState<ScreenshotTiming>(DEFAULT_SCREENSHOT_TIMING);
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
@@ -32,7 +33,16 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   useEffect(() => {
     localStorage
-      .get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage', 'blurPresets', 'screenshotTiming'])
+      .get([
+        'aiApiKey',
+        'aiProvider',
+        'aiModel',
+        'aiBaseUrl',
+        'aiLanguage',
+        'aiIncludeScreenshots',
+        'blurPresets',
+        'screenshotTiming',
+      ])
       .then((result) => {
         const p = (result.aiProvider as AIProviderKey) || 'openai';
         setProvider(p);
@@ -40,9 +50,11 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
         if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
+        setAiIncludeScreenshots(result.aiIncludeScreenshots === true);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
-        if (result.screenshotTiming && result.screenshotTiming in SCREENSHOT_TIMINGS) {
-          setScreenshotTiming(result.screenshotTiming as ScreenshotTiming);
+        const storedTiming = result.screenshotTiming as string | undefined;
+        if (storedTiming && storedTiming in SCREENSHOT_TIMINGS) {
+          setScreenshotTiming(storedTiming as ScreenshotTiming);
         }
       });
   }, []);
@@ -59,6 +71,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       aiModel: model,
       aiBaseUrl: baseUrl.trim(),
       aiLanguage,
+      aiIncludeScreenshots,
       blurPresets,
       screenshotTiming,
     });
@@ -197,6 +210,23 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               ))}
             </select>
           </div>
+
+          <label className="flex items-start gap-2.5 rounded-lg border border-border p-3 cursor-pointer hover:border-accent/60">
+            <input
+              type="checkbox"
+              checked={aiIncludeScreenshots}
+              onChange={(event) => setAiIncludeScreenshots(event.target.checked)}
+              className="mt-0.5 accent-accent"
+            />
+            <span>
+              <span className="block text-[11px] font-semibold text-foreground">
+                Include screenshots when improving guides
+              </span>
+              <span className="block text-[10px] leading-relaxed text-muted-foreground mt-0.5">
+                Off by default. Mimik asks again before sending up to eight downscaled saved screenshots.
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="border border-border rounded-[10px] p-3.5 space-y-3">

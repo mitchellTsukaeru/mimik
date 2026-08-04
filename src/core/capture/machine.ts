@@ -3,20 +3,26 @@ import { assign, createMachine, type SnapshotFrom } from 'xstate';
 export const CaptureState = {
   IDLE: 'IDLE',
   RECORDING: 'RECORDING',
+  PAUSED: 'PAUSED',
 } as const;
 
 export type CaptureStateValue = (typeof CaptureState)[keyof typeof CaptureState];
 
-type CaptureEvent =
-  | { type: 'START_RECORDING'; url?: string }
+export type CaptureEvent =
+  | { type: 'START_RECORDING'; url?: string; tabId?: number; captureToken: string }
+  | { type: 'PAUSE_RECORDING' }
+  | { type: 'RESUME_RECORDING'; url?: string; tabId?: number; captureToken: string }
+  | { type: 'HANDOFF_TAB'; url?: string; tabId?: number; captureToken: string }
   | { type: 'STOP_RECORDING' }
   | { type: 'USER_ACTION' }
   | { type: 'URL_CHANGED'; url: string };
 
-interface CaptureContext {
+export interface CaptureContext {
   currentGuideId: string | null;
   stepCount: number;
   currentUrl: string;
+  activeTabId: number | null;
+  captureToken: string | null;
 }
 
 export const captureMachine = createMachine({
@@ -30,6 +36,8 @@ export const captureMachine = createMachine({
     currentGuideId: null,
     stepCount: 0,
     currentUrl: '',
+    activeTabId: null,
+    captureToken: null,
   },
   states: {
     [CaptureState.IDLE]: {
@@ -40,6 +48,8 @@ export const captureMachine = createMachine({
             currentGuideId: () => crypto.randomUUID(),
             stepCount: 0,
             currentUrl: ({ event }) => event.url ?? '',
+            activeTabId: ({ event }) => event.tabId ?? null,
+            captureToken: ({ event }) => event.captureToken,
           }),
         },
       },
@@ -52,6 +62,19 @@ export const captureMachine = createMachine({
             currentGuideId: null,
             stepCount: 0,
             currentUrl: '',
+            activeTabId: null,
+            captureToken: null,
+          }),
+        },
+        PAUSE_RECORDING: {
+          target: CaptureState.PAUSED,
+          actions: assign({ activeTabId: null }),
+        },
+        HANDOFF_TAB: {
+          actions: assign({
+            currentUrl: ({ event }) => event.url ?? '',
+            activeTabId: ({ event }) => event.tabId ?? null,
+            captureToken: ({ event }) => event.captureToken,
           }),
         },
         USER_ACTION: {
@@ -62,6 +85,28 @@ export const captureMachine = createMachine({
         URL_CHANGED: {
           actions: assign({
             currentUrl: ({ event }) => event.url,
+          }),
+        },
+      },
+    },
+    [CaptureState.PAUSED]: {
+      on: {
+        RESUME_RECORDING: {
+          target: CaptureState.RECORDING,
+          actions: assign({
+            currentUrl: ({ event }) => event.url ?? '',
+            activeTabId: ({ event }) => event.tabId ?? null,
+            captureToken: ({ event }) => event.captureToken,
+          }),
+        },
+        STOP_RECORDING: {
+          target: CaptureState.IDLE,
+          actions: assign({
+            currentGuideId: null,
+            stepCount: 0,
+            currentUrl: '',
+            activeTabId: null,
+            captureToken: null,
           }),
         },
       },

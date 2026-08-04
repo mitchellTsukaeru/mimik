@@ -37,7 +37,7 @@ Ce dépôt est le fork Tsukaeru de [Mimik de Westpoint](https://github.com/westp
   - [🎬 Capture automatique](#-capture-automatique)
   - [📸 Captures annotées](#-captures-annotées)
   - [🔒 Smart Blur](#-smart-blur)
-  - [🧠 Descriptions par IA (optionnel)](#-descriptions-par-ia-optionnel)
+  - [🧠 Amélioration par IA (optionnel)](#-amélioration-par-ia-optionnel)
   - [▶️ Lecture Guide Me](#️-lecture-guide-me)
   - [📤 Export multi-format](#-export-multi-format)
   - [🌍 Multilingue](#-multilingue)
@@ -57,7 +57,7 @@ Ce dépôt est le fork Tsukaeru de [Mimik de Westpoint](https://github.com/westp
 
 ## 👋 Pour commencer
 
-Mimik transforme n'importe quelle tâche répétitive dans le navigateur en un guide documenté et partageable en quelques secondes. Tout tourne dans ton navigateur, sans backend, compte ou télémétrie. Les données du flux restent sur ton appareil, sauf si tu actives l'IA optionnelle, qui envoie uniquement un contexte textuel léger directement au fournisseur choisi.
+Mimik transforme n'importe quelle tâche répétitive dans le navigateur en un guide documenté et partageable en quelques secondes. Tout tourne dans ton navigateur, sans backend, compte ou télémétrie. Les données restent sur ton appareil sauf si tu lances explicitement Améliorer le guide, qui indique le texte et les captures représentatives facultatives envoyés directement au fournisseur choisi.
 
 Que tu documentes des outils internes, que tu rédiges des tutoriels, ou que tu formes un collègue, Mimik capture chaque clic, frappe et navigation pour que tu puisses te concentrer sur le reste.
 
@@ -94,6 +94,8 @@ La fusion intelligente des événements écarte les clics rapprochés sur des é
 
 Démarre ou arrête l'enregistrement depuis n'importe où avec <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, ou <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> sous macOS.
 
+Mets l'enregistrement en pause, passe sur un autre site HTTP ou HTTPS, puis reprends pour documenter un flux multi-plateforme dans un seul guide. Mimik suit l'onglet actif, conserve l'URL source et rejette les événements tardifs des anciens onglets.
+
 <div align="right">
 
 [![Back to top][back-to-top]](#readme-top)
@@ -102,7 +104,9 @@ Démarre ou arrête l'enregistrement depuis n'importe où avec <kbd>Ctrl</kbd>+<
 
 ### 📸 Captures annotées
 
-Chaque étape reçoit une capture avec l'élément cliqué mis en surbrillance et zoomé. Pas besoin de rogner à la main, pas d'outil d'annotation à apprendre. Mimik trouve la partie importante de la page et la cadre pour toi.
+Chaque étape capturée peut inclure une capture avec l'élément cliqué mis en surbrillance et zoomé. Tu peux aussi insérer n'importe où une étape manuelle avec du texte enrichi, une image importée, ou les deux. Les images PNG, JPEG et WebP sont décodées et réencodées localement pour retirer leurs métadonnées.
+
+Toutes les étapes prennent en charge le gras, l'italique, le soulignement, le code en ligne, les liens sûrs, les listes et annuler/rétablir. La mise en forme est conservée à l'export.
 
 <div align="right">
 
@@ -122,13 +126,13 @@ Besoin de cacher quelque chose de précis ? Le sélecteur manuel te laisse chois
 
 </div>
 
-### 🧠 Descriptions par IA (optionnel)
+### 🧠 Amélioration par IA (optionnel)
 
-Apporte ta propre clé API (OpenAI ou Anthropic) et Mimik génère des descriptions naturelles comme *« Clique sur le bouton **Envoyer** pour sauvegarder »* au lieu de `Click button "Submit"`. Les modèles inclus sont GPT-5.6 Luna, Terra et Sol, ainsi que Claude Haiku 4.5, Sonnet 5, Opus 4.8 et Fable 5. Tu peux aussi saisir tout identifiant de modèle pris en charge par le fournisseur sélectionné.
+L'enregistrement n'appelle jamais l'IA. Mimik crée localement des descriptions et un titre déterministe. Tu peux ensuite lancer **Améliorer le guide** pour demander un titre et des descriptions plus précis, puis sélectionner chaque proposition avant de l'appliquer.
 
-Pour utiliser des passerelles moins coûteuses, des alternatives hébergées ou une inférence locale, saisis une URL de base d'API compatible facultative et l'identifiant exact du modèle exposé par ce point de terminaison. Les points de terminaison compatibles OpenAI utilisent Chat Completions ; ceux compatibles Anthropic utilisent l'API Messages. Laisse l'URL vide pour utiliser le fournisseur officiel.
+Utilise ta propre clé OpenAI ou Anthropic, un modèle prédéfini ou personnalisé et, si besoin, une URL de base compatible. La requête exclut les valeurs saisies, les identifiants, le JSON de texte enrichi et les étapes manuelles.
 
-Les descriptions et les titres sont générés à partir d'un contexte textuel léger, pas des captures. Cela coûte nettement moins cher que d'envoyer chaque capture à un modèle vision. Les sorties peuvent être générées en anglais, espagnol, portugais brésilien, français ou japonais.
+L'analyse des captures est désactivée par défaut. Si tu l'actives pour une requête, Mimik affiche le fournisseur, le modèle et le nombre exact d'images avant d'envoyer jusqu'à huit captures représentatives, réduites localement et avec les floutages enregistrés. Si le modèle refuse les images, tu peux relancer explicitement en texte seul.
 
 <div align="right">
 
@@ -174,7 +178,7 @@ L'interface est disponible en anglais, espagnol, portugais brésilien et frança
 
 ### 💾 Stockage 100% local
 
-Tes guides, étapes, captures, clés API et URL d'API compatibles restent sur ton appareil. Pas de backend, de compte ou de télémétrie. Lorsque l'IA est activée, Mimik envoie uniquement la clé et le contexte textuel léger au fournisseur officiel ou au point de terminaison compatible configuré ; aucun serveur Mimik ne les reçoit.
+Tes guides, contenus enrichis, captures, clés API et URL compatibles restent sur ton appareil. Pas de backend, de compte ou de télémétrie. Seule une demande explicite d'amélioration envoie le texte annoncé et, si tu l'actives séparément, des captures représentatives au fournisseur configuré. Aucun serveur Mimik ne les reçoit.
 
 <div align="right">
 

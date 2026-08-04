@@ -1,14 +1,17 @@
-import { Play } from 'lucide-react';
+import type { JSONContent } from '@tiptap/core';
+import { Play, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { i18n } from '#imports';
 import {
   deleteStep,
   getGuide,
+  insertManualStep,
   onGuidesChanged,
   updateGuideTitle,
   updateScreenshotBlob,
   updateStepDescription,
+  updateStepRichDescription,
 } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { openSidebar } from '@/lib/browser-api';
@@ -16,6 +19,8 @@ import { sendMessage } from '@/lib/messaging';
 import { formatDate, getMostCommonDomain } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import FaviconImg from '@/ui/shared/FaviconImg';
+import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
+import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
 import BlurCanvas from '@/ui/sidepanel/BlurCanvas';
 import GuideStepList from './components/GuideStepList';
 
@@ -41,6 +46,8 @@ export default function GuideContent({ guideId }: GuideContentProps) {
   const [title, setTitle] = useState('');
   const [typingTitle, setTypingTitle] = useState<string | null>(null);
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
+  const [addingAt, setAddingAt] = useState<number | null>(null);
+  const [improving, setImproving] = useState(false);
   const titleRef = useRef('');
 
   const loadGuide = useCallback(async () => {
@@ -85,6 +92,20 @@ export default function GuideContent({ guideId }: GuideContentProps) {
       if (!prev) return prev;
       return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
     });
+  }, []);
+
+  const handleRichDescriptionChange = useCallback(async (stepId: string, content: JSONContent, plainText: string) => {
+    await updateStepRichDescription(stepId, content);
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            steps: prev.steps.map((step) =>
+              step.id === stepId ? { ...step, description: plainText, richDescription: content } : step,
+            ),
+          }
+        : prev,
+    );
   }, []);
 
   const handleDeleteStep = useCallback(
@@ -143,6 +164,17 @@ export default function GuideContent({ guideId }: GuideContentProps) {
       {blurringStepId && blurScreenshot && (
         <BlurCanvas screenshot={blurScreenshot} onSave={handleBlurSave} onCancel={() => setBlurringStepId(null)} />
       )}
+      {addingAt !== null && (
+        <ManualStepDialog
+          onCancel={() => setAddingAt(null)}
+          onAdd={async (content, screenshot) => {
+            await insertManualStep(guideId, addingAt, content, screenshot);
+            setAddingAt(null);
+            await loadGuide();
+          }}
+        />
+      )}
+      {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
 
       <div
         className={
@@ -214,12 +246,19 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         )}
         {data.steps.length > 0 && (
           <button
+            onClick={() => setImproving(true)}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent bg-secondary hover:bg-border/60 px-3 py-0.5 rounded-full transition-colors ml-auto"
+          >
+            <Sparkles size={11} /> Improve guide
+          </button>
+        )}
+        {data.steps.length > 0 && (
+          <button
             onClick={() => {
               openSidebar();
               void sendMessage('startGuideMe', { guideId });
             }}
-            disabled={!data.steps.some((s) => s.elementMeta)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed ml-auto"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors"
           >
             <Play size={11} />
             {i18n.t('fullview_guideMe')}
@@ -232,9 +271,11 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         steps={data.steps}
         screenshots={data.screenshots}
         onDescriptionChange={handleDescriptionChange}
+        onRichDescriptionChange={handleRichDescriptionChange}
         onDelete={handleDeleteStep}
         onBlur={(stepId) => setBlurringStepId(stepId)}
         onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}
+        onAdd={setAddingAt}
       />
     </div>
   );

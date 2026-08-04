@@ -1,6 +1,7 @@
 import { i18n } from '#imports';
 import { blobToBase64, escapeHtml, extractDomain, fetchFaviconBase64, formatDate } from '@/core/export/utils';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import { richTextToHtml } from './rich-text';
 
 export async function exportGuideAsHTML(
   guide: Guide,
@@ -24,7 +25,7 @@ export async function exportGuideAsHTML(
         <div style="display:flex;gap:16px;align-items:flex-start;">
           <span style="font-size:32px;font-weight:700;color:#818CF8;line-height:1;flex-shrink:0;min-width:48px;">${stepNumber}</span>
           <div style="flex:1;min-width:0;">
-            <p style="margin:0;font-size:16px;line-height:1.6;color:#1E1B4B;">${escapeHtml(step.description)}</p>
+            <div style="margin:0;font-size:16px;line-height:1.6;color:#1E1B4B;">${richTextToHtml(step.richDescription, step.description)}</div>
             ${imgHtml}
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { i18n } from '#imports';
 import { db } from './db';
+import { plainTextDocument, richTextToPlainText } from './rich-text';
 import type { Guide, Screenshot, Step } from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
@@ -25,6 +26,7 @@ export async function createGuide(guideId: string): Promise<Guide> {
     stepIds: [],
     starred: false,
     deletedAt: null,
+    titleEdited: false,
   };
   await db.guides.add(guide);
   return guide;
@@ -67,6 +69,13 @@ export async function getTrashedGuides(): Promise<Guide[]> {
 }
 
 export async function updateGuideTitle(id: string, title: string): Promise<void> {
+  await db.guides.update(id, { title, titleEdited: true, updatedAt: Date.now() });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function updateGuideDefaultTitle(id: string, title: string): Promise<void> {
+  const guide = await db.guides.get(id);
+  if (!guide || guide.titleEdited) return;
   await db.guides.update(id, { title, updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
@@ -123,7 +132,83 @@ export async function createStep(step: Step): Promise<void> {
 }
 
 export async function updateStepDescription(stepId: string, description: string): Promise<void> {
-  await db.steps.update(stepId, { description });
+  await db.steps.update(stepId, { description, richDescription: plainTextDocument(description) });
+}
+
+export async function updateStepRichDescription(
+  stepId: string,
+  richDescription: Step['richDescription'],
+): Promise<void> {
+  const step = await db.steps.get(stepId);
+  if (!step || !richDescription) return;
+  const description = richTextToPlainText(richDescription, step.description);
+  await db.steps.update(stepId, { description, richDescription });
+}
+
+export async function insertManualStep(
+  guideId: string,
+  index: number,
+  richDescription: NonNullable<Step['richDescription']>,
+  screenshot?: Omit<Screenshot, 'id' | 'stepId'>,
+): Promise<Step> {
+  return db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    const guide = await db.guides.get(guideId);
+    if (!guide) throw new Error('Guide not found');
+    const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    const insertionIndex = Math.max(0, Math.min(index, steps.length));
+    for (let i = insertionIndex; i < steps.length; i++) {
+      await db.steps.update(steps[i].id, { index: i + 1 });
+    }
+
+    const stepId = crypto.randomUUID();
+    let screenshotId: string | undefined;
+    if (screenshot) {
+      screenshotId = crypto.randomUUID();
+      await db.screenshots.add({ ...screenshot, id: screenshotId, stepId });
+    }
+    const step: Step = {
+      id: stepId,
+      guideId,
+      index: insertionIndex,
+      description: richTextToPlainText(richDescription),
+      richDescription,
+      kind: 'manual',
+      action: 'manual',
+      url: '',
+      timestamp: Date.now(),
+      screenshotId,
+    };
+    await db.steps.add(step);
+    const orderedIds = [...steps.map((item) => item.id)];
+    orderedIds.splice(insertionIndex, 0, stepId);
+    await db.guides.update(guideId, { stepIds: orderedIds, updatedAt: Date.now() });
+    notifyGuidesChanged({ type: 'mutated' });
+    return step;
+  });
+}
+
+export async function applyGuideImprovements(
+  guideId: string,
+  baselineTitle: string,
+  proposedTitle: string | undefined,
+  descriptions: Array<{ stepId: string; original: string; proposed: string }>,
+): Promise<void> {
+  await db.transaction('rw', db.guides, db.steps, async () => {
+    const guide = await db.guides.get(guideId);
+    if (!guide) throw new Error('Guide not found');
+    if (proposedTitle && guide.title === baselineTitle) {
+      await db.guides.update(guideId, { title: proposedTitle, titleEdited: true, updatedAt: Date.now() });
+    }
+    for (const proposal of descriptions) {
+      const step = await db.steps.get(proposal.stepId);
+      if (!step || step.description !== proposal.original) continue;
+      await db.steps.update(step.id, {
+        description: proposal.proposed,
+        richDescription: plainTextDocument(proposal.proposed),
+      });
+    }
+  });
+  notifyGuidesChanged({ type: 'mutated' });
 }
 
 export async function getStepsForGuide(guideId: string): Promise<Step[]> {

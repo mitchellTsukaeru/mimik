@@ -1,6 +1,7 @@
 import { i18n } from '#imports';
 import { blobToBase64, extractDomain, formatDate } from '@/core/export/utils';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import { richTextToMarkdown } from './rich-text';
 
 export async function exportGuideAsMarkdown(
   guide: Guide,
@@ -18,7 +19,17 @@ export async function exportGuideAsMarkdown(
 
   for (const step of steps) {
     const num = String(step.index + 1).padStart(2, '0');
-    lines.push(`## ${i18n.t('export.stepLabel', [num])}: ${step.description}`, '');
+    if (step.richDescription) {
+      lines.push(
+        `## ${i18n.t('export.stepLabel', [num])}`,
+        '',
+        richTextToMarkdown(step.richDescription, step.description),
+        '',
+      );
+    } else {
+      // Keep legacy guides byte-compatible until a step is rich-text edited.
+      lines.push(`## ${i18n.t('export.stepLabel', [num])}: ${step.description}`, '');
+    }
 
     const screenshot = screenshots.get(step.id);
     if (screenshot) {

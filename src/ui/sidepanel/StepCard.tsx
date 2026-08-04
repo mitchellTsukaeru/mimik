@@ -1,8 +1,11 @@
+import type { JSONContent } from '@tiptap/core';
 import { Check, Copy, EyeOff, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
+import { stepRichText } from '@/core/guides/rich-text';
 import type { Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
+import { RichTextEditor } from '@/ui/shared/RichTextEditor';
 import ZoomScreenshot from './ZoomScreenshot';
 
 interface DragHandleProps {
@@ -15,6 +18,7 @@ interface StepCardProps {
   step: Step;
   screenshot: Screenshot | undefined;
   onDescriptionChange: (stepId: string, description: string) => void;
+  onRichDescriptionChange?: (stepId: string, content: JSONContent, plainText: string) => void;
   onDelete: (stepId: string) => void;
   dragHandleProps?: DragHandleProps;
   onBlur?: (stepId: string) => void;
@@ -28,18 +32,29 @@ export default function StepCard({
   onDelete,
   dragHandleProps,
   onBlur,
+  onRichDescriptionChange,
 }: StepCardProps) {
-  const [description, setDescription] = useState(step.description);
   const [dragOver, setDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    setDescription(step.description);
-  }, [step.description]);
+  const [content, setContent] = useState(() => stepRichText(step.description, step.richDescription));
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSave = useRef<{ content: JSONContent; plainText: string } | null>(null);
 
-  const handleDescriptionBlur = () => {
-    if (description !== step.description) onDescriptionChange(step.id, description);
-  };
+  useEffect(
+    () => setContent(stepRichText(step.description, step.richDescription)),
+    [step.description, step.richDescription],
+  );
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      const pending = pendingSave.current;
+      if (!pending) return;
+      if (onRichDescriptionChange) onRichDescriptionChange(step.id, pending.content, pending.plainText);
+      else onDescriptionChange(step.id, pending.plainText);
+    },
+    [onDescriptionChange, onRichDescriptionChange, step.id],
+  );
 
   const handleDelete = () => {
     if (window.confirm(i18n.t('editor.deleteThisStep'))) onDelete(step.id);
@@ -93,13 +108,37 @@ export default function StepCard({
           <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-bold shrink-0 bg-primary text-primary-foreground">
             {step.index + 1}
           </span>
-          <textarea
-            className="w-full text-[13px] font-medium resize-none outline-none border-0 bg-transparent p-0 leading-snug flex-1 text-foreground"
-            value={description}
-            rows={1}
-            onChange={(e) => setDescription(e.target.value)}
-            onBlur={handleDescriptionBlur}
-          />
+          <div
+            className="min-w-0 flex-1"
+            onBlur={() => {
+              if (saveTimer.current) clearTimeout(saveTimer.current);
+              const pending = pendingSave.current;
+              if (!pending) return;
+              pendingSave.current = null;
+              if (onRichDescriptionChange) onRichDescriptionChange(step.id, pending.content, pending.plainText);
+              else onDescriptionChange(step.id, pending.plainText);
+            }}
+          >
+            {step.kind === 'manual' && (
+              <span className="inline-flex mb-1 text-[9px] font-semibold uppercase tracking-wide text-accent">
+                Manual note
+              </span>
+            )}
+            <RichTextEditor
+              compact
+              content={content}
+              onChange={(next, plainText) => {
+                setContent(next);
+                pendingSave.current = { content: next, plainText };
+                if (saveTimer.current) clearTimeout(saveTimer.current);
+                saveTimer.current = setTimeout(() => {
+                  pendingSave.current = null;
+                  if (onRichDescriptionChange) onRichDescriptionChange(step.id, next, plainText);
+                  else onDescriptionChange(step.id, plainText);
+                }, 350);
+              }}
+            />
+          </div>
         </div>
         <div className="flex items-center justify-end mt-1">
           <div className="flex items-center gap-0.5">

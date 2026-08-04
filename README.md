@@ -36,8 +36,9 @@ This repository is Tsukaeru's fork of [Westpoint's Mimik](https://github.com/wes
 - [✨ Features](#-features)
   - [🎬 Auto-capture](#-auto-capture)
   - [📸 Annotated screenshots](#-annotated-screenshots)
+  - [✍️ Manual steps and rich text](#️-manual-steps-and-rich-text)
   - [🔒 Smart Blur](#-smart-blur)
-  - [🧠 AI descriptions (optional)](#-ai-descriptions-optional)
+  - [🧠 Improve Guide AI (optional)](#-improve-guide-ai-optional)
   - [▶️ Guide Me replay](#️-guide-me-replay)
   - [📤 Multi-format export](#-multi-format-export)
   - [🌍 Multi-language](#-multi-language)
@@ -57,7 +58,7 @@ This repository is Tsukaeru's fork of [Westpoint's Mimik](https://github.com/wes
 
 ## 👋 Getting Started
 
-Mimik turns any repetitive browser task into a documented, shareable guide in seconds. It runs entirely in your browser with no backend, account, or telemetry. Workflow data stays on your device unless you enable optional AI, which sends only lightweight text context directly to your chosen provider.
+Mimik turns any repetitive browser task into a documented, shareable guide in seconds. It runs entirely in your browser with no backend, account, or telemetry. Workflow data stays on your device unless you explicitly run Improve Guide, which discloses the text and optional representative screenshots sent directly to your chosen AI provider.
 
 Whether you're documenting internal tools, writing product tutorials, or onboarding a teammate, Mimik captures every click, keystroke, and navigation automatically so you can focus on the work.
 
@@ -94,6 +95,8 @@ Smart event merging deduplicates rapid clicks on nearby elements, so your guides
 
 Start or stop recording from anywhere with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, or <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> on macOS.
 
+Pause a recording, switch to another HTTP or HTTPS website, and resume to document multi-platform workflows as one ordered guide. Mimik follows the active tab, preserves each step's source URL, and rejects late events from tabs that are no longer being recorded. Unsupported browser, extension, and store pages pause capture safely.
+
 <div align="right">
 
 [![Back to top][back-to-top]](#readme-top)
@@ -102,9 +105,21 @@ Start or stop recording from anywhere with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd
 
 ### 📸 Annotated screenshots
 
-Every step gets a screenshot with the clicked element highlighted and zoomed in. No manual cropping, no annotation tools to learn. Mimik figures out the important part of the page and frames it for you.
+Every captured step can include a screenshot with the clicked element highlighted and zoomed in. No manual cropping, no annotation tools to learn. Mimik figures out the important part of the page and frames it for you.
 
 Choose the screenshot delay in Settings to match the application you are documenting: **Fast** captures after 150 ms, **Normal** (the default) after 500 ms, and **Slow** after one second. Mimik records the target immediately when you act, so delayed menus and dialogs can appear without moving the highlight to a replacement element.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### ✍️ Manual steps and rich text
+
+Insert an informational step anywhere in a guide, with formatted text, an imported screenshot, or both. PNG, JPEG, and WebP images can be selected, dropped, or pasted. Mimik decodes and re-encodes imported images locally to remove metadata and constrain excessive dimensions.
+
+Every step supports paragraphs, bold, italic, underline, inline code, safe links, numbered lists, bullet lists, and undo/redo. Rich content is stored as structured data while a synchronized plain-text version remains available for search, accessibility, Guide Me, legacy guides, and AI context.
 
 <div align="right">
 
@@ -124,13 +139,15 @@ Need to blur something custom? The manual blur picker lets you select any DOM el
 
 </div>
 
-### 🧠 AI descriptions (optional)
+### 🧠 Improve Guide AI (optional)
 
-Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable step descriptions like *"Click the **Submit** button to save changes"* instead of `Click button "Submit"`. Presets include GPT-5.6 Luna, Terra, and Sol, plus Claude Haiku 4.5, Sonnet 5, Opus 4.8, and Fable 5. You can also enter any model ID supported by your selected provider.
+Recording never calls an AI provider. Mimik creates local fallback descriptions and a deterministic title such as `Guide on example.com` or `Multi-site guide`. After recording, you can explicitly choose **Improve guide** to request a more specific title and clearer descriptions. Nothing is applied automatically: review and select each proposed change first.
 
-For lower-cost gateways, hosted alternatives, or local inference, enter an optional compatible API base URL and the exact model ID exposed by that endpoint. OpenAI-compatible endpoints use Chat Completions; Anthropic-compatible endpoints use the Messages API. Leave the URL blank to use the official provider.
+Bring your own OpenAI or Anthropic API key, use a preset or exact custom model ID, and optionally configure a compatible API base URL for a gateway, hosted alternative, or local inference endpoint. API settings remain optional and are no longer part of first-run onboarding.
 
-Descriptions and guide titles are generated from lightweight text context, not screenshots. This is substantially cheaper than sending every screenshot to a vision model. Output can be generated in English, Spanish, Brazilian Portuguese, French, or Japanese.
+Improve Guide sends step order, action types, plain descriptions, safe target labels, and hostnames. It excludes typed input values, credentials, rich-text JSON, manual steps, and intentionally formatted descriptions from rewrite proposals. Output can be requested in English, Spanish, Brazilian Portuguese, French, or Japanese.
+
+Screenshot understanding is off by default. If you enable it for a request, Mimik discloses the provider, model, accompanying text categories, and exact number of images before sending up to eight representative, locally downscaled screenshots. Saved blur edits are respected. If the configured model rejects images, you can explicitly retry with text only.
 
 <div align="right">
 
@@ -140,7 +157,7 @@ Descriptions and guide titles are generated from lightweight text context, not s
 
 ### ▶️ Guide Me replay
 
-Replay any guide live on a real page. Mimik highlights the next element to click, tracks your progress step by step, and advances automatically as you interact. Perfect for onboarding teammates or walking through a process yourself.
+Replay any guide live on a real page. Mimik highlights captured elements, tracks your progress, and advances automatically as you interact. Manual steps are shown as informational checkpoints and advance only when you choose **Next**, including guides made entirely from manual content.
 
 <div align="right">
 
@@ -152,9 +169,9 @@ Replay any guide live on a real page. Mimik highlights the next element to click
 
 Share guides in whatever format fits your workflow:
 
-- **HTML**: self-contained, share anywhere, base64-embedded images
-- **PDF**: print-ready, A4 portrait with auto page breaks and annotated screenshots
-- **Markdown**: paste into Notion, GitHub, internal docs, wikis
+- **HTML**: self-contained, share anywhere, base64-embedded images and formatted step content
+- **PDF**: print-ready A4 portrait with auto page breaks, screenshots, lists, and inline emphasis
+- **Markdown**: formatted text and images for Notion, GitHub, internal docs, and wikis
 
 All exports are generated client-side. Nothing touches a server.
 
@@ -176,7 +193,7 @@ The interface is available in English, Spanish, Brazilian Portuguese, and French
 
 ### 💾 100% local storage
 
-Guides, steps, screenshots, API keys, and compatible API URLs live on your device. There's no backend, no account, no telemetry. When AI is enabled, Mimik sends the key and lightweight text context only to the official provider or compatible endpoint you configured; Mimik has no server that receives them.
+Guides, rich-text steps, screenshots, API keys, and compatible API URLs live on your device. There's no backend, no account, no telemetry. Only an explicit Improve Guide request sends the disclosed text and, when separately enabled, representative screenshots directly to the official provider or compatible endpoint you configured. Mimik has no server that receives them.
 
 <div align="right">
 
