@@ -1,3 +1,5 @@
+import type { JSONContent } from '@tiptap/core';
+import { Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { reorderSteps } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
@@ -10,9 +12,11 @@ interface GuideStepListProps {
   steps: Step[];
   screenshots: Map<string, Screenshot>;
   onDescriptionChange: (stepId: string, description: string) => void;
+  onRichDescriptionChange: (stepId: string, content: JSONContent, plainText: string) => void;
   onDelete: (stepId: string) => void;
   onBlur: (stepId: string) => void;
   onReorder: (newSteps: Step[]) => void;
+  onAdd: (index: number) => void;
 }
 
 export default function GuideStepList({
@@ -20,9 +24,11 @@ export default function GuideStepList({
   steps,
   screenshots,
   onDescriptionChange,
+  onRichDescriptionChange,
   onDelete,
   onBlur,
   onReorder,
+  onAdd,
 }: GuideStepListProps) {
   const { scrollToStepId, setActiveStepId } = useFullview((s) => ({
     scrollToStepId: s.scrollToStepId,
@@ -70,9 +76,7 @@ export default function GuideStepList({
     setDragOverIndex(null);
   };
 
-  if (steps.length === 0) {
-    return <EmptyGuideState />;
-  }
+  if (steps.length === 0) return <EmptyGuideState onAdd={() => onAdd(0)} />;
 
   return (
     <div className="space-y-6">
@@ -92,6 +96,7 @@ export default function GuideStepList({
             step={step}
             screenshot={screenshots.get(step.id)}
             onDescriptionChange={onDescriptionChange}
+            onRichDescriptionChange={onRichDescriptionChange}
             onDelete={onDelete}
             onBlur={onBlur}
             dragHandleProps={{
@@ -106,6 +111,18 @@ export default function GuideStepList({
               onDragEnd: handleDragEnd,
             }}
           />
+          <button
+            type="button"
+            onClick={() => onAdd(idx + 1)}
+            className="group/add mx-auto mt-3 flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground hover:text-accent focus-visible:text-accent"
+          >
+            <span className="h-px w-16 bg-border group-hover/add:bg-accent/50" />
+            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card group-hover/add:border-accent group-hover/add:bg-secondary">
+              <Plus size={11} />
+            </span>
+            <span className="h-px w-16 bg-border group-hover/add:bg-accent/50" />
+            <span className="sr-only">Add step after step {idx + 1}</span>
+          </button>
         </div>
       ))}
     </div>

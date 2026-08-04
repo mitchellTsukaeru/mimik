@@ -634,7 +634,7 @@ export default function OnboardingApp() {
   return (
     <div className="min-h-screen bg-card text-foreground">
       <style>{`@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}`}</style>
-      {step === 0 && <WelcomeStep onNext={next} />}
+      {step === 0 && <WelcomeStep onNext={() => setStep(2)} />}
       {step === 1 && <AISetupStep onNext={next} onSkip={skip} />}
       {step === 2 && <SmartBlurStep onNext={next} onSkip={skip} />}
       {step === 3 && <PinExtensionStep onNext={next} onSkip={skip} />}

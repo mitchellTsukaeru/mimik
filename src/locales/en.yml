@@ -64,6 +64,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Capture paused
+  pause: Pause recording
+  resume: Resume recording
+  unsupportedPage: Switch to a regular website before resuming
   recording: "Recording \xB7 $1 step"
   recordingPlural: "Recording \xB7 $1 steps"
   readyTitle: Ready to capture!
@@ -187,13 +190,13 @@ onboarding:
   aiMessage: Connect your own API key and optionally a compatible endpoint for AI-generated step descriptions. You can change this later in settings.
   aiGenerated: AI generated
   aiGeneratedDescription: AI-generated description
-  blurStepLabel: Step 2 of 3
+  blurStepLabel: Step 1 of 2
   blurTitle: Smart Blur
   blurMessage: Automatically blur sensitive information in screenshots. Choose which patterns to detect.
   screenshotPreview: Screenshot preview
   notEnabled: Not enabled
   categoriesProtected: "$1 categories protected"
-  pinStepLabel: Step 3 of 3
+  pinStepLabel: Step 2 of 2
   pinTitle: Pin Mimik
   pinMessage: Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
   pinStep1Title: Click the puzzle icon
@@ -239,4 +242,5 @@ export:
 
 background:
   guideOnDomain: "Guide on $1"
+  multiSiteGuide: Multi-site guide
   newGuide: New Guide

@@ -1,4 +1,5 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
+import type { GuideImprovementProposal } from '@/core/capture/ai/improve';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
 import type { ElementMeta } from '@/core/guides/types';
@@ -7,6 +8,7 @@ export interface GetStateResponse {
   state: CaptureStateValue;
   stepCount: number;
   currentGuideId: string | null;
+  captureToken: string | null;
 }
 
 export interface StartRecordingData {
@@ -24,6 +26,8 @@ export interface StopRecordingResponse {
 
 export interface CaptureStepData {
   guideId: string;
+  captureToken: string;
+  pageUrl: string;
   action: string;
   elementMeta: ElementMeta;
   domContext?: DOMContext;
@@ -42,6 +46,8 @@ export interface PrepareCaptureResponse {
 }
 
 export interface UpdateInputStepData {
+  guideId: string;
+  captureToken: string;
   stepId: string;
   description: string;
   inputValue?: string;
@@ -52,6 +58,8 @@ export interface UpdateInputStepResponse {
 }
 
 export interface FinalizeInputStepData {
+  guideId: string;
+  captureToken: string;
   stepId: string;
   elementMeta: ElementMeta;
   domContext?: DOMContext;
@@ -99,10 +107,21 @@ export interface ExitBlurModeResponse {
   exited: boolean;
 }
 
+export interface ImproveGuideData {
+  guideId: string;
+  includeScreenshots: boolean;
+}
+
+export type ImproveGuideResponse =
+  | { success: true; proposal: GuideImprovementProposal }
+  | { success: false; error: string; needsConfiguration?: boolean; imageUnsupported?: boolean };
+
 interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
+  pauseRecording(): { paused: boolean };
+  resumeRecording(): { resumed: boolean; error?: string };
   prepareCapture(data: PrepareCaptureData): PrepareCaptureResponse;
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
@@ -113,6 +132,7 @@ interface MimikProtocol {
   guideMePrev(data: GuideMe_PrevData): GuideMe_PrevResponse;
   enterBlurMode(): EnterBlurModeResponse;
   exitBlurMode(): ExitBlurModeResponse;
+  improveGuide(data: ImproveGuideData): ImproveGuideResponse;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();

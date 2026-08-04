@@ -6,6 +6,7 @@ import { CaptureState } from './machine';
 export class CaptureSession {
   private capture: CaptureHandle | null = null;
   private activeGuideId: string | null = null;
+  private captureToken: string | null = null;
   private disabled = false;
 
   constructor() {
@@ -24,7 +25,7 @@ export class CaptureSession {
     return this.activeGuideId;
   }
 
-  start(guideId: string): void {
+  start(guideId: string, captureToken: string): void {
     if (this.disabled) return;
     if (this.isActive) {
       this.stop();
@@ -32,17 +33,20 @@ export class CaptureSession {
 
     logger.info('Capture started → guideId:', guideId);
     this.activeGuideId = guideId;
+    this.captureToken = captureToken;
     const isTopFrame = window.self === window.top;
-    this.capture = startCapture(guideId, isTopFrame);
+    this.capture = startCapture(guideId, captureToken, isTopFrame);
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     if (!this.isActive) return;
 
     logger.info('Capture stopped → guideId:', this.activeGuideId);
-    this.capture?.stop();
+    const capture = this.capture;
     this.capture = null;
     this.activeGuideId = null;
+    this.captureToken = null;
+    await capture?.stop();
   }
 
   private syncWithBackground(): void {
@@ -50,7 +54,7 @@ export class CaptureSession {
       .then((res) => {
         if (this.disabled) return;
         if (res.state === CaptureState.RECORDING && res.currentGuideId) {
-          this.start(res.currentGuideId);
+          if (res.captureToken) this.start(res.currentGuideId, res.captureToken);
         }
       })
       .catch(() => {});

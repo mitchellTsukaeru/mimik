@@ -53,6 +53,7 @@ export function getStateUpdate(): PanelStateUpdate {
     state: snap.value as CaptureStateValue,
     stepCount: snap.context.stepCount,
     currentGuideId: snap.context.currentGuideId,
+    captureToken: snap.context.captureToken,
   };
 }
 

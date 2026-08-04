@@ -1,8 +1,8 @@
 import { browser, defineBackground, i18n } from '#imports';
-import { getDefaultAIModel } from '@/core/capture/ai/models';
-import { generateGuideTitle } from '@/core/capture/ai/title';
+import { improveGuide } from '@/core/capture/ai/improve';
+import { CaptureState } from '@/core/capture/machine';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
-import { createGuide, getGuideDomain, getStepsForGuide, updateGuideTitle } from '@/core/guides/service';
+import { createGuide, getGuide, getStepsForGuide, updateGuideDefaultTitle } from '@/core/guides/service';
 import { getActiveTab, localStorage, sendMessageToTab, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
@@ -11,51 +11,26 @@ import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady 
 import { registerNavigationListeners } from './navigation';
 import { createRecordingControls } from './recording-controls';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep, prepareCapture } from './step-pipeline';
-import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
+import { isInjectableTab, showNotificationOnTab, startCaptureOnTab, stopCaptureOnTab } from './tab-manager';
 
 async function generateTitleInBackground(guideId: string) {
   try {
-    const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
-    if (!settings.aiApiKey) {
-      const domain = await getGuideDomain(guideId);
-      await updateGuideTitle(
-        guideId,
-        domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
-      );
-      return;
-    }
-
     const steps = await getStepsForGuide(guideId);
-    const allSteps = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
-    if (allSteps.length === 0) return;
-    const stepsWithUrl = allSteps.length > 15 ? [...allSteps.slice(0, 10), ...allSteps.slice(-5)] : allSteps;
-
-    const provider = (settings.aiProvider as string) || 'openai';
-    const model = (settings.aiModel as string) || getDefaultAIModel(provider);
-    const title = await generateGuideTitle(
-      stepsWithUrl,
-      provider,
-      model,
-      settings.aiApiKey as string,
-      settings.aiBaseUrl as string | undefined,
-    );
-    if (title) {
-      await updateGuideTitle(guideId, title);
-      logger.info('Generated guide title:', title);
-    } else {
-      const domain = await getGuideDomain(guideId);
-      await updateGuideTitle(
-        guideId,
-        domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
-      );
+    const domains = new Set<string>();
+    for (const step of steps) {
+      try {
+        if (step.url) domains.add(new URL(step.url).hostname);
+      } catch {}
     }
+    const title =
+      domains.size === 1
+        ? i18n.t('background.guideOnDomain', [[...domains][0]])
+        : domains.size > 1
+          ? i18n.t('background.multiSiteGuide')
+          : i18n.t('background.newGuide');
+    await updateGuideDefaultTitle(guideId, title);
   } catch (err) {
-    logger.error('Guide title generation failed', err);
-    const domain = await getGuideDomain(guideId);
-    await updateGuideTitle(
-      guideId,
-      domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide'),
-    );
+    logger.error('Default guide title generation failed', err);
   }
 }
 
@@ -65,8 +40,8 @@ const recordingControls = createRecordingControls({
   getActiveTab,
   createGuide,
   showNotificationOnTab,
-  broadcastStartCapture,
-  broadcastStopCapture,
+  startCaptureOnTab,
+  stopCaptureOnTab,
   generateTitle: generateTitleInBackground,
 });
 
@@ -127,8 +102,24 @@ export default defineBackground(() => {
     });
   });
 
-  waitUntilReady().then(() => {
+  waitUntilReady().then(async () => {
     getActor().subscribe(() => broadcastStateToPanel(getStateUpdate()));
+    const restored = getActor().getSnapshot();
+    if (restored.value !== CaptureState.RECORDING || !restored.context.currentGuideId) return;
+    const activeTab = await getActiveTab();
+    if (!activeTab?.id || !isInjectableTab(activeTab)) {
+      getActor().send({ type: 'PAUSE_RECORDING' });
+      return;
+    }
+    const captureToken = crypto.randomUUID();
+    getActor().send({
+      type: 'HANDOFF_TAB',
+      url: activeTab.url,
+      tabId: activeTab.id,
+      captureToken,
+    });
+    const attached = await startCaptureOnTab(activeTab.id, restored.context.currentGuideId, captureToken);
+    if (!attached) getActor().send({ type: 'PAUSE_RECORDING' });
   });
 
   onMessage('getState', async () => {
@@ -146,9 +137,46 @@ export default defineBackground(() => {
     return { success: true, guideId };
   });
 
+  onMessage('pauseRecording', async () => ({ paused: await recordingControls.pause() }));
+
+  onMessage('resumeRecording', async () => recordingControls.resume());
+
+  onMessage('improveGuide', async ({ data }) => {
+    const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage']);
+    if (!settings.aiApiKey) {
+      return { success: false, error: 'Configure an AI provider first', needsConfiguration: true };
+    }
+    const guideData = await getGuide(data.guideId);
+    if (!guideData) return { success: false, error: 'Guide not found' };
+    try {
+      const proposal = await improveGuide(
+        guideData.guide,
+        guideData.steps,
+        guideData.screenshots,
+        {
+          apiKey: settings.aiApiKey as string,
+          provider: (settings.aiProvider as string) || 'openai',
+          model: settings.aiModel as string | undefined,
+          baseUrl: settings.aiBaseUrl as string | undefined,
+          language: settings.aiLanguage as string | undefined,
+        },
+        data.includeScreenshots,
+      );
+      return { success: true, proposal };
+    } catch (err) {
+      logger.error('Improve guide failed', err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'AI improvement failed',
+        imageUnsupported: data.includeScreenshots,
+      };
+    }
+  });
+
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
-    await broadcastStopCapture();
+    const snapshot = getActor().getSnapshot();
+    if (snapshot.context.activeTabId) await stopCaptureOnTab(snapshot.context.activeTabId);
     const activeTab = await getActiveTab();
     if (activeTab?.id) {
       sendMessageToTab(activeTab.id, { type: 'START_BLUR' }).catch(() => {});
@@ -160,16 +188,20 @@ export default defineBackground(() => {
     await waitUntilReady();
     await localStorage.set({ mimikBlurMode: false });
     const actor = getActor();
-    const guideId = actor.getSnapshot().context.currentGuideId;
-    if (guideId) {
-      await broadcastStartCapture(guideId);
+    const snapshot = actor.getSnapshot();
+    if (snapshot.context.currentGuideId && snapshot.context.activeTabId && snapshot.context.captureToken) {
+      await startCaptureOnTab(
+        snapshot.context.activeTabId,
+        snapshot.context.currentGuideId,
+        snapshot.context.captureToken,
+      );
     }
     return { exited: true };
   });
 
-  onMessage('captureStep', async ({ data }) => {
+  onMessage('captureStep', async ({ data, sender }) => {
     await waitUntilReady();
-    return handleCaptureStep(data);
+    return handleCaptureStep(data, sender.tab?.id);
   });
 
   onMessage('prepareCapture', async ({ data }) => {
@@ -179,12 +211,20 @@ export default defineBackground(() => {
 
   onMessage('updateInputStep', async ({ data }) => {
     await waitUntilReady();
+    const snapshot = getActor().getSnapshot();
+    if (snapshot.context.currentGuideId !== data.guideId || snapshot.context.captureToken !== data.captureToken) {
+      return { updated: false };
+    }
     await handleUpdateInputStep(data.stepId, data.description, data.inputValue);
     return { updated: true };
   });
 
   onMessage('finalizeInputStep', async ({ data }) => {
     await waitUntilReady();
+    const snapshot = getActor().getSnapshot();
+    if (snapshot.context.currentGuideId !== data.guideId || snapshot.context.captureToken !== data.captureToken) {
+      return { updated: false };
+    }
     await handleFinalizeInputStep(data.stepId, data.elementMeta, data.domContext);
     return { updated: true };
   });
@@ -193,8 +233,7 @@ export default defineBackground(() => {
     const steps = await getStepsForGuide(data.guideId);
     if (steps.length === 0) return { started: false, error: 'No steps' };
 
-    const firstStep = steps.find((s) => s.elementMeta) ?? steps[0];
-    if (!steps.some((s) => s.elementMeta)) return { started: false, error: 'Guide lacks element metadata' };
+    const firstStep = steps[0];
 
     await startSession(data.guideId, steps.length, firstStep);
 

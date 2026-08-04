@@ -18,6 +18,8 @@ vi.mock('../actor', () => ({
         currentGuideId: 'guide-1',
         currentUrl: 'https://example.com/workflow',
         stepCount: 0,
+        captureToken: 'token-1',
+        activeTabId: 1,
       },
     }),
     send: mocks.actorSend,
@@ -43,6 +45,8 @@ vi.mock('@/lib/browser-api', () => ({
 function captureData(overrides: Partial<CaptureStepData> = {}): CaptureStepData {
   return {
     guideId: 'guide-1',
+    captureToken: 'token-1',
+    pageUrl: 'https://example.com/workflow',
     action: 'click',
     eventId: crypto.randomUUID(),
     elementMeta: {

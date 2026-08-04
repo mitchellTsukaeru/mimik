@@ -1,6 +1,6 @@
 import { i18n } from '#imports';
 
-export default function EmptyGuideState() {
+export default function EmptyGuideState({ onAdd }: { onAdd?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
       <div className="relative">
@@ -26,6 +26,14 @@ export default function EmptyGuideState() {
       </div>
       <p className="text-sm font-medium text-foreground mt-5">{i18n.t('emptyGuide.title')}</p>
       <p className="text-xs text-muted-foreground mt-1">{i18n.t('emptyGuide.subtitle')}</p>
+      {onAdd && (
+        <button
+          onClick={onAdd}
+          className="mt-4 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          Add manual step
+        </button>
+      )}
     </div>
   );
 }

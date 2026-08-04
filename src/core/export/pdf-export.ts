@@ -4,6 +4,56 @@ import { renderScreenshotVariants } from '@/core/export/screenshot-renderer';
 import { blobToDataUrl, extractDomain, fetchFaviconBase64, formatDate } from '@/core/export/utils';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/lib/logger';
+import { type PdfTextLine, type PdfTextRun, richTextToPdfLines } from './rich-text';
+
+function setRunFont(doc: jsPDF, run: PdfTextRun) {
+  if (run.code) doc.setFont('courier', 'normal');
+  else if (run.bold && run.italic) doc.setFont('helvetica', 'bolditalic');
+  else if (run.bold) doc.setFont('helvetica', 'bold');
+  else if (run.italic) doc.setFont('helvetica', 'italic');
+  else doc.setFont('helvetica', 'normal');
+}
+
+function wrapRichLines(doc: jsPDF, source: PdfTextLine[], maxWidth: number): PdfTextLine[] {
+  const wrapped: PdfTextLine[] = [];
+  for (const line of source) {
+    let current: PdfTextRun[] = [];
+    let width = 0;
+    for (const run of line.runs) {
+      for (const token of run.text.split(/(\s+)/)) {
+        if (!token) continue;
+        if (token === '\n') {
+          wrapped.push({ runs: current });
+          current = [];
+          width = 0;
+          continue;
+        }
+        setRunFont(doc, run);
+        const tokenWidth = doc.getTextWidth(token);
+        if (current.length && width + tokenWidth > maxWidth && token.trim()) {
+          wrapped.push({ runs: current });
+          current = [];
+          width = 0;
+        }
+        current.push({ ...run, text: token });
+        width += tokenWidth;
+      }
+    }
+    wrapped.push({ runs: current });
+  }
+  return wrapped;
+}
+
+function drawRichLines(doc: jsPDF, lines: PdfTextLine[], x: number, y: number, lineHeight: number) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    let runX = x;
+    for (const run of lines[lineIndex].runs) {
+      setRunFont(doc, run);
+      doc.text(run.text, runX, y + lineIndex * lineHeight);
+      runX += doc.getTextWidth(run.text);
+    }
+  }
+}
 
 export function fitImageWithin(
   sourceWidth: number,
@@ -130,7 +180,7 @@ export async function exportGuideAsPDF(
     const descWidth = contentWidth - stepIndent;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    const descLines = doc.splitTextToSize(step.description, descWidth);
+    const descLines = wrapRichLines(doc, richTextToPdfLines(step.richDescription, step.description), descWidth);
     const descHeight = descLines.length * 5;
 
     const screenshot = screenshots.get(step.id);
@@ -170,9 +220,8 @@ export async function exportGuideAsPDF(
     doc.text(stepNum, margin, y + 4);
 
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
     doc.setTextColor(30, 27, 75);
-    doc.text(descLines, margin + stepIndent, y + 4);
+    drawRichLines(doc, descLines, margin + stepIndent, y + 4, 5);
     y += descHeight + 6;
 
     if (imgDataUrl) {

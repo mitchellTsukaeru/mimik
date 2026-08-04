@@ -1,3 +1,5 @@
+import type { JSONContent } from '@tiptap/core';
+
 export interface Guide {
   id: string;
   title: string;
@@ -6,6 +8,7 @@ export interface Guide {
   stepIds: string[];
   starred: boolean;
   deletedAt: number | null;
+  titleEdited?: boolean;
 }
 
 export interface Step {
@@ -19,6 +22,8 @@ export interface Step {
   screenshotId?: string;
   elementMeta?: ElementMeta;
   inputValue?: string;
+  kind?: 'captured' | 'manual';
+  richDescription?: JSONContent;
 }
 
 export interface ScreenshotBounds {

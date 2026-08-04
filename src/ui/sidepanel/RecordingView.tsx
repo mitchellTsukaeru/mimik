@@ -1,4 +1,4 @@
-import { Check, EyeOff, X } from 'lucide-react';
+import { Check, EyeOff, Pause, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
@@ -12,6 +12,9 @@ import ZoomScreenshot from './ZoomScreenshot';
 interface RecordingViewProps {
   guideId: string;
   onStop: () => void;
+  paused: boolean;
+  onPause: () => Promise<unknown>;
+  onResume: () => Promise<{ resumed: boolean; error?: string }>;
 }
 
 function timeAgo(createdAt: number): string {
@@ -26,10 +29,11 @@ interface LiveStep {
   screenshot?: Screenshot;
 }
 
-export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
+export default function RecordingView({ guideId, onStop, paused, onPause, onResume }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
   const [isBlurring, setIsBlurring] = useState(false);
+  const [captureError, setCaptureError] = useState('');
   const [, setTick] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -103,13 +107,17 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
     <div className="flex flex-col h-screen bg-card relative">
       {/* Floating recording pill */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
-        <span className={`w-2 h-2 rounded-full ${isBlurring ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
+        <span
+          className={`w-2 h-2 rounded-full ${paused ? 'bg-amber-500' : isBlurring ? 'bg-accent' : 'bg-destructive animate-pulse'}`}
+        />
         <span className="text-xs font-semibold text-foreground">
-          {isBlurring
+          {paused
             ? i18n.t('recording.capturePaused')
-            : steps.length === 1
-              ? i18n.t('recording.recording', [String(steps.length)])
-              : i18n.t('recording.recordingPlural', [String(steps.length)])}
+            : isBlurring
+              ? i18n.t('recording.capturePaused')
+              : steps.length === 1
+                ? i18n.t('recording.recording', [String(steps.length)])
+                : i18n.t('recording.recordingPlural', [String(steps.length)])}
         </span>
       </div>
 
@@ -182,11 +190,31 @@ export default function RecordingView({ guideId, onStop }: RecordingViewProps) {
       </div>
 
       {/* Bottom bar */}
+      {captureError && <p className="px-4 py-2 text-[11px] text-destructive bg-destructive/5">{captureError}</p>}
       <div className="shrink-0 border-t border-border px-4 py-2.5 flex items-center gap-2">
         <Button onClick={onStop} className="flex-1 h-10 rounded-full font-semibold text-[13px]">
           <Check size={16} strokeWidth={3} />
           {i18n.t('recording.finishRecording')}
         </Button>
+        <button
+          onClick={async () => {
+            setCaptureError('');
+            if (paused) {
+              const result = await onResume();
+              if (!result.resumed) setCaptureError(result.error || i18n.t('recording.unsupportedPage'));
+            } else {
+              await onPause();
+            }
+          }}
+          className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+            paused
+              ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+              : 'border-border text-muted-foreground hover:border-accent hover:text-accent'
+          }`}
+          title={paused ? i18n.t('recording.resume') : i18n.t('recording.pause')}
+        >
+          {paused ? <Play size={16} /> : <Pause size={16} />}
+        </button>
         <button
           onClick={handleBlur}
           disabled={isBlurring}

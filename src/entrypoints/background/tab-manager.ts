@@ -1,4 +1,4 @@
-import { executeScript, queryTabs, sendMessageToTab } from '@/lib/browser-api';
+import { executeScript, getTab, sendMessageToTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { TabMessage } from '@/lib/tab-messages';
 
@@ -33,28 +33,19 @@ export async function showNotificationOnTab(tabId: number): Promise<void> {
   }
 }
 
-export async function broadcastStartCapture(guideId: string): Promise<void> {
+export async function startCaptureOnTab(tabId: number, guideId: string, captureToken: string): Promise<boolean> {
   try {
-    const tabs = await queryTabs({});
-    for (const tab of tabs) {
-      if (tab.id && isInjectableTab(tab)) {
-        sendMessageToTab(tab.id, { type: TabMessage.START_CAPTURE, guideId }).catch(() => {});
-      }
-    }
+    const tab = await getTab(tabId);
+    if (!isInjectableTab(tab)) return false;
+    await injectContentScript(tabId);
+    await sendMessageToTab(tabId, { type: TabMessage.START_CAPTURE, guideId, captureToken });
+    return true;
   } catch (err) {
-    logger.warn(' broadcastStartCapture failed', err);
+    logger.warn('startCaptureOnTab failed', err);
+    return false;
   }
 }
 
-export async function broadcastStopCapture(): Promise<void> {
-  try {
-    const tabs = await queryTabs({});
-    for (const tab of tabs) {
-      if (tab.id) {
-        sendMessageToTab(tab.id, { type: TabMessage.STOP_CAPTURE }).catch(() => {});
-      }
-    }
-  } catch (err) {
-    logger.warn(' broadcastStopCapture failed', err);
-  }
+export async function stopCaptureOnTab(tabId: number): Promise<void> {
+  await sendMessageToTab(tabId, { type: TabMessage.STOP_CAPTURE }).catch(() => {});
 }

@@ -9,6 +9,7 @@ export interface PanelStateUpdate {
   state: CaptureStateValue;
   stepCount: number;
   currentGuideId: string | null;
+  captureToken: string | null;
 }
 
 type PortMessage = PanelStateUpdate;

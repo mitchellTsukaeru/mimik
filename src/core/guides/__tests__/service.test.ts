@@ -28,16 +28,21 @@ const { broadcastMessages } = vi.hoisted(() => {
 import { db } from '../db';
 import {
   addStepToGuide,
+  applyGuideImprovements,
   createGuide,
   deleteStep,
   getGuide,
   getGuides,
   getStarredGuides,
   getTrashedGuides,
+  insertManualStep,
   permanentlyDeleteGuide,
   reorderSteps,
   softDeleteGuide,
   toggleStar,
+  updateGuideDefaultTitle,
+  updateGuideTitle,
+  updateStepRichDescription,
 } from '../service';
 import type { Guide, Screenshot, Step } from '../types';
 
@@ -101,6 +106,83 @@ describe('createGuide', () => {
 
     const stored = await db.guides.get('g1');
     expect(stored).toEqual(guide);
+  });
+});
+
+describe('deterministic titles', () => {
+  it('does not replace a title after the user edits it', async () => {
+    await createGuide('g1');
+    await updateGuideDefaultTitle('g1', 'Guide on example.com');
+    expect((await db.guides.get('g1'))?.title).toBe('Guide on example.com');
+
+    await updateGuideTitle('g1', 'My account setup');
+    await updateGuideDefaultTitle('g1', 'Multi-site guide');
+    expect(await db.guides.get('g1')).toMatchObject({ title: 'My account setup', titleEdited: true });
+  });
+});
+
+describe('manual and rich steps', () => {
+  it('inserts a manual step and screenshot atomically between captured steps', async () => {
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', index: 0 }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1 }),
+    ]);
+    const richDescription = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'Check the result', marks: [{ type: 'bold' }] }] },
+      ],
+    };
+
+    const manual = await insertManualStep('g1', 1, richDescription, {
+      blob: new Blob(['normalized'], { type: 'image/jpeg' }),
+      mimeType: 'image/jpeg',
+      width: 640,
+      height: 480,
+    });
+
+    expect(manual).toMatchObject({ kind: 'manual', action: 'manual', index: 1, description: 'Check the result' });
+    expect((await db.steps.where('guideId').equals('g1').sortBy('index')).map((step) => step.id)).toEqual([
+      's1',
+      manual.id,
+      's2',
+    ]);
+    expect((await db.guides.get('g1'))?.stepIds).toEqual(['s1', manual.id, 's2']);
+    expect(await db.screenshots.get(manual.screenshotId!)).toMatchObject({ stepId: manual.id, mimeType: 'image/jpeg' });
+  });
+
+  it('keeps the plain-text projection synchronized with rich content', async () => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await db.steps.add(makeStep({ id: 's1', guideId: 'g1' }));
+    await updateStepRichDescription('s1', {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'First line' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'Second line' }] },
+      ],
+    });
+
+    expect((await db.steps.get('s1'))?.description).toBe('First line\nSecond line');
+  });
+});
+
+describe('reviewed AI changes', () => {
+  it('applies only proposals whose original content is still current', async () => {
+    await seedGuide('g1', { title: 'Original', stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', description: 'Original one' }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1, description: 'Edited while waiting' }),
+    ]);
+
+    await applyGuideImprovements('g1', 'Original', 'Specific workflow', [
+      { stepId: 's1', original: 'Original one', proposed: 'Open settings' },
+      { stepId: 's2', original: 'Old two', proposed: 'Save changes' },
+    ]);
+
+    expect(await db.guides.get('g1')).toMatchObject({ title: 'Specific workflow', titleEdited: true });
+    expect((await db.steps.get('s1'))?.description).toBe('Open settings');
+    expect((await db.steps.get('s2'))?.description).toBe('Edited while waiting');
   });
 });
 

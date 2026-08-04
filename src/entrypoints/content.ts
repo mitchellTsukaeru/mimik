@@ -24,15 +24,14 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         return true;
 
       case TabMessage.START_CAPTURE:
-        if (msg.guideId) {
-          session.start(msg.guideId as string);
+        if (msg.guideId && msg.captureToken) {
+          session.start(msg.guideId as string, msg.captureToken as string);
           sendResponse({ started: true });
         }
         return true;
 
       case TabMessage.STOP_CAPTURE:
-        session.stop();
-        sendResponse({ stopped: true });
+        session.stop().then(() => sendResponse({ stopped: true }));
         return true;
 
       case TabMessage.URL_CHANGED:

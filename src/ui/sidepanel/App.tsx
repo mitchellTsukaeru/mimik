@@ -85,16 +85,20 @@ function MascotIcon({ size = 44 }: { size?: number }) {
 export default function App() {
   const [isAlive, setIsAlive] = useState(false);
   const [_isRecording, setIsRecording] = useState(false);
+  const [captureState, setCaptureState] = useState<(typeof CaptureState)[keyof typeof CaptureState]>(CaptureState.IDLE);
   const [view, setView] = useState<View>({ name: 'library' });
   const [search, setSearch] = useState('');
+  const [startError, setStartError] = useState('');
 
   useEffect(() => {
     const disconnect = connectToBackground({
       onConnect: () => setIsAlive(true),
       onDisconnect: () => setIsAlive(false),
       onStateUpdate: (update) => {
-        if (update.state === CaptureState.RECORDING) {
+        setCaptureState(update.state);
+        if (update.state === CaptureState.RECORDING || update.state === CaptureState.PAUSED) {
           setIsRecording(true);
+          if (update.currentGuideId) setView({ name: 'recording', guideId: update.currentGuideId });
         } else {
           setIsRecording(false);
         }
@@ -125,15 +129,19 @@ export default function App() {
   }, []);
 
   const handleStartRecording = useCallback(async () => {
+    setStartError('');
+    const tab = await getActiveTab();
+    const url = tab?.url || '';
+    if (!/^https?:\/\//.test(url)) {
+      setStartError(i18n.t('recording.unsupportedPage'));
+      return;
+    }
     const permissionsPromise = requestHostPermissions();
     const granted = await permissionsPromise;
     if (!granted) {
       logger.warn('Host permissions not granted, cannot start recording');
       return;
     }
-    const tab = await getActiveTab();
-    const url = tab?.url || '';
-
     try {
       const res = await sendMessage('startRecording', { url });
       if (res.guideId) {
@@ -168,7 +176,15 @@ export default function App() {
   }, []);
 
   if (view.name === 'recording') {
-    return <RecordingView guideId={view.guideId} onStop={handleStopRecording} />;
+    return (
+      <RecordingView
+        guideId={view.guideId}
+        paused={captureState === CaptureState.PAUSED}
+        onPause={() => sendMessage('pauseRecording', undefined)}
+        onResume={() => sendMessage('resumeRecording', undefined)}
+        onStop={handleStopRecording}
+      />
+    );
   }
 
   if (view.name === 'guideme') {
@@ -250,6 +266,7 @@ export default function App() {
           <Video size={18} />
           {i18n.t('sidepanel.startCapture')}
         </Button>
+        {startError && <p className="mt-2 text-center text-[11px] font-medium text-destructive">{startError}</p>}
       </div>
 
       {/* Body */}

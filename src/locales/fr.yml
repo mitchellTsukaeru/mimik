@@ -64,6 +64,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Capture en pause
+  pause: Mettre en pause
+  resume: Reprendre l'enregistrement
+  unsupportedPage: Ouvrez un site web standard avant de reprendre
   recording: "Enregistrement \xB7 $1 étape"
   recordingPlural: "Enregistrement \xB7 $1 étapes"
   readyTitle: "Prêt à capturer !"
@@ -187,13 +190,13 @@ onboarding:
   aiMessage: "Connectez votre clé API et, si vous le souhaitez, un point de terminaison compatible pour générer les descriptions par IA. Vous pourrez modifier ce choix dans les paramètres."
   aiGenerated: "Généré par IA"
   aiGeneratedDescription: "Description générée par IA"
-  blurStepLabel: "Étape 2 sur 3"
+  blurStepLabel: "Étape 1 sur 2"
   blurTitle: Flou intelligent
   blurMessage: "Floutez automatiquement les données sensibles dans vos captures. Choisissez quels types de données détecter."
   screenshotPreview: "Aperçu"
   notEnabled: "Non activé"
   categoriesProtected: "$1 catégories protégées"
-  pinStepLabel: "Étape 3 sur 3"
+  pinStepLabel: "Étape 2 sur 2"
   pinTitle: "Épinglez Mimik"
   pinMessage: "Épinglez l'extension dans votre barre d'outils. Cliquez sur l'icône puzzle dans Chrome, puis épinglez Mimik."
   pinStep1Title: "Cliquez sur l'icône puzzle"
@@ -239,4 +242,5 @@ export:
 
 background:
   guideOnDomain: "Guide sur $1"
+  multiSiteGuide: Guide multisite
   newGuide: Nouveau guide
