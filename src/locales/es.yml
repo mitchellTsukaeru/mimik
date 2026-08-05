@@ -2,8 +2,8 @@ meta:
   locale: es
 
 app:
-  name: Mimik
-  store_title: "Mimik: guías paso a paso, tutoriales y capturas"
+  name: Mimik for Tsukaeru
+  store_title: "Mimik for Tsukaeru: guías de flujos de trabajo"
   description: Convierte cualquier tarea del navegador en una guía paso a paso con capturas. Local, código abierto, con tu propia clave de IA.
 
 common:
