@@ -157,7 +157,7 @@ Todas las exportaciones se generan del lado del cliente. Nada pasa por un servid
 
 ### 🌍 Multi-idioma
 
-La interfaz está disponible en inglés, español, portugués brasileño y francés. El idioma de salida de la IA se configura por separado y también admite japonés, así que puedes usar TaskStitch en inglés y generar guías en japonés.
+La interfaz está disponible en inglés, español, portugués brasileño, francés y japonés. El idioma de salida de la IA se configura por separado y también admite japonés, así que puedes usar TaskStitch en inglés y generar guías en japonés.
 
 <div align="right">
 
