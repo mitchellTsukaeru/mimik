@@ -1,8 +1,8 @@
 <div align="center"><a name="readme-top"></a>
 
-<img src="public/mascot.svg" width="140" height="140" alt="Mascota de Mimik" />
+<img src="public/mascot.svg" width="140" height="140" alt="Mascota de TaskStitch" />
 
-# Mimik for Tsukaeru
+# TaskStitch
 
 [English](./README.md) · **Español** · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [日本語](./README.ja.md)
 
@@ -10,7 +10,7 @@
 
 Le das a grabar, haces lo tuyo, y obtienes una guía pulida con capturas anotadas. Edítala, reprodúcela o expórtala.
 
-Este repositorio es el fork de Tsukaeru de [Mimik de Westpoint](https://github.com/westpoint-io/mimik). Mantiene el enfoque local y de código abierto, y añade salida de IA en japonés, modelos actuales, IDs de modelo personalizados y mejoras de fiabilidad.
+TaskStitch es un fork personal mantenido de forma independiente de [Mimik de Westpoint](https://github.com/westpoint-io/mimik). Conserva la base local y de código abierto, y añade captura multisitio, pasos manuales con texto enriquecido, revisión explícita de IA, salida en japonés y mejoras de fiabilidad. TaskStitch no está afiliado ni respaldado por Westpoint.
 
 <!-- SHIELD GROUP -->
 
@@ -31,7 +31,6 @@ Este repositorio es el fork de Tsukaeru de [Mimik de Westpoint](https://github.c
 
 #### TOC
 
-- [📺 Demo](#-demo)
 - [👋 Empezar](#-empezar)
 - [✨ Funciones](#-funciones)
   - [🎬 Captura automática](#-captura-automática)
@@ -49,17 +48,11 @@ Este repositorio es el fork de Tsukaeru de [Mimik de Westpoint](https://github.c
 
 </details>
 
-## 📺 Demo
-
-<div align="center">
-<img src="https://github.com/user-attachments/assets/d4c64cb8-ad26-4de1-af02-a04a64e2836e" alt="Demo de Mimik" width="800" />
-</div>
-
 ## 👋 Empezar
 
-Mimik convierte cualquier tarea repetitiva del navegador en una guía documentada y compartible en segundos. Corre por completo en tu navegador, sin backend, cuenta ni telemetría. Los datos permanecen en tu dispositivo salvo que ejecutes explícitamente Mejorar guía, que informa del texto y de las capturas representativas opcionales enviados directamente al proveedor elegido.
+TaskStitch convierte cualquier tarea repetitiva del navegador en una guía documentada y compartible en segundos. Corre por completo en tu navegador, sin backend, cuenta ni telemetría. Los datos permanecen en tu dispositivo salvo que ejecutes explícitamente Mejorar guía, que informa del texto y de las capturas representativas opcionales enviados directamente al proveedor elegido.
 
-Ya sea que estés documentando herramientas internas, escribiendo tutoriales de producto, o formando a un compañero, Mimik captura cada clic, tecla y navegación automáticamente para que te concentres en lo importante.
+Ya sea que estés documentando herramientas internas, escribiendo tutoriales de producto, o formando a un compañero, TaskStitch captura cada clic, tecla y navegación automáticamente para que te concentres en lo importante.
 
 | Navegador | Versión upstream | Instalación upstream |
 | --------- | ---------------- | --------------------- |
@@ -72,11 +65,7 @@ Ya sea que estés documentando herramientas internas, escribiendo tutoriales de 
 
 > \[!IMPORTANT]
 >
-> **⭐️ Dale una estrella al repo** si Mimik te ahorra tiempo. Ayuda a que otras personas lo descubran.
-
-<a href="https://github.com/mitchellTsukaeru/mimik">
-  <img width="100%" alt="Dale una estrella a Mimik en GitHub" src="https://github.com/user-attachments/assets/80d304da-a765-4bde-bf49-b1bdcb4fe804" />
-</a>
+> **⭐️ Dale una estrella al repo** si TaskStitch te ahorra tiempo. Ayuda a que otras personas lo descubran.
 
 <div align="right">
 
@@ -88,13 +77,13 @@ Ya sea que estés documentando herramientas internas, escribiendo tutoriales de 
 
 ### 🎬 Captura automática
 
-Haces clic, escribes, navegas. Mimik lo ve todo. Cada acción relevante se convierte en un paso: clics en botones y enlaces, entradas de formulario, atajos de teclado, portapapeles, arrastrar y soltar, y navegaciones.
+Haces clic, escribes, navegas. TaskStitch lo ve todo. Cada acción relevante se convierte en un paso: clics en botones y enlaces, entradas de formulario, atajos de teclado, portapapeles, arrastrar y soltar, y navegaciones.
 
 La fusión inteligente de eventos descarta los clics rápidos en elementos cercanos, para que tus guías queden limpias. La interceptación del clic ocurre *antes* de que la página cambie, así no se pierde nada en SPAs o recargas completas.
 
 Inicia o detén la grabación desde cualquier lugar con <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>, o <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> en macOS.
 
-Pausa la grabación, cambia a otro sitio HTTP o HTTPS y reanuda para documentar flujos multi-plataforma en una sola guía. Mimik sigue la pestaña activa, conserva la URL de origen y descarta eventos tardíos de pestañas anteriores.
+Pausa la grabación, cambia a otro sitio HTTP o HTTPS y reanuda para documentar flujos multi-plataforma en una sola guía. TaskStitch sigue la pestaña activa, conserva la URL de origen y descarta eventos tardíos de pestañas anteriores.
 
 <div align="right">
 
@@ -116,7 +105,7 @@ Todos los pasos admiten negrita, cursiva, subrayado, código en línea, enlaces 
 
 ### 🔒 Smart Blur
 
-Mimik detecta y difumina datos sensibles automáticamente en tus capturas: correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC. Activa o desactiva cada categoría de forma independiente.
+TaskStitch detecta y difumina datos sensibles automáticamente en tus capturas: correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC. Activa o desactiva cada categoría de forma independiente.
 
 ¿Necesitas ocultar algo personalizado? El selector manual te deja elegir cualquier elemento del DOM y enmascararlo en todas las capturas donde aparezca.
 
@@ -128,11 +117,11 @@ Mimik detecta y difumina datos sensibles automáticamente en tus capturas: corre
 
 ### 🧠 Mejorar guía con IA (opcional)
 
-La grabación nunca llama a la IA. Mimik crea descripciones locales y un título determinista. Después puedes ejecutar **Mejorar guía** para solicitar un título y descripciones más específicos; revisas y eliges cada cambio antes de aplicarlo.
+La grabación nunca llama a la IA. TaskStitch crea descripciones locales y un título determinista. Después puedes ejecutar **Mejorar guía** para solicitar un título y descripciones más específicos; revisas y eliges cada cambio antes de aplicarlo.
 
 Usa tu propia clave de OpenAI o Anthropic, un modelo preconfigurado o personalizado y, opcionalmente, una URL base compatible. La solicitud excluye valores escritos, credenciales, JSON de texto enriquecido y pasos manuales.
 
-El análisis de capturas está desactivado por defecto. Si lo habilitas para una solicitud, Mimik muestra el proveedor, el modelo y el número exacto de imágenes antes de enviar hasta ocho capturas representativas, reducidas localmente y con los difuminados guardados. Si el modelo rechaza imágenes, puedes reintentar explícitamente solo con texto.
+El análisis de capturas está desactivado por defecto. Si lo habilitas para una solicitud, TaskStitch muestra el proveedor, el modelo y el número exacto de imágenes antes de enviar hasta ocho capturas representativas, reducidas localmente y con los difuminados guardados. Si el modelo rechaza imágenes, puedes reintentar explícitamente solo con texto.
 
 <div align="right">
 
@@ -142,7 +131,7 @@ El análisis de capturas está desactivado por defecto. Si lo habilitas para una
 
 ### ▶️ Reproducción Guide Me
 
-Reproduce cualquier guía en vivo sobre una página real. Mimik resalta el siguiente elemento, marca tu progreso paso a paso, y avanza solo conforme vas interactuando. Ideal para formar a un compañero o para guiarte a ti mismo.
+Reproduce cualquier guía en vivo sobre una página real. TaskStitch resalta el siguiente elemento, marca tu progreso paso a paso, y avanza solo conforme vas interactuando. Ideal para formar a un compañero o para guiarte a ti mismo.
 
 <div align="right">
 
@@ -168,7 +157,7 @@ Todas las exportaciones se generan del lado del cliente. Nada pasa por un servid
 
 ### 🌍 Multi-idioma
 
-La interfaz está disponible en inglés, español, portugués brasileño y francés. El idioma de salida de la IA se configura por separado y también admite japonés, así que puedes usar Mimik en inglés y generar guías en japonés.
+La interfaz está disponible en inglés, español, portugués brasileño y francés. El idioma de salida de la IA se configura por separado y también admite japonés, así que puedes usar TaskStitch en inglés y generar guías en japonés.
 
 <div align="right">
 
@@ -178,7 +167,7 @@ La interfaz está disponible en inglés, español, portugués brasileño y franc
 
 ### 💾 Almacenamiento 100% local
 
-Tus guías, texto enriquecido, capturas, claves API y URL compatibles viven en tu dispositivo. No hay backend, cuenta ni telemetría. Solo una solicitud explícita de Mejorar guía envía el texto informado y, si lo habilitas por separado, capturas representativas al proveedor configurado. Ningún servidor de Mimik recibe esos datos.
+Tus guías, texto enriquecido, capturas, claves API y URL compatibles viven en tu dispositivo. No hay backend, cuenta ni telemetría. Solo una solicitud explícita de Mejorar guía envía el texto informado y, si lo habilitas por separado, capturas representativas al proveedor configurado. Ningún servidor de TaskStitch recibe esos datos.
 
 <div align="right">
 
@@ -200,7 +189,7 @@ Mira [CONTRIBUTING.md](./CONTRIBUTING.md) para el setup de desarrollo, la estruc
 
 ## 📜 Licencia
 
-Basado en Mimik, MIT © [Westpoint](https://github.com/westpoint-io), con modificaciones mantenidas por Tsukaeru. Mira [LICENSE](./LICENSE) para los detalles.
+TaskStitch es un fork independiente de [Mimik de Westpoint](https://github.com/westpoint-io/mimik), distribuido bajo la licencia MIT. El aviso de copyright y la licencia originales de Westpoint se conservan en [LICENSE](./LICENSE).
 
 <div align="right">
 
@@ -224,16 +213,16 @@ Basado en Mimik, MIT © [Westpoint](https://github.com/westpoint-io), con modifi
 [no-account-shield]: https://img.shields.io/badge/account-not%20required-4F46E5?style=flat-square&labelColor=1E1B4B
 [no-account-link]: #-almacenamiento-100-local
 
-[star-shield]: https://img.shields.io/github/stars/mitchellTsukaeru/mimik?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
-[star-link]: https://github.com/mitchellTsukaeru/mimik/stargazers
+[star-shield]: https://img.shields.io/github/stars/mitchellTsukaeru/taskstitch?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
+[star-link]: https://github.com/mitchellTsukaeru/taskstitch/stargazers
 
-[contributors-shield]: https://img.shields.io/github/contributors/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
-[contributors-link]: https://github.com/mitchellTsukaeru/mimik/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/mitchellTsukaeru/taskstitch?style=flat-square&labelColor=1E1B4B
+[contributors-link]: https://github.com/mitchellTsukaeru/taskstitch/graphs/contributors
 
-[last-commit-shield]: https://img.shields.io/github/last-commit/mitchellTsukaeru/mimik?style=flat-square&label=commit&labelColor=1E1B4B
+[last-commit-shield]: https://img.shields.io/github/last-commit/mitchellTsukaeru/taskstitch?style=flat-square&label=commit&labelColor=1E1B4B
 
-[issues-shield]: https://img.shields.io/github/issues/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
-[issues-link]: https://github.com/mitchellTsukaeru/mimik/issues
+[issues-shield]: https://img.shields.io/github/issues/mitchellTsukaeru/taskstitch?style=flat-square&labelColor=1E1B4B
+[issues-link]: https://github.com/mitchellTsukaeru/taskstitch/issues
 
 [chrome-version-shield]: https://img.shields.io/chrome-web-store/v/jmfohdaflahliammccpiadmkcibohgha?label=Chrome%20Version&style=flat-square&logo=googlechrome&logoColor=C7D2FE&color=4F46E5&labelColor=1E1B4B
 [chrome-link]: https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha

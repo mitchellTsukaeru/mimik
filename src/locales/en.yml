@@ -2,8 +2,8 @@ meta:
   locale: en
 
 app:
-  name: Mimik for Tsukaeru
-  store_title: "Mimik for Tsukaeru: Workflow Guides"
+  name: TaskStitch
+  store_title: "TaskStitch: Workflow Guides"
   description: Auto-capture any browser workflow into a step-by-step guide with screenshots. Local-first, open source, bring your own AI key.
 
 common:
@@ -29,7 +29,7 @@ sidepanel:
   startCapture: Start Capture
   searchPlaceholder: Search guides...
   recentLabel: Recent
-  openMimik: Open Mimik
+  openTaskStitch: Open TaskStitch
 
 library:
   noGuidesTitle: No guides yet
@@ -104,7 +104,7 @@ settings:
   privacyNotice: Your API key and compatible API URL are stored locally. The key and AI text context are sent only to the configured endpoint.
   bugReport: "Found a bug? Report it on GitHub"
   starCtaTitle: "Like what you see?"
-  starCtaMessage: A GitHub star helps others find Mimik and keeps us motivated!
+  starCtaMessage: A GitHub star helps others find TaskStitch and keeps us motivated!
   starOnGithub: Star on GitHub
 
 blurPresets:
@@ -183,7 +183,7 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Welcome
-  welcomeTitle: "You've successfully installed Mimik!"
+  welcomeTitle: "You've successfully installed TaskStitch!"
   welcomeMessage: "With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides. No account needed \u2014 everything stays in your browser."
   getStarted: Get started
   aiStepLabel: Step 1 of 3
@@ -198,21 +198,21 @@ onboarding:
   notEnabled: Not enabled
   categoriesProtected: "$1 categories protected"
   pinStepLabel: Step 2 of 2
-  pinTitle: Pin Mimik
-  pinMessage: Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
+  pinTitle: Pin TaskStitch
+  pinMessage: Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin TaskStitch.
   pinStep1Title: Click the puzzle icon
   pinStep1Sub: In the top-right of your browser toolbar
-  pinStep2Title: Find Mimik
+  pinStep2Title: Find TaskStitch
   pinStep2Sub: In the extensions dropdown
   pinStep3Title: Click the pin icon
-  pinStep3Sub: Mimik will appear in your toolbar
-  pinScreenshotAlt: Pin Mimik extension
+  pinStep3Sub: TaskStitch will appear in your toolbar
+  pinScreenshotAlt: Pin TaskStitch extension
   doneTitle: "You're all set!"
-  doneMessage: "Mimik is ready to capture your workflows. Click \"Start Capture\" in the extension to record your first guide."
+  doneMessage: "TaskStitch is ready to capture your workflows. Click \"Start Capture\" in the extension to record your first guide."
   featureAutoCapture: Auto-capture
   featureAIDescriptions: AI descriptions
   featureSmartBlur: Smart blur
-  openMimik: Open Mimik
+  openTaskStitch: Open TaskStitch
 
 steps:
   pressKey: "Press $1 on $2"

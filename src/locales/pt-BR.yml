@@ -2,8 +2,8 @@ meta:
   locale: pt-BR
 
 app:
-  name: Mimik for Tsukaeru
-  store_title: "Mimik for Tsukaeru: guias de fluxos de trabalho"
+  name: TaskStitch
+  store_title: "TaskStitch: guias de fluxos de trabalho"
   description: Capture qualquer tarefa do navegador em um guia passo a passo com prints. Local, código aberto, com sua própria chave de IA.
 
 common:
@@ -29,7 +29,7 @@ sidepanel:
   startCapture: Começar a capturar
   searchPlaceholder: Buscar guias...
   recentLabel: Recentes
-  openMimik: Abrir Mimik
+  openTaskStitch: Abrir TaskStitch
 
 library:
   noGuidesTitle: Nenhum guia ainda
@@ -103,8 +103,8 @@ settings:
   smartBlur: Desfoque inteligente
   privacyNotice: Tua chave API e a URL compatível ficam salvas localmente. A chave e o contexto de texto da IA só são enviados ao endpoint configurado.
   bugReport: "Achou um bug? Reporta no GitHub"
-  starCtaTitle: "Curtiu o Mimik?"
-  starCtaMessage: Uma estrela no GitHub ajuda outras pessoas a descobrir o Mimik e nos dá aquela motivação!
+  starCtaTitle: "Curtiu o TaskStitch?"
+  starCtaMessage: Uma estrela no GitHub ajuda outras pessoas a descobrir o TaskStitch e nos dá aquela motivação!
   starOnGithub: Dar estrela no GitHub
 
 blurPresets:
@@ -183,7 +183,7 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Bem-vindo
-  welcomeTitle: "Mimik instalado!"
+  welcomeTitle: "TaskStitch instalado!"
   welcomeMessage: "Em poucos passos você vai poder capturar fluxos de trabalho e gerar guias automáticos. Sem conta, sem cadastro \u2014 tudo fica no seu navegador."
   getStarted: Bora começar
   aiStepLabel: Passo 1 de 3
@@ -198,21 +198,21 @@ onboarding:
   notEnabled: Não ativado
   categoriesProtected: "$1 categorias protegidas"
   pinStepLabel: Passo 2 de 2
-  pinTitle: Fixa o Mimik
-  pinMessage: Fixa a extensão na barra pra ter acesso rápido. Clica no ícone de quebra-cabeça no Chrome e fixa o Mimik.
+  pinTitle: Fixa o TaskStitch
+  pinMessage: Fixa a extensão na barra pra ter acesso rápido. Clica no ícone de quebra-cabeça no Chrome e fixa o TaskStitch.
   pinStep1Title: Clica no ícone de quebra-cabeça
   pinStep1Sub: Lá em cima à direita na barra do navegador
-  pinStep2Title: Acha o Mimik
+  pinStep2Title: Acha o TaskStitch
   pinStep2Sub: No menu de extensões
   pinStep3Title: Clica no pin
-  pinStep3Sub: O Mimik vai aparecer na sua barra
-  pinScreenshotAlt: Fixar extensão Mimik
+  pinStep3Sub: O TaskStitch vai aparecer na sua barra
+  pinScreenshotAlt: Fixar extensão TaskStitch
   doneTitle: "Tudo pronto!"
-  doneMessage: "O Mimik tá pronto pra capturar. Clica em \"Começar a capturar\" na extensão pra gravar seu primeiro guia."
+  doneMessage: "O TaskStitch tá pronto pra capturar. Clica em \"Começar a capturar\" na extensão pra gravar seu primeiro guia."
   featureAutoCapture: Captura automática
   featureAIDescriptions: Descrições com IA
   featureSmartBlur: Desfoque inteligente
-  openMimik: Abrir Mimik
+  openTaskStitch: Abrir TaskStitch
 
 steps:
   pressKey: "Pressionar $1 em $2"

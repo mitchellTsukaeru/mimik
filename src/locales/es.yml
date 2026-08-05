@@ -2,8 +2,8 @@ meta:
   locale: es
 
 app:
-  name: Mimik for Tsukaeru
-  store_title: "Mimik for Tsukaeru: guías de flujos de trabajo"
+  name: TaskStitch
+  store_title: "TaskStitch: guías de flujos de trabajo"
   description: Convierte cualquier tarea del navegador en una guía paso a paso con capturas. Local, código abierto, con tu propia clave de IA.
 
 common:
@@ -29,7 +29,7 @@ sidepanel:
   startCapture: Empezar a capturar
   searchPlaceholder: Buscar guías...
   recentLabel: Recientes
-  openMimik: Abrir Mimik
+  openTaskStitch: Abrir TaskStitch
 
 library:
   noGuidesTitle: No hay guías todavía
@@ -103,8 +103,8 @@ settings:
   smartBlur: Desenfoque inteligente
   privacyNotice: Tu clave API y la URL compatible se guardan localmente. La clave y el contexto de texto de IA solo se envían al endpoint configurado.
   bugReport: "¿Encontraste un bug? Repórtalo en GitHub"
-  starCtaTitle: "¿Te gusta Mimik?"
-  starCtaMessage: "Una estrella en GitHub nos ayuda un montón y hace que más gente descubra Mimik."
+  starCtaTitle: "¿Te gusta TaskStitch?"
+  starCtaMessage: "Una estrella en GitHub nos ayuda un montón y hace que más gente descubra TaskStitch."
   starOnGithub: Dar estrella en GitHub
 
 blurPresets:
@@ -183,7 +183,7 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Bienvenido
-  welcomeTitle: "¡Ya tienes Mimik instalado!"
+  welcomeTitle: "¡Ya tienes TaskStitch instalado!"
   welcomeMessage: "En unos pasos vas a poder capturar flujos de trabajo y generar guías automáticas. Sin cuenta, sin registros \u2014 todo se queda en tu navegador."
   getStarted: Empezar
   aiStepLabel: Paso 1 de 3
@@ -198,21 +198,21 @@ onboarding:
   notEnabled: No activado
   categoriesProtected: "$1 categorías protegidas"
   pinStepLabel: Paso 2 de 2
-  pinTitle: Fija Mimik
-  pinMessage: Fija la extensión en tu barra para tenerla siempre a un clic. Busca el ícono de rompecabezas en Chrome y fija Mimik.
+  pinTitle: Fija TaskStitch
+  pinMessage: Fija la extensión en tu barra para tenerla siempre a un clic. Busca el ícono de rompecabezas en Chrome y fija TaskStitch.
   pinStep1Title: Haz clic en el ícono de rompecabezas
   pinStep1Sub: Arriba a la derecha en tu barra del navegador
-  pinStep2Title: Busca Mimik
+  pinStep2Title: Busca TaskStitch
   pinStep2Sub: En el desplegable de extensiones
   pinStep3Title: Haz clic en el pin
-  pinStep3Sub: Mimik aparecerá en tu barra
-  pinScreenshotAlt: Fijar extensión Mimik
+  pinStep3Sub: TaskStitch aparecerá en tu barra
+  pinScreenshotAlt: Fijar extensión TaskStitch
   doneTitle: "¡Ya estás listo!"
-  doneMessage: "Mimik está listo para capturar. Dale clic a \"Empezar a capturar\" en la extensión para grabar tu primera guía."
+  doneMessage: "TaskStitch está listo para capturar. Dale clic a \"Empezar a capturar\" en la extensión para grabar tu primera guía."
   featureAutoCapture: Captura automática
   featureAIDescriptions: Descripciones con IA
   featureSmartBlur: Desenfoque inteligente
-  openMimik: Abrir Mimik
+  openTaskStitch: Abrir TaskStitch
 
 steps:
   pressKey: "Presionar $1 en $2"

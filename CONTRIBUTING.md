@@ -1,4 +1,4 @@
-# Contributing to Mimik
+# Contributing to TaskStitch
 
 Thanks for your interest in contributing! Bug reports, feature requests, PRs, and translations are all welcome.
 
@@ -19,8 +19,8 @@ You represent that you have the right to submit the contribution and that it doe
 ### Install
 
 ```bash
-git clone https://github.com/mitchellTsukaeru/mimik.git
-cd mimik
+git clone https://github.com/mitchellTsukaeru/taskstitch.git
+cd taskstitch
 pnpm install
 ```
 
@@ -135,4 +135,4 @@ Open an issue with:
 - Steps to reproduce
 - Browser + version (Chrome / Firefox)
 - Screenshots if relevant
-- Any errors from the extension console (`chrome://extensions` → Mimik → "service worker" → Console, or Firefox `about:debugging` → Inspect)
+- Any errors from the extension console (`chrome://extensions` → TaskStitch → "service worker" → Console, or Firefox `about:debugging` → Inspect)

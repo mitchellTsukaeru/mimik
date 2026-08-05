@@ -1,12 +1,12 @@
-# Releasing Mimik
+# Releasing TaskStitch
 
-Mimik uses semantic versions in `package.json`, Git tags named `vX.Y.Z`, GitHub Releases for immutable artifacts, and browser stores for signed installation and automatic updates.
+TaskStitch uses semantic versions in `package.json`, Git tags named `vX.Y.Z`, GitHub Releases for immutable artifacts, and browser stores for signed installation and automatic updates.
 
 ## Release channels
 
-- **Employee pilot:** private Chrome Web Store listing restricted to trusted testers.
-- **Broader internal rollout:** private domain or enterprise policy distribution where managed Chrome is available.
-- **Public release:** public or unlisted browser-store listing after the employee pilot is accepted.
+- **Personal testing:** private Chrome Web Store listing restricted to trusted testers.
+- **Private distribution:** private domain or enterprise policy distribution where managed Chrome is available.
+- **Public release:** public or unlisted browser-store listing after private testing is accepted.
 - **Local development only:** unpacked builds from `.output/chrome-mv3`; these are not an update channel.
 
 ## Before the first Chrome Web Store release
@@ -14,10 +14,10 @@ Mimik uses semantic versions in `package.json`, Git tags named `vX.Y.Z`, GitHub 
 The first store listing must be created manually in the Chrome Web Store Developer Dashboard.
 
 1. Register and verify the publisher account.
-2. Run `pnpm zip` and upload `.output/mimik-X.Y.Z-chrome.zip` as a new item.
+2. Run `pnpm zip` and upload `.output/taskstitch-X.Y.Z-chrome.zip` as a new item.
 3. Complete the store listing and privacy questionnaire using `PRIVACY.md` as the public privacy policy.
 4. Explain the need for website access, `tabs`, `scripting`, `webNavigation`, `unlimitedStorage`, and `sidePanel`.
-5. Select **Private** visibility and add the employee's Google Account as a trusted tester.
+5. Select **Private** visibility and add the intended Google Accounts as trusted testers.
 6. Submit the item for review and retain deferred publishing control when offered.
 7. After approval, record the extension ID and configure automated submission credentials.
 
@@ -68,7 +68,7 @@ Never commit publishing credentials, API keys, `.env.submit`, private signing ke
 5. Commit the release, merge it to `main`, and create the matching tag:
 
    ```bash
-   git tag -s vX.Y.Z -m "Mimik vX.Y.Z"
+   git tag -s vX.Y.Z -m "TaskStitch vX.Y.Z"
    git push origin vX.Y.Z
    ```
 

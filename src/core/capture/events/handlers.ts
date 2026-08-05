@@ -3,7 +3,7 @@ import { localStorage } from '@/lib/browser-api';
 import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
 import { extractElementMeta } from '../dom/element-meta';
-import { findFocusableAncestor, isMimikElement, isNavigatingClick, isTextField } from '../dom/element-utils';
+import { findFocusableAncestor, isNavigatingClick, isTaskStitchElement, isTextField } from '../dom/element-utils';
 import { getScreenshotDelayMs } from '../screenshot-timing';
 import { InputSession } from './input-session';
 
@@ -116,7 +116,7 @@ class CaptureController {
     const raw = me.target;
     if (!raw || !(raw instanceof Element)) return;
     const target = findFocusableAncestor(raw);
-    if (isMimikElement(target)) return;
+    if (isTaskStitchElement(target)) return;
 
     const now = Date.now();
     if (target === lastClickTarget && now - lastClickTime < DEDUP_MS) return;
@@ -167,7 +167,7 @@ class CaptureController {
     const raw = me.target;
     if (!raw || !(raw instanceof Element)) return;
     const target = findFocusableAncestor(raw);
-    if (isMimikElement(target)) return;
+    if (isTaskStitchElement(target)) return;
     this.enqueueCaptureAction('auxclick', target);
   }
 
@@ -175,14 +175,14 @@ class CaptureController {
     const raw = (e as MouseEvent).target;
     if (!raw || !(raw instanceof Element)) return;
     const target = findFocusableAncestor(raw);
-    if (isMimikElement(target)) return;
+    if (isTaskStitchElement(target)) return;
     this.enqueueCaptureAction('contextmenu', target);
   }
 
   private onKeydown(e: Event) {
     const ke = e as KeyboardEvent;
     const target = ke.target instanceof HTMLElement ? ke.target : document.activeElement;
-    if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
+    if (!target || !(target instanceof HTMLElement) || isTaskStitchElement(target)) return;
 
     if (this.input.active && (ke.key === 'Enter' || ke.key === 'Escape')) {
       this.queue.add(() => this.input.finalize());
@@ -237,7 +237,7 @@ class CaptureController {
       (e as ClipboardEvent).target instanceof HTMLElement
         ? ((e as ClipboardEvent).target as HTMLElement)
         : document.activeElement;
-    if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
+    if (!target || !(target instanceof HTMLElement) || isTaskStitchElement(target)) return;
     this.enqueueCaptureAction(e.type, target);
   }
 
@@ -246,7 +246,7 @@ class CaptureController {
     const raw = pe.target;
     if (pe.button === 0 && raw instanceof Element) {
       const target = findFocusableAncestor(raw);
-      if (!isMimikElement(target) && !isTextField(target)) {
+      if (!isTaskStitchElement(target) && !isTextField(target)) {
         const captureId = `${this.guideId}:pointer:${performance.timeOrigin}:${pe.timeStamp}:${pe.pointerId}`;
         this.pendingClickCapture = {
           captureId,
@@ -274,7 +274,7 @@ class CaptureController {
 
     if (dx >= DRAG_MIN_PX || dy >= DRAG_MIN_PX) {
       const target = findFocusableAncestor(this.dragStartElement);
-      if (!isMimikElement(target)) this.enqueueCaptureAction('drag', target);
+      if (!isTaskStitchElement(target)) this.enqueueCaptureAction('drag', target);
     }
 
     this.dragStartX = this.dragStartY = null;
@@ -282,7 +282,7 @@ class CaptureController {
   }
 
   private onDragEnd(e: Event) {
-    if (!e.target || !(e.target instanceof Element) || isMimikElement(e.target)) return;
+    if (!e.target || !(e.target instanceof Element) || isTaskStitchElement(e.target)) return;
     this.enqueueCaptureAction('drag', findFocusableAncestor(e.target as Element));
   }
 

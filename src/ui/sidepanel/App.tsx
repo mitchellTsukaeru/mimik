@@ -175,7 +175,7 @@ export default function App() {
     }
   }, []);
 
-  const handleOpenMimik = useCallback(async () => {
+  const handleOpenTaskStitch = useCallback(async () => {
     const url = getExtensionURL('/fullview.html');
     const tabs = await queryTabs({ url });
     if (tabs.length > 0 && tabs[0].id) {
@@ -299,11 +299,11 @@ export default function App() {
           </p>
           <button
             type="button"
-            onClick={handleOpenMimik}
+            onClick={handleOpenTaskStitch}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-purple transition-colors hover:bg-secondary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
             title={i18n.t('library.openInFullView')}
           >
-            {i18n.t('sidepanel.openMimik')}
+            {i18n.t('sidepanel.openTaskStitch')}
             <Maximize2 size={12} />
           </button>
         </div>

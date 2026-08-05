@@ -123,19 +123,19 @@ export class ElementPicker {
     document.documentElement.appendChild(this.host);
   }
 
-  private isMimikElement(el: Element): boolean {
+  private isTaskStitchElement(el: Element): boolean {
     return !!el.closest('[data-mimik-ignore]');
   }
 
   private suppress(e: Event) {
-    if (e.target instanceof Element && this.isMimikElement(e.target)) return;
+    if (e.target instanceof Element && this.isTaskStitchElement(e.target)) return;
     e.stopImmediatePropagation();
   }
 
   private onClick(e: Event) {
     const raw = (e as MouseEvent).target;
     if (!raw || !(raw instanceof HTMLElement)) return;
-    if (this.isMimikElement(raw)) return;
+    if (this.isTaskStitchElement(raw)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     this.toggleBlur(raw);
@@ -153,7 +153,7 @@ export class ElementPicker {
 
   private onMouseOver(e: Event) {
     const raw = (e as MouseEvent).target;
-    if (!raw || !(raw instanceof HTMLElement) || this.isMimikElement(raw)) return;
+    if (!raw || !(raw instanceof HTMLElement) || this.isTaskStitchElement(raw)) return;
     if (!this.ring) return;
     const rect = raw.getBoundingClientRect();
     const pad = 3;

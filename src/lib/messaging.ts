@@ -116,7 +116,7 @@ export type ImproveGuideResponse =
   | { success: true; proposal: GuideImprovementProposal }
   | { success: false; error: string; needsConfiguration?: boolean; imageUnsupported?: boolean };
 
-interface MimikProtocol {
+interface TaskStitchProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
@@ -135,4 +135,4 @@ interface MimikProtocol {
   improveGuide(data: ImproveGuideData): ImproveGuideResponse;
 }
 
-export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();
+export const { sendMessage, onMessage } = defineExtensionMessaging<TaskStitchProtocol>();

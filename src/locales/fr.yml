@@ -2,8 +2,8 @@ meta:
   locale: fr
 
 app:
-  name: Mimik for Tsukaeru
-  store_title: "Mimik for Tsukaeru : guides de procédures"
+  name: TaskStitch
+  store_title: "TaskStitch : guides de procédures"
   description: "Transformez toute tâche dans le navigateur en guide pas-à-pas avec captures. Local, open source, avec votre propre clé IA."
 
 common:
@@ -29,7 +29,7 @@ sidepanel:
   startCapture: Lancer la capture
   searchPlaceholder: "Rechercher des guides..."
   recentLabel: "Récents"
-  openMimik: "Ouvrir Mimik"
+  openTaskStitch: "Ouvrir TaskStitch"
 
 library:
   noGuidesTitle: Pas encore de guide
@@ -103,8 +103,8 @@ settings:
   smartBlur: Flou intelligent
   privacyNotice: "Votre clé API et l'URL compatible sont stockées localement. La clé et le contexte texte de l'IA sont envoyés uniquement au point de terminaison configuré."
   bugReport: "Un bug ? Signalez-le sur GitHub"
-  starCtaTitle: "Vous aimez Mimik ?"
-  starCtaMessage: "Une étoile sur GitHub nous aide beaucoup et permet à d'autres de découvrir Mimik !"
+  starCtaTitle: "Vous aimez TaskStitch ?"
+  starCtaMessage: "Une étoile sur GitHub nous aide beaucoup et permet à d'autres de découvrir TaskStitch !"
   starOnGithub: "Donner une étoile sur GitHub"
 
 blurPresets:
@@ -183,7 +183,7 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Bienvenue
-  welcomeTitle: "Mimik est installé !"
+  welcomeTitle: "TaskStitch est installé !"
   welcomeMessage: "En quelques étapes, vous pourrez capturer vos parcours navigateur et générer des guides automatiquement. Pas de compte nécessaire — tout reste dans votre navigateur."
   getStarted: "C'est parti"
   aiStepLabel: "Étape 1 sur 3"
@@ -198,21 +198,21 @@ onboarding:
   notEnabled: "Non activé"
   categoriesProtected: "$1 catégories protégées"
   pinStepLabel: "Étape 2 sur 2"
-  pinTitle: "Épinglez Mimik"
-  pinMessage: "Épinglez l'extension dans votre barre d'outils. Cliquez sur l'icône puzzle dans Chrome, puis épinglez Mimik."
+  pinTitle: "Épinglez TaskStitch"
+  pinMessage: "Épinglez l'extension dans votre barre d'outils. Cliquez sur l'icône puzzle dans Chrome, puis épinglez TaskStitch."
   pinStep1Title: "Cliquez sur l'icône puzzle"
   pinStep1Sub: "En haut à droite de votre navigateur"
-  pinStep2Title: Trouvez Mimik
+  pinStep2Title: Trouvez TaskStitch
   pinStep2Sub: "Dans le menu des extensions"
   pinStep3Title: "Cliquez sur l'épingle"
-  pinStep3Sub: "Mimik apparaîtra dans votre barre"
-  pinScreenshotAlt: "Épingler Mimik"
+  pinStep3Sub: "TaskStitch apparaîtra dans votre barre"
+  pinScreenshotAlt: "Épingler TaskStitch"
   doneTitle: "Tout est prêt !"
-  doneMessage: "Mimik est prêt à capturer. Cliquez sur « Lancer la capture » pour enregistrer votre premier guide."
+  doneMessage: "TaskStitch est prêt à capturer. Cliquez sur « Lancer la capture » pour enregistrer votre premier guide."
   featureAutoCapture: Capture automatique
   featureAIDescriptions: Descriptions IA
   featureSmartBlur: Flou intelligent
-  openMimik: Ouvrir Mimik
+  openTaskStitch: Ouvrir TaskStitch
 
 steps:
   pressKey: "Appuyer sur $1 dans $2"
