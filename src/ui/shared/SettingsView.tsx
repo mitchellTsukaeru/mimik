@@ -8,6 +8,7 @@ import { DEFAULT_SCREENSHOT_TIMING, SCREENSHOT_TIMINGS, type ScreenshotTiming } 
 import { localStorage } from '@/lib/browser-api';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
+import MascotIcon from '@/ui/fullview/components/MascotIcon';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -223,7 +224,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 Include screenshots when improving guides
               </span>
               <span className="block text-[10px] leading-relaxed text-muted-foreground mt-0.5">
-                Off by default. Mimik asks again before sending up to eight downscaled saved screenshots.
+                Off by default. TaskStitch asks again before sending up to eight downscaled saved screenshots.
               </span>
             </span>
           </label>
@@ -309,7 +310,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         </div>
 
         <a
-          href="https://github.com/mitchellTsukaeru/mimik/issues"
+          href="https://github.com/mitchellTsukaeru/taskstitch/issues"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-accent transition-colors"
@@ -319,21 +320,16 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         </a>
 
         <div className="flex items-center gap-3.5 border border-border rounded-[10px] p-3.5">
-          <svg width="44" height="44" viewBox="20 55 160 108" className="shrink-0">
-            <rect x="30" y="95" width="140" height="68" rx="8" fill="#1E1B4B" />
-            <path d="M30 95 L30 80 Q30 58, 100 58 Q170 58, 170 80 L170 95 Z" fill="#3730A3" />
-            <rect x="30" y="93" width="140" height="3" fill="#C7D2FE" />
-            <path d="M68 122 Q76 112 84 122" stroke="#C7D2FE" strokeWidth="5" fill="none" strokeLinecap="round" />
-            <path d="M116 122 Q124 112 132 122" stroke="#C7D2FE" strokeWidth="5" fill="none" strokeLinecap="round" />
-            <path d="M84 138 Q100 148 116 138" stroke="#C7D2FE" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-          </svg>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary">
+            <MascotIcon size={32} />
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-foreground mb-0.5">{i18n.t('settings.starCtaTitle')}</p>
             <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
               {i18n.t('settings.starCtaMessage')}
             </p>
             <a
-              href="https://github.com/mitchellTsukaeru/mimik"
+              href="https://github.com/mitchellTsukaeru/taskstitch"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-[10px] font-semibold text-accent hover:bg-accent hover:text-white transition-colors"

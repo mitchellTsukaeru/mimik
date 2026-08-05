@@ -603,7 +603,7 @@ function DoneStep() {
           onClick={handleOpen}
           className="inline-flex items-center gap-2 px-7 py-3 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors"
         >
-          {i18n.t('onboarding.openMimik')}
+          {i18n.t('onboarding.openTaskStitch')}
           <svg
             width="16"
             height="16"

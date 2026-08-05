@@ -41,7 +41,7 @@ export function isTooLarge(el: Element): boolean {
   return rect.width / window.innerWidth > MAX_ELEMENT_RATIO && rect.height / window.innerHeight > MAX_ELEMENT_RATIO;
 }
 
-export function isMimikElement(el: Element): boolean {
+export function isTaskStitchElement(el: Element): boolean {
   return !!el.closest('[data-mimik-ignore]');
 }
 

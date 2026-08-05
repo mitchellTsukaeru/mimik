@@ -64,7 +64,7 @@ jobs:
       - name: Preserve release candidate artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mimik-${{ inputs.tag }}
+          name: taskstitch-${{ inputs.tag }}
           path: |
             .output/*-chrome.zip
             .output/*-firefox.zip
@@ -77,7 +77,7 @@ jobs:
         if: ${{ !inputs.dryRun }}
         run: |
           gh release view "${{ inputs.tag }}" >/dev/null 2>&1 || \
-            gh release create "${{ inputs.tag }}" --verify-tag --generate-notes --title "Mimik ${{ inputs.tag }}"
+            gh release create "${{ inputs.tag }}" --verify-tag --generate-notes --title "TaskStitch ${{ inputs.tag }}"
           gh release upload "${{ inputs.tag }}" \
             .output/*-chrome.zip \
             .output/*-firefox.zip \

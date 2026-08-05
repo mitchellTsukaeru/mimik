@@ -1,12 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Guide, Screenshot, Step } from './types';
 
-export class MimikDB extends Dexie {
+export class TaskStitchDB extends Dexie {
   guides!: EntityTable<Guide, 'id'>;
   steps!: EntityTable<Step, 'id'>;
   screenshots!: EntityTable<Screenshot, 'id'>;
 
   constructor() {
+    // Keep the original database name so existing Mimik/TaskStitch guides remain readable after rebranding.
     super('mimik');
     this.version(1).stores({
       guides: 'id, createdAt, updatedAt, starred, deletedAt',
@@ -16,4 +17,4 @@ export class MimikDB extends Dexie {
   }
 }
 
-export const db = new MimikDB();
+export const db = new TaskStitchDB();

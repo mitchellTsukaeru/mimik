@@ -83,8 +83,8 @@ export function ImproveGuideDialog({
           {!proposal ? (
             <div className="space-y-4">
               <div className="rounded-xl border border-border bg-secondary/25 p-4 text-xs leading-relaxed text-foreground">
-                Mimik sends step order, action types, descriptions, safe target labels, and hostnames to {providerLabel}
-                . It never sends typed values, API credentials, or rich-text JSON.
+                TaskStitch sends step order, action types, descriptions, safe target labels, and hostnames to{' '}
+                {providerLabel}. It never sends typed values, API credentials, or rich-text JSON.
               </div>
               <label className="flex items-start gap-3 rounded-xl border border-border p-4 cursor-pointer hover:border-accent/60">
                 <input

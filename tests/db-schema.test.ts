@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import 'fake-indexeddb/auto';
-import { MimikDB } from '../src/shared/db-schema';
+import { TaskStitchDB } from '../src/shared/db-schema';
 import type { Guide, Step, Screenshot } from '../src/shared/types';
 
-describe('MimikDB Schema', () => {
-  let db: MimikDB;
+describe('TaskStitchDB Schema', () => {
+  let db: TaskStitchDB;
 
   beforeEach(async () => {
-    db = new MimikDB();
+    db = new TaskStitchDB();
     await db.open();
   });
 

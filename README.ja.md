@@ -1,8 +1,8 @@
 <div align="center"><a name="readme-top"></a>
 
-<img src="public/mascot.svg" width="140" height="140" alt="Mimik マスコット" />
+<img src="public/mascot.svg" width="140" height="140" alt="TaskStitch マスコット" />
 
-# Mimik for Tsukaeru
+# TaskStitch
 
 [English](./README.md) · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · **日本語**
 
@@ -10,7 +10,7 @@
 
 記録を開始して、いつもの操作を行うだけ。注釈付きスクリーンショットを含む分かりやすいガイドを自動生成し、編集、再生、エクスポートできます。
 
-このリポジトリは [Westpoint の Mimik](https://github.com/westpoint-io/mimik) をベースとした Tsukaeru のフォークです。ローカルファーストかつオープンソースという特長を維持しながら、日本語の AI 出力、最新のモデルプリセット、カスタムモデル ID、ワークフロー記録の信頼性向上を追加しています。
+TaskStitch は、[Westpoint の Mimik](https://github.com/westpoint-io/mimik) をベースに個人が独立して保守するフォークです。ローカルファーストかつオープンソースという基盤を維持しながら、複数サイトの記録、リッチテキストによる手動手順、明示的な AI レビュー、日本語出力、信頼性向上を追加しています。TaskStitch は Westpoint と提携しておらず、Westpoint の承認を受けた製品ではありません。
 
 <!-- SHIELD GROUP -->
 
@@ -31,7 +31,6 @@
 
 #### TOC
 
-- [📺 デモ](#-デモ)
 - [👋 はじめに](#-はじめに)
 - [✨ 機能](#-機能)
   - [🎬 自動キャプチャ](#-自動キャプチャ)
@@ -49,17 +48,11 @@
 
 </details>
 
-## 📺 デモ
-
-<div align="center">
-<img src="https://github.com/user-attachments/assets/d4c64cb8-ad26-4de1-af02-a04a64e2836e" alt="Mimik デモ" width="800" />
-</div>
-
 ## 👋 はじめに
 
-Mimik は、ブラウザ上の繰り返し作業を、わずか数秒で共有可能な手順書に変換します。バックエンド、アカウント、テレメトリはなく、すべてブラウザ内で動作します。明示的に「ガイドを改善」を実行しない限り、データが端末外に送信されることはありません。実行時には、選択したプロバイダーへ直接送るテキストと任意の代表スクリーンショットが事前に表示されます。
+TaskStitch は、ブラウザ上の繰り返し作業を、わずか数秒で共有可能な手順書に変換します。バックエンド、アカウント、テレメトリはなく、すべてブラウザ内で動作します。明示的に「ガイドを改善」を実行しない限り、データが端末外に送信されることはありません。実行時には、選択したプロバイダーへ直接送るテキストと任意の代表スクリーンショットが事前に表示されます。
 
-社内ツールの操作手順、製品チュートリアル、新メンバー向けのオンボーディング資料など、用途を問わず、クリック、キー入力、画面遷移を Mimik が自動で記録します。そのため、ドキュメント作成ではなく、本来の作業に集中できます。
+社内ツールの操作手順、製品チュートリアル、新メンバー向けのオンボーディング資料など、用途を問わず、クリック、キー入力、画面遷移を TaskStitch が自動で記録します。そのため、ドキュメント作成ではなく、本来の作業に集中できます。
 
 | ブラウザ | アップストリーム版 | アップストリーム版をインストール |
 | -------- | ------------------ | -------------------------------- |
@@ -72,11 +65,7 @@ Mimik は、ブラウザ上の繰り返し作業を、わずか数秒で共有�
 
 > \[!IMPORTANT]
 >
-> Mimik が役に立ったら、ぜひ **⭐️ リポジトリに Star** をお願いします。より多くの方に知ってもらう助けになります。
-
-<a href="https://github.com/mitchellTsukaeru/mimik">
-  <img width="100%" alt="GitHub で Mimik に Star を付ける" src="https://github.com/user-attachments/assets/80d304da-a765-4bde-bf49-b1bdcb4fe804" />
-</a>
+> TaskStitch が役に立ったら、ぜひ **⭐️ リポジトリに Star** をお願いします。より多くの方に知ってもらう助けになります。
 
 <div align="right">
 
@@ -88,13 +77,13 @@ Mimik は、ブラウザ上の繰り返し作業を、わずか数秒で共有�
 
 ### 🎬 自動キャプチャ
 
-クリック、入力、画面遷移を Mimik が自動で記録します。ボタンやリンクのクリック、フォーム入力、キーボードショートカット、クリップボード操作、ドラッグ操作、ページ遷移など、意味のある操作がそれぞれ手順として追加されます。
+クリック、入力、画面遷移を TaskStitch が自動で記録します。ボタンやリンクのクリック、フォーム入力、キーボードショートカット、クリップボード操作、ドラッグ操作、ページ遷移など、意味のある操作がそれぞれ手順として追加されます。
 
 スマートなイベント統合により、近接する要素への連続クリックを重複としてまとめ、ガイドを読みやすく保ちます。クリックイベントはページ遷移の前に取得されるため、SPA や通常のページ読み込みでも操作を取りこぼしません。
 
 どの画面からでも <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>、macOS では <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> を押して記録を開始または停止できます。
 
-記録を一時停止し、別の HTTP または HTTPS サイトへ移動して再開することで、複数プラットフォームにまたがる操作を 1 つのガイドとして記録できます。Mimik はアクティブなタブのみを追跡し、各手順の元 URL を保持し、以前のタブから遅れて届いたイベントを破棄します。
+記録を一時停止し、別の HTTP または HTTPS サイトへ移動して再開することで、複数プラットフォームにまたがる操作を 1 つのガイドとして記録できます。TaskStitch はアクティブなタブのみを追跡し、各手順の元 URL を保持し、以前のタブから遅れて届いたイベントを破棄します。
 
 <div align="right">
 
@@ -116,7 +105,7 @@ Mimik は、ブラウザ上の繰り返し作業を、わずか数秒で共有�
 
 ### 🔒 スマートぼかし
 
-Mimik は、メールアドレス、電話番号、米国社会保障番号（SSN）、クレジットカード番号、IP アドレス、MAC アドレスなどの機密情報をスクリーンショットから自動検出し、ぼかします。各カテゴリーは個別に有効または無効にできます。
+TaskStitch は、メールアドレス、電話番号、米国社会保障番号（SSN）、クレジットカード番号、IP アドレス、MAC アドレスなどの機密情報をスクリーンショットから自動検出し、ぼかします。各カテゴリーは個別に有効または無効にできます。
 
 任意の箇所を隠したい場合は、手動ぼかしピッカーで DOM 要素を選択できます。その要素が表示されるすべてのスクリーンショットで同じ箇所がマスクされます。
 
@@ -128,7 +117,7 @@ Mimik は、メールアドレス、電話番号、米国社会保障番号（SS
 
 ### 🧠 AI によるガイド改善（オプション）
 
-記録中に AI が呼び出されることはありません。Mimik はローカルで説明文と決定的な初期タイトルを作成します。記録後に **ガイドを改善** を明示的に実行すると、より具体的なタイトルと説明文を提案できます。変更は自動適用されず、内容を確認して項目ごとに選択します。
+記録中に AI が呼び出されることはありません。TaskStitch はローカルで説明文と決定的な初期タイトルを作成します。記録後に **ガイドを改善** を明示的に実行すると、より具体的なタイトルと説明文を提案できます。変更は自動適用されず、内容を確認して項目ごとに選択します。
 
 OpenAI または Anthropic の API キー、プリセットまたはカスタムモデル ID、必要に応じて互換 API のベース URL を設定できます。送信内容には、入力した値、認証情報、リッチテキスト JSON、手動手順は含まれません。
 
@@ -142,7 +131,7 @@ OpenAI または Anthropic の API キー、プリセットまたはカスタム
 
 ### ▶️ Guide Me リプレイ
 
-作成済みのガイドを実際のページ上で再生できます。Mimik が次にクリックする要素を強調し、進行状況を手順ごとに追跡します。操作を行うと自動で次の手順へ進むため、チームメンバーのオンボーディングや、自分で手順を確認する際に便利です。
+作成済みのガイドを実際のページ上で再生できます。TaskStitch が次にクリックする要素を強調し、進行状況を手順ごとに追跡します。操作を行うと自動で次の手順へ進むため、チームメンバーのオンボーディングや、自分で手順を確認する際に便利です。
 
 <div align="right">
 
@@ -168,7 +157,7 @@ OpenAI または Anthropic の API キー、プリセットまたはカスタム
 
 ### 🌍 多言語対応
 
-インターフェースは英語、スペイン語、ブラジルポルトガル語、フランス語に対応しています。AI の出力言語はインターフェースとは別に設定でき、日本語にも対応しています。そのため、英語版の Mimik を使用しながら日本語のガイドを生成できます。
+インターフェースは英語、スペイン語、ブラジルポルトガル語、フランス語に対応しています。AI の出力言語はインターフェースとは別に設定でき、日本語にも対応しています。そのため、英語版の TaskStitch を使用しながら日本語のガイドを生成できます。
 
 <div align="right">
 
@@ -178,7 +167,7 @@ OpenAI または Anthropic の API キー、プリセットまたはカスタム
 
 ### 💾 100% ローカルストレージ
 
-ガイド、リッチテキスト手順、スクリーンショット、API キー、互換 API URL はすべて端末内に保存されます。バックエンド、アカウント、テレメトリはありません。明示的な「ガイドを改善」リクエストだけが、事前表示されたテキストと、別途有効化した場合の代表スクリーンショットを設定済みプロバイダーへ送信します。これらを受信する Mimik のサーバーはありません。
+ガイド、リッチテキスト手順、スクリーンショット、API キー、互換 API URL はすべて端末内に保存されます。バックエンド、アカウント、テレメトリはありません。明示的な「ガイドを改善」リクエストだけが、事前表示されたテキストと、別途有効化した場合の代表スクリーンショットを設定済みプロバイダーへ送信します。これらを受信する TaskStitch のサーバーはありません。
 
 <div align="right">
 
@@ -200,7 +189,7 @@ OpenAI または Anthropic の API キー、プリセットまたはカスタム
 
 ## 📜 ライセンス
 
-Mimik をベースとし、MIT © [Westpoint](https://github.com/westpoint-io) のライセンスの下で、Tsukaeru が変更部分を保守しています。詳細は [LICENSE](./LICENSE) を参照してください。
+TaskStitch は [Westpoint の Mimik](https://github.com/westpoint-io/mimik) をベースとする独立したフォークで、MIT ライセンスの下で配布されています。Westpoint の元の著作権表示とライセンスは [LICENSE](./LICENSE) に保持されています。
 
 <div align="right">
 
@@ -224,16 +213,16 @@ Mimik をベースとし、MIT © [Westpoint](https://github.com/westpoint-io) �
 [no-account-shield]: https://img.shields.io/badge/account-not%20required-4F46E5?style=flat-square&labelColor=1E1B4B
 [no-account-link]: #-100-ローカルストレージ
 
-[star-shield]: https://img.shields.io/github/stars/mitchellTsukaeru/mimik?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
-[star-link]: https://github.com/mitchellTsukaeru/mimik/stargazers
+[star-shield]: https://img.shields.io/github/stars/mitchellTsukaeru/taskstitch?style=flat-square&label=stars&color=4F46E5&labelColor=1E1B4B
+[star-link]: https://github.com/mitchellTsukaeru/taskstitch/stargazers
 
-[contributors-shield]: https://img.shields.io/github/contributors/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
-[contributors-link]: https://github.com/mitchellTsukaeru/mimik/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/mitchellTsukaeru/taskstitch?style=flat-square&labelColor=1E1B4B
+[contributors-link]: https://github.com/mitchellTsukaeru/taskstitch/graphs/contributors
 
-[last-commit-shield]: https://img.shields.io/github/last-commit/mitchellTsukaeru/mimik?style=flat-square&label=commit&labelColor=1E1B4B
+[last-commit-shield]: https://img.shields.io/github/last-commit/mitchellTsukaeru/taskstitch?style=flat-square&label=commit&labelColor=1E1B4B
 
-[issues-shield]: https://img.shields.io/github/issues/mitchellTsukaeru/mimik?style=flat-square&labelColor=1E1B4B
-[issues-link]: https://github.com/mitchellTsukaeru/mimik/issues
+[issues-shield]: https://img.shields.io/github/issues/mitchellTsukaeru/taskstitch?style=flat-square&labelColor=1E1B4B
+[issues-link]: https://github.com/mitchellTsukaeru/taskstitch/issues
 
 [chrome-version-shield]: https://img.shields.io/chrome-web-store/v/jmfohdaflahliammccpiadmkcibohgha?label=Chrome%20Version&style=flat-square&logo=googlechrome&logoColor=C7D2FE&color=4F46E5&labelColor=1E1B4B
 [chrome-link]: https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha

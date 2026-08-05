@@ -6,7 +6,7 @@ export default defineConfig({
   srcDir: "src",
   imports: false,
   webExt: {
-    chromiumArgs: ['--user-data-dir=/tmp/mimik-dev-profile', '--window-size=1280,800', '--window-position=0,0', '--force-device-scale-factor=1.25'],
+    chromiumArgs: ['--user-data-dir=/tmp/taskstitch-dev-profile', '--window-size=1280,800', '--window-position=0,0', '--force-device-scale-factor=1.25'],
   },
   zip: {
     excludeSources: [
@@ -65,7 +65,7 @@ export default defineConfig({
             default: 'Ctrl+Shift+R',
             mac: 'Command+Shift+R',
           },
-          description: 'Start or stop a Mimik recording',
+          description: 'Start or stop a TaskStitch recording',
         },
       },
       ...(isFirefox
@@ -73,12 +73,12 @@ export default defineConfig({
             sidebar_action: {
               default_panel: "sidepanel.html",
               default_icon: "icon32.png",
-              default_title: "Mimik",
+              default_title: "TaskStitch",
               open_at_install: false,
             },
             browser_specific_settings: {
               gecko: {
-                id: "mimik@westpoint.io",
+                id: "{a07c6329-c052-4a3d-b7e6-cf714a8bd7fe}",
                 strict_min_version: "128.0",
                 data_collection_permissions: {
                   required: ["none"],
