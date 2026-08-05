@@ -40,7 +40,14 @@ export async function getGuide(
   const steps = await db.steps.where('guideId').equals(id).sortBy('index');
   const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
   const screenshotRows = await db.screenshots.where('id').anyOf(screenshotIds).toArray();
-  const screenshots = new Map(screenshotRows.map((s) => [s.stepId, s]));
+  const screenshotsById = new Map(screenshotRows.map((s) => [s.id, s]));
+  const screenshots = new Map<string, Screenshot>();
+  for (const step of steps) {
+    if (step.screenshotId) {
+      const screenshot = screenshotsById.get(step.screenshotId);
+      if (screenshot) screenshots.set(step.id, screenshot);
+    }
+  }
   return { guide, steps, screenshots };
 }
 
@@ -112,9 +119,14 @@ export async function restoreGuide(id: string): Promise<void> {
 export async function permanentlyDeleteGuide(id: string): Promise<void> {
   const steps = await db.steps.where('guideId').equals(id).toArray();
   const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
-  await db.screenshots.where('id').anyOf(screenshotIds).delete();
-  await db.steps.where('guideId').equals(id).delete();
-  await db.guides.delete(id);
+  await db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    await db.steps.where('guideId').equals(id).delete();
+    await db.guides.delete(id);
+    for (const screenshotId of screenshotIds) {
+      const stillReferenced = await db.steps.where('screenshotId').equals(screenshotId).count();
+      if (stillReferenced === 0) await db.screenshots.delete(screenshotId);
+    }
+  });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
@@ -217,10 +229,11 @@ export async function getStepsForGuide(guideId: string): Promise<Step[]> {
 
 export async function deleteStep(guideId: string, stepId: string): Promise<void> {
   const step = await db.steps.get(stepId);
-  if (step?.screenshotId) {
-    await db.screenshots.delete(step.screenshotId);
-  }
   await db.steps.delete(stepId);
+  if (step?.screenshotId) {
+    const stillReferenced = await db.steps.where('screenshotId').equals(step.screenshotId).count();
+    if (stillReferenced === 0) await db.screenshots.delete(step.screenshotId);
+  }
   const guide = await db.guides.get(guideId);
   if (guide) {
     const newStepIds = guide.stepIds.filter((id) => id !== stepId);
@@ -244,8 +257,25 @@ export async function saveScreenshot(screenshot: Screenshot): Promise<void> {
   await db.screenshots.add(screenshot);
 }
 
-export async function updateScreenshotBlob(screenshotId: string, blob: Blob): Promise<void> {
+export async function updateScreenshotBlob(
+  screenshotId: string,
+  blob: Blob,
+  stepId?: string,
+): Promise<Screenshot | undefined> {
+  const screenshot = await db.screenshots.get(screenshotId);
+  if (!screenshot) return undefined;
+  const referenceCount = await db.steps.where('screenshotId').equals(screenshotId).count();
+  if (stepId && referenceCount > 1) {
+    const id = crypto.randomUUID();
+    const copy = { ...screenshot, id, stepId, blob };
+    await db.transaction('rw', db.screenshots, db.steps, async () => {
+      await db.screenshots.add(copy);
+      await db.steps.update(stepId, { screenshotId: id });
+    });
+    return copy;
+  }
   await db.screenshots.update(screenshotId, { blob });
+  return { ...screenshot, blob };
 }
 
 export async function getScreenshotsForSteps(stepIds: string[]): Promise<Map<string, Screenshot>> {

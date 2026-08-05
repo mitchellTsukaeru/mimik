@@ -116,6 +116,19 @@ export type ImproveGuideResponse =
   | { success: true; proposal: GuideImprovementProposal }
   | { success: false; error: string; needsConfiguration?: boolean; imageUnsupported?: boolean };
 
+export interface StartTranslationData {
+  guideId: string;
+  targetLanguage: string;
+}
+
+export type StartTranslationResponse =
+  | { success: true; jobId: string }
+  | { success: false; error: string; needsConfiguration?: boolean };
+
+export interface TranslationJobData {
+  jobId: string;
+}
+
 interface TaskStitchProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
@@ -133,6 +146,8 @@ interface TaskStitchProtocol {
   enterBlurMode(): EnterBlurModeResponse;
   exitBlurMode(): ExitBlurModeResponse;
   improveGuide(data: ImproveGuideData): ImproveGuideResponse;
+  startTranslation(data: StartTranslationData): StartTranslationResponse;
+  retryTranslation(data: TranslationJobData): { success: boolean; error?: string };
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<TaskStitchProtocol>();

@@ -9,6 +9,8 @@ export interface Guide {
   starred: boolean;
   deletedAt: number | null;
   titleEdited?: boolean;
+  sourceGuideId?: string;
+  language?: string;
 }
 
 export interface Step {
@@ -42,6 +44,25 @@ export interface Screenshot {
   height: number;
   bounds?: ScreenshotBounds;
   pixelRatio?: number;
+}
+
+export type TranslationJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface TranslationJob {
+  id: string;
+  sourceGuide: Guide;
+  sourceSteps: Step[];
+  targetLanguage: string;
+  status: TranslationJobStatus;
+  items: Array<{ id: string; text: string }>;
+  translations: Record<string, string>;
+  nextIndex: number;
+  completedItems: number;
+  totalItems: number;
+  translatedGuideId?: string;
+  error?: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Settings {

@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
-import { ArrowLeft, Layers, Maximize2, Play, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Languages, Layers, Maximize2, Play, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import {
@@ -21,6 +21,7 @@ import EmptyGuideState from '@/ui/shared/EmptyGuideState';
 import FaviconImg from '@/ui/shared/FaviconImg';
 import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
 import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
+import { TranslateGuideDialog } from '@/ui/shared/TranslateGuideDialog';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
 import StepCard from './StepCard';
@@ -47,6 +48,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
   const [addingAt, setAddingAt] = useState<number | null>(null);
   const [improving, setImproving] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   const loadGuide = useCallback(async () => {
     const result = await getGuide(guideId);
@@ -113,12 +115,19 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
       if (!blurringStepId || !data) return;
       const blurScreenshot = data.screenshots.get(blurringStepId);
       if (!blurScreenshot) return;
-      await updateScreenshotBlob(blurScreenshot.id, blob);
+      const updatedScreenshot = await updateScreenshotBlob(blurScreenshot.id, blob, blurringStepId);
+      if (!updatedScreenshot) return;
       setData((prev) => {
         if (!prev) return prev;
         const newScreenshots = new Map(prev.screenshots);
-        newScreenshots.set(blurringStepId, { ...blurScreenshot, blob });
-        return { ...prev, screenshots: newScreenshots };
+        newScreenshots.set(blurringStepId, updatedScreenshot);
+        return {
+          ...prev,
+          steps: prev.steps.map((step) =>
+            step.id === blurringStepId ? { ...step, screenshotId: updatedScreenshot.id } : step,
+          ),
+          screenshots: newScreenshots,
+        };
       });
       setBlurringStepId(null);
     },
@@ -157,6 +166,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
         />
       )}
       {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
+      {translating && <TranslateGuideDialog guideId={guideId} onClose={() => setTranslating(false)} />}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <button
@@ -189,6 +199,15 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
           >
             <Maximize2 size={15} />
           </button>
+          {data.steps.length > 0 && (
+            <button
+              onClick={() => setTranslating(true)}
+              className="shrink-0 rounded-md p-1.5 text-purple transition-colors hover:bg-secondary hover:text-accent"
+              title="Create translated copy"
+            >
+              <Languages size={15} />
+            </button>
+          )}
           {data.steps.length > 0 && (
             <button
               onClick={() => setImproving(true)}
