@@ -2,8 +2,8 @@ meta:
   locale: en
 
 app:
-  name: Mimik
-  store_title: "Mimik: Step-by-Step Guides, Tutorials & Screenshots"
+  name: Mimik for Tsukaeru
+  store_title: "Mimik for Tsukaeru: Workflow Guides"
   description: Auto-capture any browser workflow into a step-by-step guide with screenshots. Local-first, open source, bring your own AI key.
 
 common:

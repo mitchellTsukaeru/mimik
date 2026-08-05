@@ -71,6 +71,8 @@ Whether you're documenting internal tools, writing product tutorials, or onboard
 >
 > The store listings are maintained by the upstream project and may not yet include the fork-specific features documented here. To run this repository's current version, follow the local development or build instructions in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+Fork releases and their checksums are published on the [GitHub Releases page](https://github.com/mitchellTsukaeru/mimik/releases). Employee builds are distributed through a private Chrome Web Store listing so installations receive signed automatic updates. See [Releasing Mimik](./RELEASING.md) for the release and trusted-tester process.
+
 > \[!IMPORTANT]
 >
 > **⭐️ Star the repo** if Mimik saves you time. It helps other people discover it!
@@ -216,6 +218,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, project layout, 
 ## 📜 License
 
 Based on Mimik, MIT © [Westpoint](https://github.com/westpoint-io), with modifications maintained by Tsukaeru. See [LICENSE](./LICENSE) for details.
+
+See the [Mimik Privacy Policy](./PRIVACY.md) for local storage, browser permissions, and optional AI transmission disclosures.
 
 <div align="right">
 
