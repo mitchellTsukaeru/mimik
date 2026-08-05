@@ -71,6 +71,7 @@ jobs:
             .output/*-sources.zip
             .output/SHA256SUMS.txt
           if-no-files-found: error
+          include-hidden-files: true
 
       - name: Create or update GitHub release
         if: ${{ !inputs.dryRun }}
