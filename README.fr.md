@@ -157,7 +157,7 @@ Tous les exports sont générés côté client. Rien ne passe par un serveur.
 
 ### 🌍 Multilingue
 
-L'interface est disponible en anglais, espagnol, portugais brésilien et français. La langue des sorties IA se configure séparément et prend aussi en charge le japonais, ce qui permet d'utiliser TaskStitch en anglais tout en générant des guides en japonais.
+L'interface est disponible en anglais, espagnol, portugais brésilien, français et japonais. La langue des sorties IA se configure séparément et prend aussi en charge le japonais, ce qui permet d'utiliser TaskStitch en anglais tout en générant des guides en japonais.
 
 <div align="right">
 

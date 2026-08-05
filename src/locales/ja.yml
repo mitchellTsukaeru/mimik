@@ -1,0 +1,247 @@
+meta:
+  locale: ja
+
+app:
+  name: TaskStitch
+  store_title: "TaskStitch: ワークフローガイド"
+  description: スクリーンショット付きのステップガイドとしてブラウザのワークフローを自動記録。ローカル優先、オープンソース、自分の AI キーを使用。
+
+common:
+  loading: 読み込み中...
+  cancel: キャンセル
+  save: 保存
+  delete: 削除
+  back: 戻る
+  continue: 続行
+  skip: スキップ
+  export: エクスポート
+  close: 閉じる
+  undo: 元に戻す
+  star: スターを付ける
+  unstar: スターを外す
+  restore: 復元
+
+sidepanel:
+  connected: 接続済み
+  connecting: 接続中...
+  heroTitle: 何をキャプチャしますか？
+  heroSubtitle: ワークフローを自動で記録
+  startCapture: キャプチャを開始
+  searchPlaceholder: ガイドを検索...
+  recentLabel: 最近使ったガイド
+  openTaskStitch: TaskStitch を開く
+
+library:
+  noGuidesTitle: ガイドはまだありません
+  noGuidesSub: キャプチャを開始して最初のガイドを作成しましょう
+  noStarredTitle: スター付きのガイドはありません
+  noStarredSub: ガイドにスターを付けるとすぐに見つけられます
+  trashEmptyTitle: ゴミ箱は空です
+  trashEmptySub: すっきりしました！
+  noMatchingGuides: 一致するガイドがありません
+  moveToTrash: ゴミ箱に移動
+  deletePermanently: 完全に削除
+  openInFullView: 全画面表示で開く
+
+guideme:
+  live: ライブ
+  stepOf: "$1 / $2 ステップ"
+  noDescription: 説明なし
+  prev: 前へ
+  next: 次へ
+  finish: 完了
+  exitTitle: 終了しますか？
+  exitMessage: ガイドを終了し、ページ上のオーバーレイを削除します。
+  stay: 続ける
+  exit: 終了
+  guideNotFound: ガイドが見つかりません
+
+guidemeCompletion:
+  title: "完了しました！"
+  stepsCompleted: "$1 ステップが完了しました。"
+  stepsCompletedPlural: "$1 ステップすべてが完了しました。"
+  allDone: すべて完了
+  runAgain: もう一度実行
+
+recording:
+  capturePaused: キャプチャを一時停止中
+  pause: 録画を一時停止
+  resume: 録画を再開
+  unsupportedPage: 再開するには通常のウェブサイトに移動してください
+  recording: "録画中 \xB7 $1 ステップ"
+  recordingPlural: "録画中 \xB7 $1 ステップ"
+  readyTitle: キャプチャの準備ができました！
+  readySub: ページをクリックして開始
+  finishRecording: 録画を終了
+  smartBlur: スマートぼかし
+  discard: 破棄
+  deleteStep: ステップを削除
+  justNow: たった今
+  secondsAgo: "$1 秒前"
+  minutesAgo: "$1 分前"
+
+settings:
+  title: 設定
+  aiDescriptions: AI による説明
+  provider: プロバイダー
+  model: モデル
+  customModel: カスタムモデル ID...
+  customModelId: カスタムモデル ID
+  customModelPlaceholder: プロバイダーのモデル ID を入力
+  apiKey: API キー
+  baseUrl: 互換 API URL（任意）
+  baseUrlHelp: 公式プロバイダーを使う場合は空欄にしてください。カスタム URL には API キーと AI 用のテキストコンテキストが送信されます。
+  aiLanguage: 説明の言語
+  captureTiming: スクリーンショットのタイミング
+  screenshotDelay: スクリーンショット前の遅延
+  captureTimingFast: 高速（150 ms）
+  captureTimingNormal: 標準（500 ms）
+  captureTimingSlow: 低速（1 秒）
+  captureTimingHelp: 各操作の後に少し待ち、メニューやダイアログが表示されてからスクリーンショットを撮影します。
+  saveSettings: 設定を保存
+  saved: 保存しました
+  smartBlur: スマートぼかし
+  privacyNotice: API キーと互換 API URL はローカルに保存されます。キーと AI 用のテキストコンテキストは設定したエンドポイントにのみ送信されます。
+  bugReport: "バグを見つけましたか？ GitHub で報告"
+  starCtaTitle: "気に入っていただけましたか？"
+  starCtaMessage: GitHub でスターを付けると、TaskStitch を他の人に見つけてもらいやすくなり、開発の励みになります！
+  starOnGithub: GitHub でスターを付ける
+
+blurPresets:
+  email: メールアドレス
+  phoneNumbers: 電話番号
+  ssn: 社会保障番号
+  creditCard: クレジットカード
+  ipAddress: IP アドレス
+  macAddress: MAC アドレス
+
+fullview:
+  allGuides: すべてのガイド
+  starred: スター付き
+  trash: ゴミ箱
+  searchPlaceholder: ガイドを検索...
+  guideMe: ガイドモード
+  untitledGuide: 無題のガイド
+  writingTitle: キャプチャしたステップからタイトルを作成中...
+  guideNotFound: "ガイドが見つかりません。"
+  stepCount: "$1 ステップ"
+  stepCountPlural: "$1 ステップ"
+  pageOf: "$1 / $2"
+
+sort:
+  recentFirst: 新しい順
+  oldestFirst: 古い順
+  alphaAZ: "A \u2014 Z"
+  mostSteps: ステップ数の多い順
+  gridView: グリッド表示
+  listView: リスト表示
+
+search:
+  startTyping: ガイドを検索するには入力してください
+  noMatchingGuides: 一致するガイドがありません
+  noGuidesYet: ガイドはまだありません
+
+keyboard:
+  navigate: 移動
+  open: 開く
+  close: 閉じる
+
+confirmDelete:
+  title: "ガイドを削除しますか？"
+  message: このガイドを完全に削除します。この操作は元に戻せません。
+  confirm: 完全に削除
+
+editor:
+  backToLibrary: ライブラリに戻る
+  guideMe: ガイドモード
+  deleteThisStep: "このステップを削除しますか？"
+  blurSensitiveArea: 機密エリアをぼかす
+  copyScreenshot: スクリーンショットをコピー
+  noScreenshot: スクリーンショットなし
+
+emptyGuide:
+  title: このガイドは空です
+  subtitle: ステップを記録してガイドを始めましょう
+
+blurCanvas:
+  drawInstructions: 長方形を描いてぼかす
+  regionCount: "$1 個の領域"
+  regionCountPlural: "$1 個の領域"
+
+blurPanel:
+  title: スマートぼかし
+  manualMode: 手動モード
+  selectElements: ぼかす要素を選択
+  done: 完了
+  doneResume: "完了 \xB7 録画を再開"
+  resetAll: すべてリセット
+
+exportMenu:
+  html: HTML
+  markdown: Markdown
+  pdf: PDF
+
+onboarding:
+  welcomeBadge: ようこそ
+  welcomeTitle: "TaskStitch のインストールが完了しました！"
+  welcomeMessage: "あと数ステップで、ブラウザのワークフローを自動記録してステップガイドを作成できます。アカウントは不要です \u2014 すべてブラウザ内に保存されます。"
+  getStarted: はじめる
+  aiStepLabel: 3 ステップ中 1
+  aiTitle: AI による説明
+  aiMessage: 自分の API キーと、AI によるステップ説明に使用する互換エンドポイントを任意で接続できます。設定は後から変更できます。
+  aiGenerated: AI 生成
+  aiGeneratedDescription: AI が生成した説明
+  blurStepLabel: 2 ステップ中 1
+  blurTitle: スマートぼかし
+  blurMessage: スクリーンショット内の機密情報を自動的にぼかします。検出するパターンを選択してください。
+  screenshotPreview: スクリーンショットのプレビュー
+  notEnabled: 無効
+  categoriesProtected: "$1 個のカテゴリを保護中"
+  pinStepLabel: 2 ステップ中 2
+  pinTitle: TaskStitch を固定
+  pinMessage: すぐにアクセスできるよう、拡張機能をツールバーに固定してください。Chrome のパズルアイコンをクリックして TaskStitch を固定します。
+  pinStep1Title: パズルアイコンをクリック
+  pinStep1Sub: ブラウザ右上のツールバー
+  pinStep2Title: TaskStitch を探す
+  pinStep2Sub: 拡張機能のメニュー内
+  pinStep3Title: 固定アイコンをクリック
+  pinStep3Sub: TaskStitch がツールバーに表示されます
+  pinScreenshotAlt: TaskStitch 拡張機能を固定
+  doneTitle: "準備完了です！"
+  doneMessage: "TaskStitch でワークフローをキャプチャする準備ができました。拡張機能の「キャプチャを開始」をクリックして、最初のガイドを記録しましょう。"
+  featureAutoCapture: 自動キャプチャ
+  featureAIDescriptions: AI による説明
+  featureSmartBlur: スマートぼかし
+  openTaskStitch: TaskStitch を開く
+
+steps:
+  pressKey: "$2 で $1 を押す"
+  toggleCheckbox: "$1 を切り替え"
+  selectRadio: "$1 を選択"
+  toggleSwitch: "$1 を切り替え"
+  clickLink: "リンク「$1」をクリック"
+  click: "$1 をクリック"
+  openContextMenu: "$1 のコンテキストメニューを開く"
+  typeIntoField: "$1 フィールドに $2 を入力"
+  typeInto: "$1 に入力"
+  copyFrom: "$1 からコピー"
+  pasteInto: "$1 に貼り付け"
+  cutFrom: "$1 から切り取り"
+  drag: "$1 をドラッグ"
+  navigate: ページに移動
+  defaultAction: "$1 $2"
+
+export:
+  created: 作成日
+  source: ソース
+  step: ステップ
+  steps: ステップ
+  stepLabel: "$1 ステップ"
+  stepsCount: "$1 ステップ"
+  createdLabel: "作成日: $1"
+  sourceLabel: "ソース: $1"
+
+background:
+  guideOnDomain: "$1 のガイド"
+  multiSiteGuide: マルチサイトガイド
+  newGuide: 新しいガイド

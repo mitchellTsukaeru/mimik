@@ -174,7 +174,7 @@ All exports are generated client-side. Nothing touches a server.
 
 ### 🌍 Multi-language
 
-The interface is available in English, Spanish, Brazilian Portuguese, and French. AI output language is configured independently and also supports Japanese, so you can run TaskStitch in English while generating Japanese guides.
+The interface is available in English, Spanish, Brazilian Portuguese, French, and Japanese. AI output language is configured independently and also supports Japanese, so you can run TaskStitch in English while generating Japanese guides.
 
 <div align="right">
 
