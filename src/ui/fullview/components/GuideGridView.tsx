@@ -1,8 +1,29 @@
-import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  FileArchive,
+  FileCode,
+  FileDown,
+  FileText,
+  Loader2,
+  MoreVertical,
+  RotateCcw,
+  Star,
+  StarOff,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
+import { downloadBlob, downloadText } from '@/core/export/download';
+import { exportGuideAsHTML } from '@/core/export/html-export';
+import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
+import { exportGuideAsPDF } from '@/core/export/pdf-export';
+import { getGuide } from '@/core/guides/service';
+import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { formatDate } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
+import { PortableExportDialog } from '@/ui/shared/PortableExportDialog';
 import ZoomScreenshot from '@/ui/sidepanel/ZoomScreenshot';
 import { navigate } from '../router';
 import MascotIcon from './MascotIcon';
@@ -41,22 +62,63 @@ function CardMenu({
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<'actions' | 'export'>('actions');
+  const [exporting, setExporting] = useState<'html' | 'markdown' | 'pdf' | 'taskstitch' | null>(null);
+  const [portableData, setPortableData] = useState<{
+    guide: Guide;
+    steps: Step[];
+    screenshots: Map<string, Screenshot>;
+  } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+
+  const closeMenu = () => {
+    setOpen(false);
+    setView('actions');
+  };
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setView('actions');
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
+
+  const handleExport = async (e: React.MouseEvent, type: 'html' | 'markdown' | 'pdf' | 'taskstitch') => {
+    e.stopPropagation();
+    setExporting(type);
+    try {
+      const data = await getGuide(guideId);
+      if (!data) return;
+
+      if (type === 'taskstitch') {
+        setPortableData(data);
+      } else if (type === 'html') {
+        const html = await exportGuideAsHTML(data.guide, data.steps, data.screenshots);
+        downloadText(html, `${data.guide.title}.html`, 'text/html');
+      } else if (type === 'markdown') {
+        const markdown = await exportGuideAsMarkdown(data.guide, data.steps, data.screenshots);
+        downloadText(markdown, `${data.guide.title}.md`, 'text/markdown');
+      } else {
+        const pdf = await exportGuideAsPDF(data.guide, data.steps, data.screenshots);
+        downloadBlob(pdf, `${data.guide.title}.pdf`);
+      }
+      closeMenu();
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const items: {
     icon: React.ReactNode;
     label: string;
     onClick: (e: React.MouseEvent) => void;
     destructive?: boolean;
+    submenu?: boolean;
   }[] = [];
 
   if (category === 'trash') {
@@ -87,6 +149,15 @@ function CardMenu({
       },
     });
     items.push({
+      icon: <Download size={13} />,
+      label: i18n.t('common_export'),
+      onClick: (e) => {
+        e.stopPropagation();
+        setView('export');
+      },
+      submenu: true,
+    });
+    items.push({
       icon: <Trash2 size={13} />,
       label: i18n.t('library_moveToTrash'),
       onClick: (e) => {
@@ -99,10 +170,21 @@ function CardMenu({
 
   return (
     <div ref={ref} className="relative">
+      {portableData && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <PortableExportDialog
+            guide={portableData.guide}
+            steps={portableData.steps}
+            screenshots={portableData.screenshots}
+            onClose={() => setPortableData(null)}
+          />
+        </div>
+      )}
       <button
         onClick={(e) => {
           e.stopPropagation();
-          setOpen(!open);
+          if (open) closeMenu();
+          else setOpen(true);
         }}
         className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
       >
@@ -113,18 +195,51 @@ function CardMenu({
           className="absolute left-full ml-1 top-0 bg-card border border-border rounded-lg shadow-lg py-1 z-20 min-w-[160px]"
           onClick={(e) => e.stopPropagation()}
         >
-          {items.map((item) => (
-            <button
-              key={item.label}
-              onClick={item.onClick}
-              className={`flex items-center gap-2 w-full text-left text-xs font-medium px-3 py-2 transition-colors ${
-                item.destructive ? 'text-destructive hover:bg-destructive/10' : 'text-foreground hover:bg-secondary'
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
+          {view === 'actions' ? (
+            items.map((item) => (
+              <button
+                key={item.label}
+                onClick={item.onClick}
+                className={`flex items-center gap-2 w-full text-left text-xs font-medium px-3 py-2 transition-colors ${
+                  item.destructive ? 'text-destructive hover:bg-destructive/10' : 'text-foreground hover:bg-secondary'
+                }`}
+              >
+                {item.icon}
+                {item.label}
+                {item.submenu && <ChevronRight size={12} className="ml-auto" />}
+              </button>
+            ))
+          ) : (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setView('actions');
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs font-semibold text-muted-foreground hover:bg-secondary"
+              >
+                <ChevronLeft size={12} />
+                {i18n.t('common_export')}
+              </button>
+              <div className="my-1 border-t border-border" />
+              {[
+                { type: 'html' as const, icon: FileCode, label: i18n.t('exportMenu_html') },
+                { type: 'markdown' as const, icon: FileText, label: i18n.t('exportMenu_markdown') },
+                { type: 'pdf' as const, icon: FileDown, label: i18n.t('exportMenu_pdf') },
+                { type: 'taskstitch' as const, icon: FileArchive, label: 'Interactive guide' },
+              ].map((item) => (
+                <button
+                  key={item.type}
+                  onClick={(e) => handleExport(e, item.type)}
+                  disabled={exporting !== null}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-secondary disabled:opacity-60"
+                >
+                  {exporting === item.type ? <Loader2 size={13} className="animate-spin" /> : <item.icon size={13} />}
+                  {item.label}
+                </button>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
