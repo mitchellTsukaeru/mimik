@@ -2,7 +2,7 @@ import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { GuideImprovementProposal } from '@/core/capture/ai/improve';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
-import type { ElementMeta } from '@/core/guides/types';
+import type { ElementMeta, GuideImpact } from '@/core/guides/types';
 
 export interface GetStateResponse {
   state: CaptureStateValue;
@@ -71,11 +71,14 @@ export interface FinalizeInputStepResponse {
 
 export interface StartGuideMeData {
   guideId: string;
+  confirmedImpact?: boolean;
 }
 
 export interface StartGuideMeResponse {
   started: boolean;
   error?: string;
+  confirmationRequired?: boolean;
+  impact?: GuideImpact;
 }
 
 export interface GuideMeStepCompletedData {
@@ -116,6 +119,19 @@ export type ImproveGuideResponse =
   | { success: true; proposal: GuideImprovementProposal }
   | { success: false; error: string; needsConfiguration?: boolean; imageUnsupported?: boolean };
 
+export interface StartTranslationData {
+  guideId: string;
+  targetLanguage: string;
+}
+
+export type StartTranslationResponse =
+  | { success: true; jobId: string }
+  | { success: false; error: string; needsConfiguration?: boolean };
+
+export interface TranslationJobData {
+  jobId: string;
+}
+
 interface TaskStitchProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
@@ -133,6 +149,8 @@ interface TaskStitchProtocol {
   enterBlurMode(): EnterBlurModeResponse;
   exitBlurMode(): ExitBlurModeResponse;
   improveGuide(data: ImproveGuideData): ImproveGuideResponse;
+  startTranslation(data: StartTranslationData): StartTranslationResponse;
+  retryTranslation(data: TranslationJobData): { success: boolean; error?: string };
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<TaskStitchProtocol>();

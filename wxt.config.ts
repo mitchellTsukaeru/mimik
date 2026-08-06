@@ -47,6 +47,7 @@ export default defineConfig({
         "scripting",
         "unlimitedStorage",
         "webNavigation",
+        "alarms",
         ...(isFirefox ? [] : ["sidePanel"]),
       ],
       ...(isFirefox

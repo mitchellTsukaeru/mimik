@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
-import { Play, Sparkles } from 'lucide-react';
+import { Languages, Play, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { i18n } from '#imports';
@@ -19,8 +19,10 @@ import { sendMessage } from '@/lib/messaging';
 import { formatDate, getMostCommonDomain } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import FaviconImg from '@/ui/shared/FaviconImg';
+import { GuideMeStartDialog } from '@/ui/shared/GuideMeStartDialog';
 import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
 import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
+import { TranslateGuideDialog } from '@/ui/shared/TranslateGuideDialog';
 import BlurCanvas from '@/ui/sidepanel/BlurCanvas';
 import GuideStepList from './components/GuideStepList';
 
@@ -48,6 +50,8 @@ export default function GuideContent({ guideId }: GuideContentProps) {
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
   const [addingAt, setAddingAt] = useState<number | null>(null);
   const [improving, setImproving] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [guideMeWarning, setGuideMeWarning] = useState(false);
   const titleRef = useRef('');
 
   const loadGuide = useCallback(async () => {
@@ -121,12 +125,19 @@ export default function GuideContent({ guideId }: GuideContentProps) {
       if (!blurringStepId || !data) return;
       const screenshot = data.screenshots.get(blurringStepId);
       if (!screenshot) return;
-      await updateScreenshotBlob(screenshot.id, blob);
+      const updatedScreenshot = await updateScreenshotBlob(screenshot.id, blob, blurringStepId);
+      if (!updatedScreenshot) return;
       setData((prev) => {
         if (!prev) return prev;
         const newScreenshots = new Map(prev.screenshots);
-        newScreenshots.set(blurringStepId, { ...screenshot, blob });
-        return { ...prev, screenshots: newScreenshots };
+        newScreenshots.set(blurringStepId, updatedScreenshot);
+        return {
+          ...prev,
+          steps: prev.steps.map((step) =>
+            step.id === blurringStepId ? { ...step, screenshotId: updatedScreenshot.id } : step,
+          ),
+          screenshots: newScreenshots,
+        };
       });
       setBlurringStepId(null);
     },
@@ -175,6 +186,17 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         />
       )}
       {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
+      {translating && <TranslateGuideDialog guideId={guideId} onClose={() => setTranslating(false)} />}
+      {guideMeWarning && (
+        <GuideMeStartDialog
+          guide={data.guide}
+          onClose={() => setGuideMeWarning(false)}
+          onBeforeStart={openSidebar}
+          onStarted={() => {
+            setGuideMeWarning(false);
+          }}
+        />
+      )}
 
       <div
         className={
@@ -246,8 +268,16 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         )}
         {data.steps.length > 0 && (
           <button
+            onClick={() => setTranslating(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-0.5 text-[11px] font-semibold text-accent transition-colors hover:bg-border/60"
+          >
+            <Languages size={11} /> Translate
+          </button>
+        )}
+        {data.steps.length > 0 && (
+          <button
             onClick={() => setImproving(true)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent bg-secondary hover:bg-border/60 px-3 py-0.5 rounded-full transition-colors ml-auto"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-0.5 text-[11px] font-semibold text-accent transition-colors hover:bg-border/60"
           >
             <Sparkles size={11} /> Improve guide
           </button>
@@ -255,8 +285,14 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         {data.steps.length > 0 && (
           <button
             onClick={() => {
+              if ((data.guide.impact ?? 'unknown') !== 'read_only') {
+                setGuideMeWarning(true);
+                return;
+              }
               openSidebar();
-              void sendMessage('startGuideMe', { guideId });
+              void sendMessage('startGuideMe', { guideId }).then((result) => {
+                if (!result.started && result.confirmationRequired) setGuideMeWarning(true);
+              });
             }}
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors"
           >

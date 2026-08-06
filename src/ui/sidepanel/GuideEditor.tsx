@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
-import { ArrowLeft, Layers, Maximize2, Play, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Languages, Layers, Maximize2, Play, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import {
@@ -19,8 +19,10 @@ import { getMostCommonDomain } from '@/lib/utils';
 import { Input } from '@/ui/components/ui/input';
 import EmptyGuideState from '@/ui/shared/EmptyGuideState';
 import FaviconImg from '@/ui/shared/FaviconImg';
+import { GuideMeStartDialog } from '@/ui/shared/GuideMeStartDialog';
 import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
 import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
+import { TranslateGuideDialog } from '@/ui/shared/TranslateGuideDialog';
 import BlurCanvas from './BlurCanvas';
 import ExportMenu from './ExportMenu';
 import StepCard from './StepCard';
@@ -47,6 +49,8 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
   const [blurringStepId, setBlurringStepId] = useState<string | null>(null);
   const [addingAt, setAddingAt] = useState<number | null>(null);
   const [improving, setImproving] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [guideMeWarning, setGuideMeWarning] = useState(false);
 
   const loadGuide = useCallback(async () => {
     const result = await getGuide(guideId);
@@ -113,12 +117,19 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
       if (!blurringStepId || !data) return;
       const blurScreenshot = data.screenshots.get(blurringStepId);
       if (!blurScreenshot) return;
-      await updateScreenshotBlob(blurScreenshot.id, blob);
+      const updatedScreenshot = await updateScreenshotBlob(blurScreenshot.id, blob, blurringStepId);
+      if (!updatedScreenshot) return;
       setData((prev) => {
         if (!prev) return prev;
         const newScreenshots = new Map(prev.screenshots);
-        newScreenshots.set(blurringStepId, { ...blurScreenshot, blob });
-        return { ...prev, screenshots: newScreenshots };
+        newScreenshots.set(blurringStepId, updatedScreenshot);
+        return {
+          ...prev,
+          steps: prev.steps.map((step) =>
+            step.id === blurringStepId ? { ...step, screenshotId: updatedScreenshot.id } : step,
+          ),
+          screenshots: newScreenshots,
+        };
       });
       setBlurringStepId(null);
     },
@@ -157,6 +168,17 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
         />
       )}
       {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
+      {translating && <TranslateGuideDialog guideId={guideId} onClose={() => setTranslating(false)} />}
+      {guideMeWarning && (
+        <GuideMeStartDialog
+          guide={data.guide}
+          onClose={() => setGuideMeWarning(false)}
+          onStarted={() => {
+            setGuideMeWarning(false);
+            onGuideMe?.(guideId);
+          }}
+        />
+      )}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <button
@@ -191,6 +213,15 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
           </button>
           {data.steps.length > 0 && (
             <button
+              onClick={() => setTranslating(true)}
+              className="shrink-0 rounded-md p-1.5 text-purple transition-colors hover:bg-secondary hover:text-accent"
+              title="Create translated copy"
+            >
+              <Languages size={15} />
+            </button>
+          )}
+          {data.steps.length > 0 && (
+            <button
               onClick={() => setImproving(true)}
               className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary"
               title="Improve guide"
@@ -201,8 +232,12 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
           {data.steps.length > 0 && (
             <button
               onClick={async () => {
-                await sendMessage('startGuideMe', { guideId });
-                onGuideMe?.(guideId);
+                if ((data.guide.impact ?? 'unknown') !== 'read_only') {
+                  setGuideMeWarning(true);
+                  return;
+                }
+                const result = await sendMessage('startGuideMe', { guideId });
+                if (result.started) onGuideMe?.(guideId);
               }}
               className="shrink-0 p-1.5 rounded-md transition-colors text-purple hover:text-accent hover:bg-secondary"
               title={i18n.t('editor.guideMe')}

@@ -60,6 +60,19 @@ describe('exportGuideAsMarkdown', () => {
     expect(md).toContain('export.createdLabel[');
   });
 
+  it('includes portable Guide Me instructions and the safety classification', async () => {
+    const guide = makeGuide({
+      title: 'Change Billing Contact',
+      impact: 'makes_changes',
+      impactNote: 'Uses production.',
+    });
+    const md = await exportGuideAsMarkdown(guide, [makeStep()], new Map());
+
+    expect(md).toContain('[Change-Billing-Contact.taskstitch](Change-Billing-Contact.taskstitch)');
+    expect(md).toContain('Safety: Makes changes');
+    expect(md).toContain('Uses production.');
+  });
+
   it('includes step descriptions with padded step numbers', async () => {
     const guide = makeGuide();
     const steps = [

@@ -89,19 +89,24 @@ export class GuideMeController {
   private setupActionDetection(step: Step, target: HTMLElement) {
     this.currentTarget = target;
 
-    if (step.action === 'input' && step.inputValue) {
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-        const proto =
-          target instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-        const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-        if (nativeSetter) nativeSetter.call(target, step.inputValue);
-        else target.value = step.inputValue;
-      } else if (target.getAttribute('contenteditable') !== null) {
-        target.textContent = step.inputValue;
+    if (step.action === 'input') {
+      if (step.inputValue) {
+        if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+          const proto =
+            target instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+          if (nativeSetter) nativeSetter.call(target, step.inputValue);
+          else target.value = step.inputValue;
+        } else if (target.getAttribute('contenteditable') !== null) {
+          target.textContent = step.inputValue;
+        }
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+        setTimeout(() => this.advanceStep(), 500);
+      } else {
+        this.clickHandler = () => this.advanceStep();
+        target.addEventListener('change', this.clickHandler, { once: true });
       }
-      target.dispatchEvent(new Event('input', { bubbles: true }));
-      target.dispatchEvent(new Event('change', { bubbles: true }));
-      setTimeout(() => this.advanceStep(), 500);
       return;
     }
 
@@ -118,6 +123,7 @@ export class GuideMeController {
   private removeActionDetection() {
     if (this.clickHandler && this.currentTarget) {
       this.currentTarget.removeEventListener('click', this.clickHandler);
+      this.currentTarget.removeEventListener('change', this.clickHandler);
     }
     this.clickHandler = null;
     this.currentTarget = null;

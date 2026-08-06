@@ -3,6 +3,7 @@ import { improveGuide } from '@/core/capture/ai/improve';
 import { CaptureState } from '@/core/capture/machine';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { createGuide, getGuide, getStepsForGuide, updateGuideDefaultTitle } from '@/core/guides/service';
+import { registerTranslationRunner, retryTranslation, startTranslation } from '@/core/translation/runner';
 import { getActiveTab, localStorage, sendMessageToTab, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
@@ -83,6 +84,7 @@ export default defineBackground(() => {
   initActor().catch(initActorFallback);
   cancelSession();
   registerNavigationListeners();
+  registerTranslationRunner();
 
   setupPortListener((port) => {
     logger.debug('Panel connected via port');
@@ -173,6 +175,29 @@ export default defineBackground(() => {
     }
   });
 
+  onMessage('startTranslation', async ({ data }) => {
+    const settings = await localStorage.get(['aiApiKey']);
+    if (!settings.aiApiKey) {
+      return { success: false, error: 'Configure an AI provider first', needsConfiguration: true };
+    }
+    try {
+      const job = await startTranslation(data.guideId, data.targetLanguage);
+      return { success: true, jobId: job.id };
+    } catch (error) {
+      logger.error('Starting guide translation failed', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Translation could not start' };
+    }
+  });
+
+  onMessage('retryTranslation', async ({ data }) => {
+    try {
+      await retryTranslation(data.jobId);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Translation could not resume' };
+    }
+  });
+
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
     const snapshot = getActor().getSnapshot();
@@ -230,7 +255,18 @@ export default defineBackground(() => {
   });
 
   onMessage('startGuideMe', async ({ data }) => {
-    const steps = await getStepsForGuide(data.guideId);
+    const guideData = await getGuide(data.guideId);
+    if (!guideData) return { started: false, error: 'Guide not found' };
+    const impact = guideData.guide.impact ?? 'unknown';
+    if (impact !== 'read_only' && !data.confirmedImpact) {
+      return {
+        started: false,
+        error: 'Review this guide before starting',
+        confirmationRequired: true,
+        impact,
+      };
+    }
+    const steps = guideData.steps;
     if (steps.length === 0) return { started: false, error: 'No steps' };
 
     const firstStep = steps[0];

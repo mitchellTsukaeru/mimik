@@ -1,5 +1,7 @@
 import { i18n } from '#imports';
 import { blobToBase64, escapeHtml, extractDomain, fetchFaviconBase64, formatDate } from '@/core/export/utils';
+import { guideImpact } from '@/core/guides/impact';
+import { taskStitchFilename } from '@/core/guides/portable';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { richTextToHtml } from './rich-text';
 
@@ -34,6 +36,8 @@ export async function exportGuideAsHTML(
 
   const domain = extractDomain(steps);
   const favicon = domain ? await fetchFaviconBase64(domain) : null;
+  const impact = guideImpact(guide.impact);
+  const portableName = taskStitchFilename(guide.title);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -68,6 +72,12 @@ export async function exportGuideAsHTML(
           : ''
       }
     </div>
+  </div>
+
+  <div style="margin:-20px 0 40px;padding:18px 20px;border:1px solid #C7D2FE;border-left:4px solid ${impact.tone === 'safe' ? '#059669' : impact.tone === 'danger' ? '#DC2626' : '#D97706'};border-radius:10px;background:#EEF2FF;">
+    <div style="font-size:14px;font-weight:700;color:#1E1B4B;margin-bottom:6px;">Run this interactively with TaskStitch</div>
+    <div style="font-size:13px;line-height:1.6;color:#4B5563;">Download <a href="${encodeURI(portableName)}" download style="font-weight:600;color:#4F46E5;">${escapeHtml(portableName)}</a>, import it into TaskStitch, then select <strong>Guide Me</strong>.</div>
+    <div style="font-size:12px;line-height:1.5;color:#1E1B4B;margin-top:8px;"><strong>Safety: ${escapeHtml(impact.label)}.</strong> ${escapeHtml(guide.impactNote || impact.description)}</div>
   </div>
 
   ${stepSections.join('\n')}

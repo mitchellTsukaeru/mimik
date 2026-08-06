@@ -25,6 +25,7 @@ const { broadcastMessages } = vi.hoisted(() => {
   return { broadcastMessages };
 });
 
+import { completeTranslationJob, createTranslationJob, updateTranslationJob } from '@/core/translation/service';
 import { db } from '../db';
 import {
   addStepToGuide,
@@ -42,6 +43,7 @@ import {
   toggleStar,
   updateGuideDefaultTitle,
   updateGuideTitle,
+  updateScreenshotBlob,
   updateStepRichDescription,
 } from '../service';
 import type { Guide, Screenshot, Step } from '../types';
@@ -90,6 +92,7 @@ afterEach(async () => {
   await db.guides.clear();
   await db.steps.clear();
   await db.screenshots.clear();
+  await db.translationJobs.clear();
 });
 
 describe('createGuide', () => {
@@ -252,6 +255,95 @@ describe('deleteStep', () => {
     const remaining = await db.steps.where('guideId').equals('g1').sortBy('index');
     expect(remaining[0].index).toBe(0);
     expect(remaining[1].index).toBe(1);
+  });
+
+  it('keeps a screenshot while another translated step references it', async () => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await seedGuide('g2', { stepIds: ['s2'], sourceGuideId: 'g1', language: 'ja' });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', screenshotId: 'shared' }),
+      makeStep({ id: 's2', guideId: 'g2', screenshotId: 'shared' }),
+    ]);
+    await db.screenshots.add(makeScreenshot({ id: 'shared', stepId: 's1' }));
+
+    await deleteStep('g2', 's2');
+
+    expect(await db.screenshots.get('shared')).toBeDefined();
+  });
+});
+
+describe('translated copies', () => {
+  it('creates an independent guide while reusing local screenshot assets', async () => {
+    const source = await seedGuide('g1', { title: 'Update profile', stepIds: ['s1'] });
+    const sourceStep = makeStep({
+      id: 's1',
+      guideId: 'g1',
+      description: 'Click Save changes',
+      screenshotId: 'shared',
+    });
+    await db.steps.add(sourceStep);
+    await db.screenshots.add(makeScreenshot({ id: 'shared', stepId: 's1' }));
+    const job = await createTranslationJob(source, [sourceStep], 'ja');
+    await updateTranslationJob(job.id, {
+      translations: { 'guide-title': 'プロフィールを更新', 'step:s1': '「変更を保存」をクリックします' },
+      nextIndex: 2,
+      completedItems: 2,
+    });
+
+    const translatedGuideId = await completeTranslationJob(job.id);
+    const translated = await getGuide(translatedGuideId);
+
+    expect(translated?.guide).toMatchObject({
+      title: 'プロフィールを更新',
+      sourceGuideId: 'g1',
+      language: 'ja',
+    });
+    expect(translated?.steps[0]).toMatchObject({
+      description: '「変更を保存」をクリックします',
+      screenshotId: 'shared',
+    });
+    expect(translated?.screenshots.get(translated.steps[0].id)?.id).toBe('shared');
+    expect(await db.screenshots.count()).toBe(1);
+  });
+
+  it('copies a shared screenshot only when one guide edits it', async () => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await seedGuide('g2', { stepIds: ['s2'], sourceGuideId: 'g1', language: 'ja' });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', screenshotId: 'shared' }),
+      makeStep({ id: 's2', guideId: 'g2', screenshotId: 'shared' }),
+    ]);
+    await db.screenshots.add(makeScreenshot({ id: 'shared', stepId: 's1', blob: new Blob(['original']) }));
+
+    const updated = await updateScreenshotBlob('shared', new Blob(['translated-edit']), 's2');
+
+    expect(updated?.id).not.toBe('shared');
+    expect((await db.steps.get('s1'))?.screenshotId).toBe('shared');
+    expect((await db.steps.get('s2'))?.screenshotId).toBe(updated?.id);
+    expect(await db.screenshots.count()).toBe(2);
+  });
+
+  it('masks typed values before AI translation and restores them only in the local copy', async () => {
+    const source = await seedGuide('g1', { title: 'Sign in', stepIds: ['s1'] });
+    const sourceStep = makeStep({
+      id: 's1',
+      guideId: 'g1',
+      action: 'input',
+      description: 'Type "private-token" in API key',
+      inputValue: 'private-token',
+    });
+    const job = await createTranslationJob(source, [sourceStep], 'ja');
+    expect(job.items.find((item) => item.id === 'step:s1')?.text).toBe('Type "{{INPUT_VALUE}}" in API key');
+
+    await updateTranslationJob(job.id, {
+      translations: { 'guide-title': 'サインイン', 'step:s1': 'APIキーに「{{INPUT_VALUE}}」を入力します' },
+      nextIndex: 2,
+      completedItems: 2,
+    });
+    const translatedGuideId = await completeTranslationJob(job.id);
+    const translated = await getGuide(translatedGuideId);
+
+    expect(translated?.steps[0].description).toBe('APIキーに「private-token」を入力します');
   });
 });
 
