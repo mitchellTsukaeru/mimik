@@ -11,7 +11,12 @@ export interface Guide {
   titleEdited?: boolean;
   sourceGuideId?: string;
   language?: string;
+  impact?: GuideImpact;
+  impactNote?: string;
+  importedAt?: number;
 }
+
+export type GuideImpact = 'read_only' | 'makes_changes' | 'destructive' | 'unknown';
 
 export interface Step {
   id: string;

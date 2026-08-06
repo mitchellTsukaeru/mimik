@@ -2,7 +2,7 @@ import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { GuideImprovementProposal } from '@/core/capture/ai/improve';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
-import type { ElementMeta } from '@/core/guides/types';
+import type { ElementMeta, GuideImpact } from '@/core/guides/types';
 
 export interface GetStateResponse {
   state: CaptureStateValue;
@@ -71,11 +71,14 @@ export interface FinalizeInputStepResponse {
 
 export interface StartGuideMeData {
   guideId: string;
+  confirmedImpact?: boolean;
 }
 
 export interface StartGuideMeResponse {
   started: boolean;
   error?: string;
+  confirmationRequired?: boolean;
+  impact?: GuideImpact;
 }
 
 export interface GuideMeStepCompletedData {

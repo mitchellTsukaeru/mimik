@@ -1,4 +1,12 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
+import {
+  ArrowDownWideNarrow,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  FileUp,
+  LayoutGrid,
+  LayoutList,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import {
@@ -14,11 +22,14 @@ import {
   toggleStar,
 } from '@/core/guides/service';
 import type { Guide, Screenshot } from '@/core/guides/types';
+import { openSidebar } from '@/lib/browser-api';
 import { useFullview } from '@/stores/fullview';
+import { ImportGuideDialog } from '@/ui/shared/ImportGuideDialog';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import GuideGridView from './components/GuideGridView';
 import GuideListView from './components/GuideListView';
 import MascotIcon from './components/MascotIcon';
+import { navigate } from './router';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
@@ -100,7 +111,9 @@ export default function LibraryContent({ category }: LibraryContentProps) {
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [importFile, setImportFile] = useState<File>();
   const sortRef = useRef<HTMLDivElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   const allGuidesRef = useRef<Guide[]>([]);
 
@@ -222,7 +235,40 @@ export default function LibraryContent({ category }: LibraryContentProps) {
 
   return (
     <div>
+      {importFile && (
+        <ImportGuideDialog
+          file={importFile}
+          onClose={() => setImportFile(undefined)}
+          onBeforeStart={openSidebar}
+          onImported={(guideId, started) => {
+            setImportFile(undefined);
+            navigate({ page: 'guide', guideId });
+            if (started) openSidebar();
+          }}
+        />
+      )}
       <div className="flex items-center justify-end gap-2 mb-4">
+        {category === 'all' && (
+          <>
+            <button
+              onClick={() => importRef.current?.click()}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-violet hover:text-purple"
+            >
+              <FileUp size={13} /> Import guide
+            </button>
+            <input
+              ref={importRef}
+              type="file"
+              accept=".taskstitch,application/vnd.taskstitch.guide+json,application/json"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = '';
+                if (file) setImportFile(file);
+              }}
+            />
+          </>
+        )}
         <div ref={sortRef} className="relative">
           <button
             onClick={() => setSortOpen(!sortOpen)}

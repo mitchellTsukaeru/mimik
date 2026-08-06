@@ -1,5 +1,5 @@
-import { Maximize2, Search, Settings, Video } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { FileUp, Maximize2, Search, Settings, Video } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { CaptureState } from '@/core/capture/machine';
 import type { GuideMeSession } from '@/core/guideme/session';
@@ -19,6 +19,7 @@ import { connectToBackground } from '@/lib/port';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import MascotIcon from '@/ui/fullview/components/MascotIcon';
+import { ImportGuideDialog } from '@/ui/shared/ImportGuideDialog';
 import SettingsView from '@/ui/shared/SettingsView';
 import GuideEditor from './GuideEditor';
 import GuideMeCompletion from './GuideMeCompletion';
@@ -41,6 +42,8 @@ export default function App() {
   const [view, setView] = useState<View>({ name: 'library' });
   const [search, setSearch] = useState('');
   const [startError, setStartError] = useState('');
+  const [importFile, setImportFile] = useState<File>();
+  const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const disconnect = connectToBackground({
@@ -169,7 +172,7 @@ export default function App() {
         guideId={view.guideId}
         onDone={() => setView({ name: 'library' })}
         onRunAgain={async (id) => {
-          await sendMessage('startGuideMe', { guideId: id });
+          await sendMessage('startGuideMe', { guideId: id, confirmedImpact: true });
           setView({ name: 'guideme', guideId: id });
         }}
       />
@@ -192,6 +195,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-card flex flex-col">
+      {importFile && (
+        <ImportGuideDialog
+          file={importFile}
+          onClose={() => setImportFile(undefined)}
+          onImported={(guideId, started) => {
+            setImportFile(undefined);
+            setView({ name: started ? 'guideme' : 'editor', guideId });
+          }}
+        />
+      )}
       {/* Header */}
       <div className="relative overflow-hidden px-6 pt-6 pb-7 bg-gradient-to-br from-violet to-violet-light">
         <div className="absolute -top-12 -right-8 w-44 h-44 rounded-full opacity-15 blur-[40px] bg-gradient-to-br from-lavender to-white" />
@@ -249,15 +262,35 @@ export default function App() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {i18n.t('sidepanel.recentLabel')}
           </p>
-          <button
-            type="button"
-            onClick={handleOpenTaskStitch}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-purple transition-colors hover:bg-secondary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-            title={i18n.t('library.openInFullView')}
-          >
-            {i18n.t('sidepanel.openTaskStitch')}
-            <Maximize2 size={12} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => importRef.current?.click()}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-purple transition-colors hover:bg-secondary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+            >
+              Import <FileUp size={12} />
+            </button>
+            <input
+              ref={importRef}
+              type="file"
+              accept=".taskstitch,application/vnd.taskstitch.guide+json,application/json"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = '';
+                if (file) setImportFile(file);
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleOpenTaskStitch}
+              className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-purple transition-colors hover:bg-secondary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+              title={i18n.t('library.openInFullView')}
+            >
+              {i18n.t('sidepanel.openTaskStitch')}
+              <Maximize2 size={12} />
+            </button>
+          </div>
         </div>
 
         <LibraryView

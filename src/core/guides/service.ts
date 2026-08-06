@@ -1,7 +1,7 @@
 import { i18n } from '#imports';
 import { db } from './db';
 import { plainTextDocument, richTextToPlainText } from './rich-text';
-import type { Guide, Screenshot, Step } from './types';
+import type { Guide, GuideImpact, Screenshot, Step } from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
@@ -27,6 +27,7 @@ export async function createGuide(guideId: string): Promise<Guide> {
     starred: false,
     deletedAt: null,
     titleEdited: false,
+    impact: 'unknown',
   };
   await db.guides.add(guide);
   return guide;
@@ -84,6 +85,24 @@ export async function updateGuideDefaultTitle(id: string, title: string): Promis
   const guide = await db.guides.get(id);
   if (!guide || guide.titleEdited) return;
   await db.guides.update(id, { title, updatedAt: Date.now() });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function updateGuideImpact(id: string, impact: GuideImpact, impactNote?: string): Promise<void> {
+  await db.guides.update(id, {
+    impact,
+    impactNote: impactNote?.trim().slice(0, 500) || undefined,
+    updatedAt: Date.now(),
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function saveImportedGuide(guide: Guide, steps: Step[], screenshots: Screenshot[]): Promise<void> {
+  await db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    await db.guides.add(guide);
+    if (steps.length) await db.steps.bulkAdd(steps);
+    if (screenshots.length) await db.screenshots.bulkAdd(screenshots);
+  });
   notifyGuidesChanged({ type: 'mutated' });
 }
 

@@ -19,6 +19,7 @@ import { sendMessage } from '@/lib/messaging';
 import { formatDate, getMostCommonDomain } from '@/lib/utils';
 import { useFullview } from '@/stores/fullview';
 import FaviconImg from '@/ui/shared/FaviconImg';
+import { GuideMeStartDialog } from '@/ui/shared/GuideMeStartDialog';
 import { ImproveGuideDialog } from '@/ui/shared/ImproveGuideDialog';
 import { ManualStepDialog } from '@/ui/shared/ManualStepDialog';
 import { TranslateGuideDialog } from '@/ui/shared/TranslateGuideDialog';
@@ -50,6 +51,7 @@ export default function GuideContent({ guideId }: GuideContentProps) {
   const [addingAt, setAddingAt] = useState<number | null>(null);
   const [improving, setImproving] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [guideMeWarning, setGuideMeWarning] = useState(false);
   const titleRef = useRef('');
 
   const loadGuide = useCallback(async () => {
@@ -185,6 +187,16 @@ export default function GuideContent({ guideId }: GuideContentProps) {
       )}
       {improving && <ImproveGuideDialog guideId={guideId} onClose={() => setImproving(false)} onApplied={loadGuide} />}
       {translating && <TranslateGuideDialog guideId={guideId} onClose={() => setTranslating(false)} />}
+      {guideMeWarning && (
+        <GuideMeStartDialog
+          guide={data.guide}
+          onClose={() => setGuideMeWarning(false)}
+          onBeforeStart={openSidebar}
+          onStarted={() => {
+            setGuideMeWarning(false);
+          }}
+        />
+      )}
 
       <div
         className={
@@ -273,8 +285,14 @@ export default function GuideContent({ guideId }: GuideContentProps) {
         {data.steps.length > 0 && (
           <button
             onClick={() => {
+              if ((data.guide.impact ?? 'unknown') !== 'read_only') {
+                setGuideMeWarning(true);
+                return;
+              }
               openSidebar();
-              void sendMessage('startGuideMe', { guideId });
+              void sendMessage('startGuideMe', { guideId }).then((result) => {
+                if (!result.started && result.confirmationRequired) setGuideMeWarning(true);
+              });
             }}
             className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors"
           >

@@ -1,5 +1,7 @@
 import { i18n } from '#imports';
 import { blobToBase64, extractDomain, formatDate } from '@/core/export/utils';
+import { guideImpact } from '@/core/guides/impact';
+import { taskStitchFilename } from '@/core/guides/portable';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { richTextToMarkdown } from './rich-text';
 
@@ -15,7 +17,20 @@ export async function exportGuideAsMarkdown(
     ...(domain ? [i18n.t('export.sourceLabel', [domain])] : []),
   ].join(' · ');
 
-  const lines: string[] = [`# ${guide.title}`, '', `*${meta}*`, '', '---', ''];
+  const impact = guideImpact(guide.impact);
+  const portableName = taskStitchFilename(guide.title);
+  const lines: string[] = [
+    `# ${guide.title}`,
+    '',
+    `*${meta}*`,
+    '',
+    '> **Run this interactively with TaskStitch**',
+    `> Download [${portableName}](${encodeURI(portableName)}), import it into TaskStitch, then select **Guide Me**.`,
+    `> **Safety: ${impact.label}.** ${guide.impactNote || impact.description}`,
+    '',
+    '---',
+    '',
+  ];
 
   for (const step of steps) {
     const num = String(step.index + 1).padStart(2, '0');

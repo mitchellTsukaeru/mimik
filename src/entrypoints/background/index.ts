@@ -255,7 +255,18 @@ export default defineBackground(() => {
   });
 
   onMessage('startGuideMe', async ({ data }) => {
-    const steps = await getStepsForGuide(data.guideId);
+    const guideData = await getGuide(data.guideId);
+    if (!guideData) return { started: false, error: 'Guide not found' };
+    const impact = guideData.guide.impact ?? 'unknown';
+    if (impact !== 'read_only' && !data.confirmedImpact) {
+      return {
+        started: false,
+        error: 'Review this guide before starting',
+        confirmationRequired: true,
+        impact,
+      };
+    }
+    const steps = guideData.steps;
     if (steps.length === 0) return { started: false, error: 'No steps' };
 
     const firstStep = steps[0];
