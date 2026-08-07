@@ -19,7 +19,13 @@ import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady 
 import { registerNavigationListeners } from './navigation';
 import { createRecordingControls } from './recording-controls';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep, prepareCapture } from './step-pipeline';
-import { isInjectableTab, showNotificationOnTab, startCaptureOnTab, stopCaptureOnTab } from './tab-manager';
+import {
+  injectContentScript,
+  isInjectableTab,
+  showNotificationOnTab,
+  startCaptureOnTab,
+  stopCaptureOnTab,
+} from './tab-manager';
 
 async function generateTitleInBackground(guideId: string) {
   try {
@@ -89,7 +95,6 @@ export default defineBackground(() => {
     });
   });
   initActor().catch(initActorFallback);
-  cancelSession();
   registerNavigationListeners();
   registerTranslationRunner();
 
@@ -278,11 +283,16 @@ export default defineBackground(() => {
 
     const firstStep = steps[0];
 
+    const activeTab = await getActiveTab();
     await startSession(data.guideId, steps.length, firstStep);
 
-    const activeTab = await getActiveTab();
-    if (activeTab?.id && firstStep.url) {
+    if (activeTab?.id && firstStep.url && firstStep.url !== activeTab.url) {
       await updateTab(activeTab.id, { url: firstStep.url });
+    } else if (activeTab?.id && isInjectableTab(activeTab)) {
+      // A tab opened before the extension was loaded may not have the content
+      // script. Inject it when Guide Me starts on the current URL so the live
+      // target can be found and highlighted immediately.
+      await injectContentScript(activeTab.id);
     }
 
     return { started: true };
