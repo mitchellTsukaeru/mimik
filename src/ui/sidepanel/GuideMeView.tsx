@@ -57,6 +57,8 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
   const [loading, setLoading] = useState(true);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [viewedStepIndex, setViewedStepIndex] = useState(0);
+  const [advancing, setAdvancing] = useState(false);
+  const [advanceError, setAdvanceError] = useState('');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const objectUrlsRef = useRef<Map<string, string>>(new Map());
 
@@ -222,23 +224,42 @@ export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeView
               {i18n.t('guideme.prev')}
             </button>
             <button
-              onClick={() => {
-                if (viewedStepIndex === activeStepIndex) {
-                  sendMessage('guideMeStepCompleted', { stepIndex: activeStepIndex }).catch(() => {});
+              onClick={async () => {
+                if (viewedStepIndex !== activeStepIndex || advancing) {
+                  if (viewedStepIndex < totalSteps - 1) setViewedStepIndex((i) => i + 1);
+                  return;
                 }
-                if (viewedStepIndex < totalSteps - 1) {
-                  setViewedStepIndex((i) => i + 1);
+
+                setAdvancing(true);
+                setAdvanceError('');
+                try {
+                  const result = await sendMessage('guideMeNext', undefined);
+                  if (!result.advanced) {
+                    setAdvanceError('Guide Me could not advance. Try again.');
+                    return;
+                  }
+                  if (!result.completed && result.activeStepIndex !== undefined) {
+                    setActiveStepIndex(result.activeStepIndex);
+                    setViewedStepIndex(result.activeStepIndex);
+                  }
+                } catch {
+                  setAdvanceError('Guide Me could not advance. Try again.');
+                } finally {
+                  setAdvancing(false);
                 }
               }}
-              disabled={viewedStepIndex === totalSteps - 1 && viewedStepIndex !== activeStepIndex}
+              disabled={advancing || (viewedStepIndex === totalSteps - 1 && viewedStepIndex !== activeStepIndex)}
               className="flex items-center gap-1 text-xs font-medium text-purple hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {viewedStepIndex === totalSteps - 1 && viewedStepIndex === activeStepIndex
-                ? i18n.t('guideme.finish')
-                : i18n.t('guideme.next')}
+              {advancing
+                ? 'Moving…'
+                : viewedStepIndex === totalSteps - 1 && viewedStepIndex === activeStepIndex
+                  ? i18n.t('guideme.finish')
+                  : i18n.t('guideme.next')}
               <ChevronRight size={14} />
             </button>
           </div>
+          {advanceError && <p className="px-4 pb-3 text-[11px] text-destructive">{advanceError}</p>}
         </div>
       </div>
 

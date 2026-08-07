@@ -1,7 +1,14 @@
 import { browser, defineBackground, i18n } from '#imports';
 import { improveGuide } from '@/core/capture/ai/improve';
 import { CaptureState } from '@/core/capture/machine';
-import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
+import {
+  advanceSession,
+  cancelSession,
+  completeSession,
+  type GuideMeSession,
+  getSession,
+  startSession,
+} from '@/core/guideme/session';
 import { createGuide, getGuide, getStepsForGuide, updateGuideDefaultTitle } from '@/core/guides/service';
 import { registerTranslationRunner, retryTranslation, startTranslation } from '@/core/translation/runner';
 import { getActiveTab, localStorage, sendMessageToTab, setSidePanelBehavior, updateTab } from '@/lib/browser-api';
@@ -281,23 +288,26 @@ export default defineBackground(() => {
     return { started: true };
   });
 
-  onMessage('guideMeStepCompleted', async ({ data }) => {
+  const advanceGuideMe = async (expectedStepIndex?: number) => {
     const sessionData = await localStorage.get(['guideMeSession']);
-    const session = sessionData.guideMeSession as { guideId: string } | undefined;
-    if (!session) return { advanced: false };
+    const session = sessionData.guideMeSession as GuideMeSession | undefined;
+    if (!session?.active) return { advanced: false };
+    if (expectedStepIndex !== undefined && expectedStepIndex !== session.activeStepIndex) {
+      return { advanced: false };
+    }
 
     const steps = await getStepsForGuide(session.guideId);
-    const nextIndex = data.stepIndex + 1;
+    const nextIndex = session.activeStepIndex + 1;
 
     if (nextIndex >= steps.length) {
       await completeSession();
-      return { advanced: true, completed: true };
+      return { advanced: true, completed: true, activeStepIndex: nextIndex };
     }
 
     const nextStep = steps[nextIndex];
     if (!nextStep) {
       await completeSession();
-      return { advanced: true, completed: true };
+      return { advanced: true, completed: true, activeStepIndex: nextIndex };
     }
     await advanceSession(nextStep, nextIndex);
 
@@ -306,7 +316,15 @@ export default defineBackground(() => {
       await updateTab(currentTab.id, { url: nextStep.url });
     }
 
-    return { advanced: true };
+    return { advanced: true, activeStepIndex: nextIndex };
+  };
+
+  onMessage('guideMeStepCompleted', async ({ data }) => {
+    return advanceGuideMe(data.stepIndex);
+  });
+
+  onMessage('guideMeNext', async () => {
+    return advanceGuideMe();
   });
 
   onMessage('guideMeCancel', async () => {
