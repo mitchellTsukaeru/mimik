@@ -88,6 +88,13 @@ export interface GuideMeStepCompletedData {
 export interface GuideMeStepCompletedResponse {
   advanced: boolean;
   completed?: boolean;
+  activeStepIndex?: number;
+}
+
+export interface GuideMeNextResponse {
+  advanced: boolean;
+  completed?: boolean;
+  activeStepIndex?: number;
 }
 
 export interface GuideMe_CancelResponse {
@@ -144,6 +151,7 @@ interface TaskStitchProtocol {
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;
   startGuideMe(data: StartGuideMeData): StartGuideMeResponse;
   guideMeStepCompleted(data: GuideMeStepCompletedData): GuideMeStepCompletedResponse;
+  guideMeNext(): GuideMeNextResponse;
   guideMeCancel(): GuideMe_CancelResponse;
   guideMePrev(data: GuideMe_PrevData): GuideMe_PrevResponse;
   enterBlurMode(): EnterBlurModeResponse;
